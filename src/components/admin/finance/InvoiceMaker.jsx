@@ -103,17 +103,42 @@ const InvoiceMaker = () => {
   };
 
   const amountInWords = (amount) => {
+    const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    
+    const convertHundreds = (num) => {
+      let result = '';
+      if (num >= 100) {
+        result += ones[Math.floor(num / 100)] + ' hundred';
+        num %= 100;
+        if (num > 0) result += ' ';
+      }
+      if (num >= 20) {
+        result += tens[Math.floor(num / 10)];
+        if (num % 10 > 0) result += ' ' + ones[num % 10];
+      } else if (num >= 10) {
+        result += teens[num - 10];
+      } else if (num > 0) {
+        result += ones[num];
+      }
+      return result.trim();
+    };
+
+    if (amount === 0) return 'zero';
+    
     const crore = Math.floor(amount / 10000000);
-    const remainder = amount % 10000000;
-    const lakh = Math.floor(remainder / 100000);
-    const rest = remainder % 100000;
+    const lakh = Math.floor((amount % 10000000) / 100000);
+    const thousand = Math.floor((amount % 100000) / 1000);
+    const hundred = amount % 1000;
 
     let words = '';
-    if (crore > 0) words += `${crore} Crore `;
-    if (lakh > 0) words += `${lakh} Lakh `;
-    if (rest > 0) words += `${rest}`;
-    
-    return words.trim() || '0';
+    if (crore > 0) words += convertHundreds(crore) + ' crore ';
+    if (lakh > 0) words += convertHundreds(lakh) + ' lakh ';
+    if (thousand > 0) words += convertHundreds(thousand) + ' thousand ';
+    if (hundred > 0) words += convertHundreds(hundred);
+
+    return words.trim();
   };
 
   const { subtotal, gstAmount, beforeDiscount, discount, total } = calculateTotals();
@@ -125,6 +150,8 @@ const InvoiceMaker = () => {
       const canvas = await html2canvas(previewRef.current, {
         scale: 2,
         backgroundColor: '#ffffff',
+        allowTaint: true,
+        useCORS: true
       });
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
@@ -144,6 +171,8 @@ const InvoiceMaker = () => {
       const canvas = await html2canvas(previewRef.current, {
         scale: 2,
         backgroundColor: '#ffffff',
+        allowTaint: true,
+        useCORS: true
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -158,6 +187,44 @@ const InvoiceMaker = () => {
       pdf.save(`${invoiceNumber}.pdf`);
     } catch (error) {
       alert('Error exporting PDF: ' + error.message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedClient) {
+      alert('Please select a client first');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const invoiceHtml = previewRef.current?.innerHTML;
+      if (!invoiceHtml) {
+        throw new Error('Could not generate invoice HTML');
+      }
+
+      const response = await fetch('https://project-5alhy.vercel.app/api/send-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: selectedClient.email,
+          invoiceNumber: invoiceNumber,
+          invoiceHtml: invoiceHtml,
+          clientName: selectedClient.name
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert(`✅ Invoice sent to ${selectedClient.email}!`);
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      alert(`Error sending email: ${error.message}`);
     } finally {
       setExporting(false);
     }
@@ -263,57 +330,59 @@ const InvoiceMaker = () => {
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} style={{ width: '100%', height: '80px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box', fontFamily: 'Arial, sans-serif' }} placeholder="Enter payment terms, thank you message, or other notes..." />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           <button onClick={handleExportPNG} disabled={exporting} style={{ padding: '12px', backgroundColor: '#D4A574', color: 'white', border: 'none', borderRadius: '4px', cursor: exporting ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '16px', opacity: exporting ? 0.6 : 1 }}>
             {exporting ? '⏳ Exporting...' : '⬇ Export as PNG'}
           </button>
           <button onClick={handleExportPDF} disabled={exporting} style={{ padding: '12px', backgroundColor: '#d1356f', color: 'white', border: 'none', borderRadius: '4px', cursor: exporting ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '16px', opacity: exporting ? 0.6 : 1 }}>
             {exporting ? '⏳ Exporting...' : '📄 Export as PDF'}
           </button>
+          <button onClick={handleSendEmail} disabled={exporting} style={{ padding: '12px', backgroundColor: '#D4A574', color: 'white', border: 'none', borderRadius: '4px', cursor: exporting ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '16px', opacity: exporting ? 0.6 : 1 }}>
+            {exporting ? '⏳ Sending...' : '✉️ Send via Email'}
+          </button>
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', justifyContent: 'center', backgroundColor: '#eee' }}>
-        <div ref={previewRef} style={{ width: '850px', backgroundColor: 'white', padding: '40px', boxShadow: '0 0 20px rgba(0,0,0,0.1)', fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#333' }}>
-          {/* LOGO HEADER */}
-          <div style={{ textAlign: 'center', marginBottom: '32px', paddingBottom: '24px', borderBottom: '2px solid #D4A574' }}>
-            <img src={logoUrl} alt="India Reisen" style={{ height: '80px', objectFit: 'contain', marginBottom: '16px' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', backgroundColor: '#eee' }}>
+        <div ref={previewRef} style={{ width: '820px', backgroundColor: 'white', padding: '30px', boxShadow: '0 0 20px rgba(0,0,0,0.1)', fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#333', minHeight: 'auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '3px solid #D4A574' }}>
+            <img src={logoUrl} alt="India Reisen" style={{ height: '60px', marginBottom: '12px', objectFit: 'contain' }} onError={(e) => e.target.style.display = 'none'} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
               <div style={{ textAlign: 'left' }}>
-                <h1 style={{ color: '#d1356f', margin: '0 0 8px 0', fontSize: '32px' }}>INVOICE</h1>
+                <h1 style={{ color: '#d1356f', margin: '0', fontSize: '28px' }}>INVOICE</h1>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: '4px 0', fontWeight: 'bold' }}>Invoice No: {invoiceNumber}</p>
-                <p style={{ margin: '4px 0' }}>Date: {invoiceDate}</p>
-                {dueDate && <p style={{ margin: '4px 0' }}>Due: {dueDate}</p>}
+              <div style={{ textAlign: 'right', fontSize: '11px' }}>
+                <p style={{ margin: '2px 0' }}>Invoice No: <strong>{invoiceNumber}</strong></p>
+                <p style={{ margin: '2px 0' }}>Date: {invoiceDate}</p>
+                {dueDate && <p style={{ margin: '2px 0' }}>Due: {dueDate}</p>}
               </div>
             </div>
           </div>
 
-          <div style={{ marginBottom: '32px' }}>
-            <p style={{ fontWeight: 'bold', marginBottom: '8px', color: '#d1356f' }}>BILL TO</p>
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontWeight: 'bold', marginBottom: '6px', color: '#d1356f', fontSize: '11px' }}>BILL TO</p>
             {selectedClient ? (
-              <div>
-                <p style={{ margin: '4px 0', fontWeight: 'bold' }}>{selectedClient.name}</p>
-                <p style={{ margin: '4px 0' }}>{selectedClient.company}</p>
-                <p style={{ margin: '4px 0' }}>{selectedClient.address}</p>
-                {selectedClient.gstNumber && <p style={{ margin: '4px 0' }}>GST: {selectedClient.gstNumber}</p>}
-                {selectedClient.phoneNumber && <p style={{ margin: '4px 0' }}>Phone: {selectedClient.phoneNumber}</p>}
-                {selectedClient.email && <p style={{ margin: '4px 0' }}>Email: {selectedClient.email}</p>}
+              <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedClient.name}</p>
+                <p style={{ margin: '2px 0' }}>{selectedClient.company}</p>
+                <p style={{ margin: '2px 0' }}>{selectedClient.address}</p>
+                {selectedClient.gstNumber && <p style={{ margin: '2px 0' }}>GST: {selectedClient.gstNumber}</p>}
+                {selectedClient.phoneNumber && <p style={{ margin: '2px 0' }}>Phone: {selectedClient.phoneNumber}</p>}
+                {selectedClient.email && <p style={{ margin: '2px 0' }}>Email: {selectedClient.email}</p>}
               </div>
             ) : (
-              <p style={{ color: '#999', fontStyle: 'italic' }}>Select a client to populate</p>
+              <p style={{ color: '#999', fontStyle: 'italic', fontSize: '11px' }}>Select a client to populate</p>
             )}
           </div>
 
-          <table style={{ width: '100%', marginBottom: '24px', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', marginBottom: '16px', borderCollapse: 'collapse', fontSize: '11px' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #D4A574', backgroundColor: '#fff5f9' }}>
-                <th style={{ textAlign: 'left', padding: '10px', fontWeight: 'bold', color: '#d1356f' }}>Description</th>
-                <th style={{ textAlign: 'right', padding: '10px', fontWeight: 'bold', color: '#d1356f', width: '80px' }}>Qty</th>
-                <th style={{ textAlign: 'right', padding: '10px', fontWeight: 'bold', color: '#d1356f', width: '100px' }}>Rate (₹)</th>
-                <th style={{ textAlign: 'right', padding: '10px', fontWeight: 'bold', color: '#d1356f', width: '70px' }}>GST %</th>
-                <th style={{ textAlign: 'right', padding: '10px', fontWeight: 'bold', color: '#d1356f', width: '100px' }}>Amount (₹)</th>
+                <th style={{ textAlign: 'left', padding: '8px', fontWeight: 'bold', color: '#d1356f' }}>Description</th>
+                <th style={{ textAlign: 'right', padding: '8px', fontWeight: 'bold', color: '#d1356f', width: '70px' }}>Qty</th>
+                <th style={{ textAlign: 'right', padding: '8px', fontWeight: 'bold', color: '#d1356f', width: '90px' }}>Rate (₹)</th>
+                <th style={{ textAlign: 'right', padding: '8px', fontWeight: 'bold', color: '#d1356f', width: '60px' }}>GST %</th>
+                <th style={{ textAlign: 'right', padding: '8px', fontWeight: 'bold', color: '#d1356f', width: '100px' }}>Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
@@ -323,53 +392,53 @@ const InvoiceMaker = () => {
                 const total = amount + gst;
                 return (
                   <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px' }}>{item.description}</td>
-                    <td style={{ textAlign: 'right', padding: '10px' }}>{item.quantity}</td>
-                    <td style={{ textAlign: 'right', padding: '10px' }}>{formatIndianNumber(item.rate)}</td>
-                    <td style={{ textAlign: 'right', padding: '10px' }}>{item.gst}%</td>
-                    <td style={{ textAlign: 'right', padding: '10px', fontWeight: 'bold' }}>{formatIndianNumber(total)}</td>
+                    <td style={{ padding: '6px 8px' }}>{item.description}</td>
+                    <td style={{ textAlign: 'right', padding: '6px 8px' }}>{item.quantity}</td>
+                    <td style={{ textAlign: 'right', padding: '6px 8px' }}>{formatIndianNumber(item.rate)}</td>
+                    <td style={{ textAlign: 'right', padding: '6px 8px' }}>{item.gst}%</td>
+                    <td style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 'bold' }}>{formatIndianNumber(total)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
 
-          <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-end' }}>
-            <div style={{ width: '300px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}><span>Subtotal:</span><span>₹{formatIndianNumber(subtotal)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}><span>GST:</span><span>₹{formatIndianNumber(gstAmount)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee', color: '#666' }}><span>Before Discount:</span><span>₹{formatIndianNumber(beforeDiscount)}</span></div>
-              {discountPercent > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee', color: '#d1356f' }}><span>Discount ({discountPercent}%):</span><span>-₹{formatIndianNumber(discount)}</span></div>}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '2px solid #d1356f', fontWeight: 'bold', fontSize: '16px', color: '#d1356f' }}><span>Total:</span><span>₹{formatIndianNumber(total)}</span></div>
+          <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ width: '280px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #eee' }}><span>Subtotal:</span><span>₹{formatIndianNumber(subtotal)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #eee' }}><span>GST:</span><span>₹{formatIndianNumber(gstAmount)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #eee', color: '#666' }}><span>Before Discount:</span><span>₹{formatIndianNumber(beforeDiscount)}</span></div>
+              {discountPercent > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #eee', color: '#d1356f' }}><span>Discount ({discountPercent}%):</span><span>-₹{formatIndianNumber(discount)}</span></div>}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '2px solid #d1356f', fontWeight: 'bold', fontSize: '13px', color: '#d1356f' }}><span>Total:</span><span>₹{formatIndianNumber(total)}</span></div>
             </div>
           </div>
 
-          <div style={{ marginBottom: '24px', padding: '12px', backgroundColor: '#fff5f9', borderRadius: '4px' }}>
-            <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>Amount in Words:</p>
-            <p style={{ margin: '4px 0 0 0', fontWeight: 'bold', color: '#d1356f' }}>Rupees {amountInWords(Math.floor(total))} only</p>
+          <div style={{ marginBottom: '16px', padding: '10px', backgroundColor: '#fff5f9', borderRadius: '3px', fontSize: '11px' }}>
+            <p style={{ margin: '0 0 4px 0', color: '#666' }}>Amount in Words:</p>
+            <p style={{ margin: '0', fontWeight: 'bold', color: '#d1356f' }}>Rupees {amountInWords(Math.floor(total))} only</p>
           </div>
 
-          <div style={{ marginBottom: '24px', backgroundColor: '#f9f9f9', padding: '12px', borderRadius: '4px', border: '1px solid #e0e0e0' }}>
-            <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#333' }}>Bank Details</p>
-            <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-              <div style={{ display: 'flex' }}><span style={{ width: '150px', fontWeight: 'bold' }}>Bank Name:</span><span>{bankName}</span></div>
-              <div style={{ display: 'flex' }}><span style={{ width: '150px', fontWeight: 'bold' }}>Account Holder:</span><span>{accountName}</span></div>
-              <div style={{ display: 'flex' }}><span style={{ width: '150px', fontWeight: 'bold' }}>Account Number:</span><span>{accountNumber}</span></div>
-              <div style={{ display: 'flex' }}><span style={{ width: '150px', fontWeight: 'bold' }}>IFSC Code:</span><span>{ifscCode}</span></div>
+          <div style={{ marginBottom: '16px', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '3px', border: '1px solid #e0e0e0', fontSize: '10px' }}>
+            <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#333' }}>Bank Details</p>
+            <div style={{ lineHeight: '1.5' }}>
+              <div style={{ display: 'flex' }}><span style={{ width: '140px', fontWeight: 'bold' }}>Bank Name:</span><span>{bankName}</span></div>
+              <div style={{ display: 'flex' }}><span style={{ width: '140px', fontWeight: 'bold' }}>Account Holder:</span><span>{accountName}</span></div>
+              <div style={{ display: 'flex' }}><span style={{ width: '140px', fontWeight: 'bold' }}>Account Number:</span><span>{accountNumber}</span></div>
+              <div style={{ display: 'flex' }}><span style={{ width: '140px', fontWeight: 'bold' }}>IFSC Code:</span><span>{ifscCode}</span></div>
             </div>
           </div>
 
           {notes && (
-            <div style={{ marginBottom: '24px', padding: '12px', backgroundColor: '#f0f8f0', borderRadius: '4px' }}>
-              <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#333' }}>Notes</p>
-              <p style={{ margin: 0, fontSize: '12px', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{notes}</p>
+            <div style={{ marginBottom: '16px', padding: '10px', backgroundColor: '#f0f8f0', borderRadius: '3px', fontSize: '10px' }}>
+              <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#333' }}>Notes</p>
+              <p style={{ margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{notes}</p>
             </div>
           )}
 
-          <div style={{ marginTop: '32px', paddingTop: '16px', borderTop: '2px solid #D4A574', textAlign: 'center', fontSize: '12px', color: '#666' }}>
+          <div style={{ marginTop: '20px', paddingTop: '12px', borderTop: '2px solid #D4A574', textAlign: 'center', fontSize: '10px', color: '#666' }}>
             <p style={{ margin: '4px 0' }}>Thank you for your business!</p>
             <p style={{ margin: '4px 0' }}><strong style={{ color: '#d1356f' }}>India Reisen</strong> | Explore. Experience. Enchant.</p>
-            <p style={{ margin: '4px 0', fontSize: '11px' }}>www.indiareisen.com | team@indiareisen.com | +91 98108 27785</p>
+            <p style={{ margin: '4px 0' }}>www.indiareisen.com | team@indiareisen.com | +91 98108 27785</p>
           </div>
         </div>
       </div>
