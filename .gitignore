@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 india-reisen-api/.env
 functions/.env
+.env
+functions/.env
