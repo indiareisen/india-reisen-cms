@@ -27,3 +27,4 @@ functions/.env
 .env
 functions/.env
 .env.local
+.vercel
