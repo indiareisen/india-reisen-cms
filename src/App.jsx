@@ -9,7 +9,9 @@ import TeamManager from './components/admin/team/TeamManager'
 import ReviewsManager from './components/admin/reviews/ReviewsManager'
 import InvoiceMaker from './components/admin/finance/InvoiceMaker'
 import ClientManager from './components/admin/finance/ClientManager'
+import AdminSettings from './components/admin/settings/AdminSettings'
 import Dashboard from './components/admin/Dashboard'
+import SocialMediaCreator from './components/SocialMediaCreator'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -411,6 +413,8 @@ case 'team': return <TeamManager />
 case 'reviews': return <ReviewsManager />
 case 'clients': return <ClientManager />
 case 'invoices': return <InvoiceMaker />
+case 'social': return <SocialMediaCreator />
+case 'admin': return <AdminSettings />
       default: return renderDashboard()
     }
   }
@@ -465,6 +469,7 @@ const navItems = [
   { id: 'reviews', label: '⭐ Reviews' },
   { id: 'clients', label: '👤 Manage Clients' },
   { id: 'invoices', label: '📄 Create Invoices' },
+  { id: 'social', label: '📱 Social Content' },
   { id: 'admin', label: '🔐 Admin' }
   ]
 

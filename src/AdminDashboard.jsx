@@ -1,3 +1,4 @@
+import SocialMediaCreator from './components/SocialMediaCreator';
 import { useState, useRef } from 'react'
 import { 
   collection, 
@@ -45,6 +46,7 @@ function AdminDashboard() {
       case 'blogs': return <PlaceholderManager title="Blog Posts" colors={brandColors} />
       case 'team': return <PlaceholderManager title="Team Members" colors={brandColors} />
       case 'reviews': return <PlaceholderManager title="Reviews" colors={brandColors} />
+      case 'social': return <SocialMediaCreator />
       case 'settings': return <PlaceholderManager title="Settings" colors={brandColors} />
       default: return null
     }
@@ -73,6 +75,7 @@ function AdminDashboard() {
           { id: 'blogs', label: '📝 Blog Posts' },
           { id: 'team', label: '👥 Team' },
           { id: 'reviews', label: '⭐ Reviews' },
+          { id: 'social', label: '📱 Social Content', icon: '📱' },
           { id: 'settings', label: '⚙️ Settings' }
         ].map((tab) => (
           <button
