@@ -9,7 +9,8 @@ import {
   query, 
   orderBy,
   where,
-  Timestamp 
+  Timestamp,
+  setDoc
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -187,8 +188,8 @@ export const getSetting = async (key) => {
 };
 
 export const updateSetting = async (key, data) => {
-  await updateDoc(doc(db, 'settings', key), {
+  await setDoc(doc(db, 'settings', key), {
     ...data,
     updatedAt: Timestamp.now()
-  });
+  }, { merge: true });
 };
