@@ -21,6 +21,7 @@ const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [expandedSection, setExpandedSection] = useState('company');
 
   useEffect(() => {
     loadSettings();
@@ -58,107 +59,138 @@ const AdminSettings = () => {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-600">Loading settings...</div>;
+    return <div style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>Loading settings...</div>;
   }
 
+  const sections = [
+    { id: 'company', label: '🏢 Company Info', icon: '🏢' },
+    { id: 'brand', label: '🎨 Brand Colors', icon: '🎨' },
+    { id: 'social', label: '📱 Social Media', icon: '📱' }
+  ];
+
   return (
-    <div className="p-8 max-w-5xl mx-auto bg-white min-h-screen">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Settings</h1>
-        <p className="text-gray-600">Manage your brand identity and company information</p>
+    <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem', padding: '2rem', minHeight: '100vh', backgroundColor: '#f8f8f8' }}>
+      {/* Sidebar Navigation */}
+      <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '1.5rem', height: 'fit-content', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#666', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Settings</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {sections.map(section => (
+            <button key={section.id} onClick={() => setExpandedSection(section.id)} style={{ padding: '0.75rem 1rem', textAlign: 'left', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: expandedSection === section.id ? '600' : '500', backgroundColor: expandedSection === section.id ? '#d1356f' : 'transparent', color: expandedSection === section.id ? 'white' : '#333', transition: 'all 0.3s' }}>
+              {section.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {message.text && (
-        <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'}`}>
-          {message.text}
+      {/* Main Content */}
+      <div>
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '700', color: '#333', marginBottom: '0.5rem' }}>⚙️ Admin Settings</h1>
+          <p style={{ color: '#666', fontSize: '14px' }}>Manage your brand identity and company information</p>
         </div>
-      )}
 
-      <div className="space-y-8">
-        {/* Company Information */}
-        <div className="border-t-4 pt-6" style={{ borderTopColor: settings.primaryColor }}>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Company Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Company Name</label>
-              <input type="text" name="companyName" value={settings.companyName} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Tagline</label>
-              <input type="text" name="tagline" value={settings.tagline} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-              <input type="email" name="email" value={settings.email} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
-              <input type="tel" name="phone" value={settings.phone} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Website</label>
-              <input type="url" name="website" value={settings.website} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Logo URL</label>
-              <input type="url" name="logo" value={settings.logo} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-              {settings.logo && <img src={settings.logo} alt="Logo" className="mt-3 h-12" />}
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-              <textarea name="address" value={settings.address} onChange={handleChange} rows="3" className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
+        {message.text && (
+          <div style={{ padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '14px', backgroundColor: message.type === 'success' ? '#e8f5e9' : '#ffebee', color: message.type === 'success' ? '#2e7d32' : '#c62828', border: `1px solid ${message.type === 'success' ? '#c8e6c9' : '#ffcdd2'}` }}>
+            {message.text}
           </div>
-        </div>
+        )}
 
-        {/* Brand Colors */}
-        <div className="border-t-4 pt-6" style={{ borderTopColor: settings.accentColor }}>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Brand Colors</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Color</label>
-              <div className="flex gap-3">
-                <input type="color" name="primaryColor" value={settings.primaryColor} onChange={handleChange} className="h-12 w-20 rounded-lg cursor-pointer" />
-                <input type="text" value={settings.primaryColor} disabled className="flex-1 px-4 py-2 bg-gray-100 border-2 border-gray-300 rounded-lg text-gray-600 font-mono" />
+        {/* Company Information Section */}
+        {expandedSection === 'company' && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#333', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '2px solid #d1356f' }}>🏢 Company Information</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Company Name</label>
+                <input type="text" name="companyName" value={settings.companyName} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Tagline</label>
+                <input type="text" name="tagline" value={settings.tagline} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Email</label>
+                <input type="email" name="email" value={settings.email} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Phone</label>
+                <input type="tel" name="phone" value={settings.phone} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Website</label>
+                <input type="url" name="website" value={settings.website} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Logo URL</label>
+                <input type="url" name="logo" value={settings.logo} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
               </div>
             </div>
+            {settings.logo && <img src={settings.logo} alt="Logo" style={{ height: '50px', marginBottom: '1.5rem' }} />}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Accent Color</label>
-              <div className="flex gap-3">
-                <input type="color" name="accentColor" value={settings.accentColor} onChange={handleChange} className="h-12 w-20 rounded-lg cursor-pointer" />
-                <input type="text" value={settings.accentColor} disabled className="flex-1 px-4 py-2 bg-gray-100 border-2 border-gray-300 rounded-lg text-gray-600 font-mono" />
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Address</label>
+              <textarea name="address" value={settings.address} onChange={handleChange} rows="3" style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+            </div>
+          </div>
+        )}
+
+        {/* Brand Colors Section */}
+        {expandedSection === 'brand' && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#333', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '2px solid #D4A574' }}>🎨 Brand Colors</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '1rem', textTransform: 'uppercase' }}>Primary Color</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <input type="color" name="primaryColor" value={settings.primaryColor} onChange={handleChange} style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer', border: 'none' }} />
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>{settings.primaryColor}</div>
+                    <div style={{ fontSize: '12px', color: '#999', marginTop: '0.5rem' }}>Pink/Magenta</div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '1rem', textTransform: 'uppercase' }}>Accent Color</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <input type="color" name="accentColor" value={settings.accentColor} onChange={handleChange} style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer', border: 'none' }} />
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>{settings.accentColor}</div>
+                    <div style={{ fontSize: '12px', color: '#999', marginTop: '0.5rem' }}>Gold</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="md:col-span-2 h-20 rounded-lg" style={{ backgroundImage: `linear-gradient(135deg, ${settings.primaryColor} 0%, ${settings.accentColor} 100%)` }} />
+            <div style={{ marginTop: '2rem', height: '120px', borderRadius: '8px', backgroundImage: `linear-gradient(135deg, ${settings.primaryColor} 0%, ${settings.accentColor} 100%)` }} />
           </div>
-        </div>
+        )}
 
-        {/* Social Media */}
-        <div className="border-t-4 pt-6" style={{ borderTopColor: settings.primaryColor }}>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Social Media Links</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Instagram</label>
-              <input type="url" name="instagram" value={settings.instagram} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Facebook</label>
-              <input type="url" name="facebook" value={settings.facebook} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Twitter / X</label>
-              <input type="url" name="twitter" value={settings.twitter} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">YouTube</label>
-              <input type="url" name="youtube" value={settings.youtube} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-pink-500" />
+        {/* Social Media Section */}
+        {expandedSection === 'social' && (
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#333', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '2px solid #d1356f' }}>📱 Social Media Links</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>📸 Instagram</label>
+                <input type="url" name="instagram" value={settings.instagram} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>👥 Facebook</label>
+                <input type="url" name="facebook" value={settings.facebook} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>𝕏 Twitter / X</label>
+                <input type="url" name="twitter" value={settings.twitter} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '0.5rem', textTransform: 'uppercase' }}>▶️ YouTube</label>
+                <input type="url" name="youtube" value={settings.youtube} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Save Button */}
-        <button onClick={handleSave} disabled={saving} style={{ backgroundColor: settings.primaryColor }} className="w-full py-4 text-white font-bold text-lg rounded-lg hover:opacity-90 transition disabled:opacity-50">
-          {saving ? 'Saving...' : '💾 Save Settings'}
+        <button onClick={handleSave} disabled={saving} style={{ marginTop: '2rem', width: '100%', padding: '1rem', backgroundColor: settings.primaryColor, color: 'white', fontWeight: '700', fontSize: '16px', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: saving ? 0.6 : 1, transition: 'opacity 0.3s' }}>
+          {saving ? '💾 Saving...' : '💾 Save Settings'}
         </button>
       </div>
     </div>
