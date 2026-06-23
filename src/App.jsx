@@ -15,6 +15,7 @@ import SocialMediaCreator from './components/SocialMediaCreator'
 
 import Homepage from './website/pages/Homepage'
 import JourneysPage from './website/pages/JourneysPage'
+import WebsiteLayout from './website/WebsiteLayout'
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -417,7 +418,7 @@ case 'clients': return <ClientManager />
 case 'invoices': return <InvoiceMaker />
 case 'social': return <SocialMediaCreator />
 case 'admin': return <AdminSettings />
-case 'website-home': return <Homepage />
+case 'website': return <WebsiteLayout />
 case 'website-journeys': return <JourneysPage />
       default: return renderDashboard()
     }
@@ -475,8 +476,9 @@ const navItems = [
   { id: 'invoices', label: '📄 Create Invoices' },
   { id: 'social', label: '📱 Social Content' },
   { id: 'admin', label: '🔐 Admin' },
-  { id: 'website-home', label: '🏠 Website Home' },
-  { id: 'website-journeys', label: '🌍 Explore Journeys' }
+  { id: 'website', label: '🌐 View Website' }
+
+
   ]
 
   return (
