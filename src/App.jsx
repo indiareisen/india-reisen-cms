@@ -13,6 +13,8 @@ import AdminSettings from './components/admin/settings/AdminSettings'
 import Dashboard from './components/admin/Dashboard'
 import SocialMediaCreator from './components/SocialMediaCreator'
 
+import Homepage from './website/pages/Homepage'
+import JourneysPage from './website/pages/JourneysPage'
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -415,6 +417,8 @@ case 'clients': return <ClientManager />
 case 'invoices': return <InvoiceMaker />
 case 'social': return <SocialMediaCreator />
 case 'admin': return <AdminSettings />
+case 'website-home': return <Homepage />
+case 'website-journeys': return <JourneysPage />
       default: return renderDashboard()
     }
   }
@@ -470,7 +474,9 @@ const navItems = [
   { id: 'clients', label: '👤 Manage Clients' },
   { id: 'invoices', label: '📄 Create Invoices' },
   { id: 'social', label: '📱 Social Content' },
-  { id: 'admin', label: '🔐 Admin' }
+  { id: 'admin', label: '🔐 Admin' },
+  { id: 'website-home', label: '🏠 Website Home' },
+  { id: 'website-journeys', label: '🌍 Explore Journeys' }
   ]
 
   return (
