@@ -10,6 +10,7 @@ import ReviewsManager from './components/admin/reviews/ReviewsManager'
 import InvoiceMaker from './components/admin/finance/InvoiceMaker'
 import ClientManager from './components/admin/finance/ClientManager'
 import AdminSettings from './components/admin/settings/AdminSettings'
+import WebsiteManager from './components/admin/website/WebsiteManager'
 import Dashboard from './components/admin/Dashboard'
 import SocialMediaCreator from './components/SocialMediaCreator'
 
@@ -411,6 +412,7 @@ function App() {
      case 'dashboard': return <Dashboard />
 case 'media': return <MediaGallery />
 case 'itineraries': return <ItineraryManager />
+case 'website': return <WebsiteManager />
 case 'blogs': return <BlogManager />
 case 'team': return <TeamManager />
 case 'reviews': return <ReviewsManager />
