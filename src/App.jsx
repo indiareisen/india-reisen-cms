@@ -11,11 +11,14 @@ import InvoiceMaker from './components/admin/finance/InvoiceMaker'
 import ClientManager from './components/admin/finance/ClientManager'
 import AdminSettings from './components/admin/settings/AdminSettings'
 import WebsiteManager from './components/admin/website/WebsiteManager'
+import HomePage from './pages/website/HomePage';
+import JourneysPage from './pages/website/JourneysPage';
+import BlogPage from './pages/website/BlogPage';
+import ContactPage from './pages/website/ContactPage';
 import Dashboard from './components/admin/Dashboard'
 import SocialMediaCreator from './components/SocialMediaCreator'
 
 import Homepage from './website/pages/Homepage'
-import JourneysPage from './website/pages/JourneysPage'
 import WebsiteLayout from './website/WebsiteLayout'
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -409,6 +412,10 @@ function App() {
     }
 
     switch(activeTab) {
+case 'website-home': return <HomePage />;
+  case 'website-journeys': return <JourneysPage />;
+  case 'website-blog': return <BlogPage />;
+  case 'website-contact': return <ContactPage />;
      case 'dashboard': return <Dashboard />
 case 'media': return <MediaGallery />
 case 'itineraries': return <ItineraryManager />
