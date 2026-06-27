@@ -485,6 +485,10 @@ const navItems = [
   { id: 'invoices', label: '📄 Create Invoices' },
   { id: 'social', label: '📱 Social Content' },
   { id: 'admin', label: '🔐 Admin' },
+  { id: 'website-home', label: '🏠 Website Home' },
+  { id: 'website-journeys', label: '📍 Website Journeys' },
+  { id: 'website-blog', label: '📰 Website Blog' },
+  { id: 'website-contact', label: '✉️ Website Contact' },
   { id: 'website', label: '🌐 View Website' }
 
 
