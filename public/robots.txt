@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-
-Sitemap: https://india-reisen-cms.vercel.app/sitemap.xml

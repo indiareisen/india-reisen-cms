@@ -193,25 +193,3 @@ export const updateSetting = async (key, data) => {
     updatedAt: Timestamp.now()
   }, { merge: true });
 };
-
-// AUTHENTICATION
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-
-export const auth = getAuth();
-
-export const loginUser = async (email, password) => {
-  return await signInWithEmailAndPassword(auth, email, password);
-};
-
-export const logoutUser = async () => {
-  return await signOut(auth);
-};
-
-export const getCurrentUser = () => {
-  return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      resolve(user);
-      unsubscribe();
-    });
-  });
-};
