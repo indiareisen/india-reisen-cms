@@ -29,16 +29,24 @@ const HomePage = ({ setActiveTab }) => {
     setNewsletterLoading(true);
 
     try {
-      const response = await fetch('https://project-5alhy.vercel.app/api/send-newsletter-email', {
+      const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newsletterEmail })
+        body: JSON.stringify({
+          access_key: '3d1e8f82-8b9c-4c3f-9e2a-5c7d9b1f4e6a',
+          email: newsletterEmail,
+          subject: 'Newsletter Signup',
+          message: `New newsletter subscriber: ${newsletterEmail}`,
+          from_name: 'India Reisen Newsletter',
+          to_email: 'team@indiareisen.com'
+        })
       });
 
       const data = await response.json();
       if (data.success) {
         setNewsletterMessage({ type: 'success', text: '✅ Subscribed! Check your email.' });
         setNewsletterEmail('');
+        setTimeout(() => setNewsletterMessage(''), 3000);
       } else {
         setNewsletterMessage({ type: 'error', text: '❌ Failed to subscribe.' });
       }
@@ -46,7 +54,6 @@ const HomePage = ({ setActiveTab }) => {
       setNewsletterMessage({ type: 'error', text: '❌ Error subscribing.' });
     } finally {
       setNewsletterLoading(false);
-      setTimeout(() => setNewsletterMessage(''), 3000);
     }
   };
 
@@ -115,7 +122,7 @@ const HomePage = ({ setActiveTab }) => {
               style={{ backgroundColor: '#D4A574' }}
               className="px-6 py-3 rounded-lg text-gray-900 font-semibold hover:opacity-90 transition disabled:opacity-50"
             >
-              {newsletterLoading ? 'Subscribing...' : 'Subscribe'}
+              {newsletterLoading ? '...' : 'Subscribe'}
             </button>
           </form>
 
