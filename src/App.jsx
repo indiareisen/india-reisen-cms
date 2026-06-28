@@ -416,7 +416,7 @@ case 'website-home': return <HomePage />;
   case 'website-journeys': return <JourneysPage />;
   case 'website-blog': return <BlogPage />;
   case 'website-contact': return <ContactPage />;
-     case 'dashboard': return <Dashboard />
+     case 'dashboard': return <Dashboard setActiveTab={setActiveTab} />
 case 'media': return <MediaGallery />
 case 'itineraries': return <ItineraryManager />
 case 'website': return <WebsiteManager />
