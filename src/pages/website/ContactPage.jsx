@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import WebsiteLayout from './WebsiteLayout';
 
 const ContactPage = ({ setActiveTab }) => {
-  const [step, setStep] = useState(1); // 1: Form, 2: OTP, 3: Success
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
   const [otp, setOtp] = useState('');
   const [generatedOTP, setGeneratedOTP] = useState('');
@@ -26,8 +26,8 @@ const ContactPage = ({ setActiveTab }) => {
     if (!formData.name.trim()) newErrors.name = 'Name required';
     if (!formData.email.trim()) newErrors.email = 'Email required';
     else if (!isValidEmail(formData.email)) newErrors.email = 'Invalid email';
-    if (formData.phone && !isValidPhone(formData.phone)) newErrors.phone = 'Invalid phone (10+ digits)';
-    if (!formData.message.trim() || formData.message.trim().length < 10) newErrors.message = 'Message min 10 chars';
+    if (formData.phone && !isValidPhone(formData.phone)) newErrors.phone = 'Invalid phone';
+    if (!formData.message.trim() || formData.message.trim().length < 10) newErrors.message = 'Min 10 chars';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -38,17 +38,28 @@ const ContactPage = ({ setActiveTab }) => {
 
     setLoading(true);
     try {
-      // Generate OTP
       const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedOTP(newOTP);
 
-      // In production, send SMS via Twilio
-      console.log(`📱 OTP for ${formData.phone}: ${newOTP}`);
+      // Send SMS via Twilio
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phone: formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone.replace(/\D/g, '')}`,
+          otp: newOTP 
+        })
+      });
 
-      setMessage({ type: 'info', text: `📱 OTP sent! Check console for test OTP: ${newOTP}` });
+      if (response.ok) {
+        setMessage({ type: 'success', text: `✅ OTP sent to ${formData.phone}` });
+      } else {
+        setMessage({ type: 'error', text: '❌ Failed to send OTP' });
+      }
       setStep(2);
     } catch (error) {
-      setMessage({ type: 'error', text: '❌ Error' });
+      console.error(error);
+      setMessage({ type: 'error', text: '❌ Error sending OTP' });
     } finally {
       setLoading(false);
     }
@@ -64,18 +75,17 @@ const ContactPage = ({ setActiveTab }) => {
 
     setLoading(true);
     try {
-      // Save to Firestore
       await addDoc(collection(db, 'contactMessages'), {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.trim() || null,
+        phone: formData.phone.trim(),
         message: formData.message.trim(),
         emailVerified: true,
-        phoneVerified: formData.phone ? true : null,
+        phoneVerified: true,
         createdAt: serverTimestamp()
       });
 
-      setMessage({ type: 'success', text: '✅ Message verified and sent!' });
+      setMessage({ type: 'success', text: '✅ Message sent!' });
       setFormData({ name: '', email: '', phone: '', message: '' });
       setOtp('');
       setStep(3);
@@ -85,8 +95,7 @@ const ContactPage = ({ setActiveTab }) => {
         setMessage('');
       }, 3000);
     } catch (error) {
-      console.error(error);
-      setMessage({ type: 'error', text: '❌ Error saving message' });
+      setMessage({ type: 'error', text: '❌ Error' });
     } finally {
       setLoading(false);
     }
@@ -102,15 +111,12 @@ const ContactPage = ({ setActiveTab }) => {
           <div className="bg-white rounded-lg shadow-lg p-8">
             {message.text && (
               <div className={`p-4 rounded-lg mb-6 ${
-                message.type === 'success' ? 'bg-green-100 text-green-700' : 
-                message.type === 'error' ? 'bg-red-100 text-red-700' :
-                'bg-blue-100 text-blue-700'
+                message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
               }`}>
                 {message.text}
               </div>
             )}
 
-            {/* Step 1: Contact Form */}
             {step === 1 && (
               <form onSubmit={handleSubmitForm} className="space-y-6">
                 <div>
@@ -123,7 +129,6 @@ const ContactPage = ({ setActiveTab }) => {
                     value={formData.name} 
                     onChange={handleChange} 
                     className={`w-full px-4 py-2 border rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
-                    placeholder="Your name"
                   />
                 </div>
 
@@ -137,13 +142,12 @@ const ContactPage = ({ setActiveTab }) => {
                     value={formData.email} 
                     onChange={handleChange} 
                     className={`w-full px-4 py-2 border rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                    placeholder="your@email.com"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone {errors.phone && <span className="text-red-600 text-xs ml-2">{errors.phone}</span>}
+                    Phone * {errors.phone && <span className="text-red-600 text-xs ml-2">{errors.phone}</span>}
                   </label>
                   <input 
                     type="tel" 
@@ -165,7 +169,6 @@ const ContactPage = ({ setActiveTab }) => {
                     onChange={handleChange} 
                     rows="6" 
                     className={`w-full px-4 py-2 border rounded-lg ${errors.message ? 'border-red-500' : 'border-gray-300'}`}
-                    placeholder="Tell us about your travel plans..."
                   />
                 </div>
 
@@ -175,22 +178,20 @@ const ContactPage = ({ setActiveTab }) => {
                   style={{ backgroundColor: '#d1356f' }} 
                   className="w-full text-white font-semibold py-3 rounded-lg hover:opacity-90 disabled:opacity-50"
                 >
-                  {loading ? 'Sending...' : 'Send OTP'}
+                  {loading ? 'Sending OTP...' : 'Send OTP'}
                 </button>
               </form>
             )}
 
-            {/* Step 2: OTP Verification */}
             {step === 2 && (
               <form onSubmit={handleVerifyOTP} className="space-y-6">
                 <div className="text-center mb-6">
                   <div className="text-5xl mb-4">📱</div>
-                  <h2 className="text-2xl font-bold text-gray-900">Verify Your Phone</h2>
+                  <h2 className="text-2xl font-bold">Verify Your Phone</h2>
                   <p className="text-gray-600 mt-2">OTP sent to {formData.phone}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter 6-digit OTP</label>
                   <input 
                     type="text" 
                     value={otp} 
@@ -199,14 +200,13 @@ const ContactPage = ({ setActiveTab }) => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-3xl tracking-widest font-mono"
                     placeholder="000000"
                   />
-                  <p className="text-xs text-gray-500 mt-2">Check browser console for test OTP</p>
                 </div>
 
                 <button 
                   type="submit" 
                   disabled={loading || otp.length !== 6}
                   style={{ backgroundColor: '#d1356f' }} 
-                  className="w-full text-white font-semibold py-3 rounded-lg hover:opacity-90 disabled:opacity-50"
+                  className="w-full text-white font-semibold py-3 rounded-lg disabled:opacity-50"
                 >
                   {loading ? 'Verifying...' : 'Verify & Submit'}
                 </button>
@@ -214,30 +214,20 @@ const ContactPage = ({ setActiveTab }) => {
                 <button 
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg"
                 >
                   Back
                 </button>
               </form>
             )}
 
-            {/* Step 3: Success */}
             {step === 3 && (
               <div className="text-center space-y-6 py-8">
                 <div className="text-6xl">✅</div>
-                <h2 className="text-2xl font-bold text-gray-900">Message Sent!</h2>
-                <p className="text-gray-600">Your verified message has been received.<br/>We'll reply within 24 hours.</p>
+                <h2 className="text-2xl font-bold">Message Sent!</h2>
+                <p className="text-gray-600">We'll reply within 24 hours.</p>
               </div>
             )}
-          </div>
-
-          <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-gray-900 mb-3">Contact Info</h3>
-            <div className="space-y-2 text-sm text-gray-700">
-              <p>📧 team@indiareisen.com</p>
-              <p>📱 +91 98108 27785</p>
-              <p>📍 New Delhi, India</p>
-            </div>
           </div>
         </div>
       </div>
