@@ -48,8 +48,20 @@ const ContactMessages = () => {
               </div>
 
               {msg.phone && (
-                <p className="text-sm text-gray-700 mb-4">📱 {msg.phone}</p>
+                <p className="text-sm text-gray-700 mb-2">📱 {msg.phone}</p>
               )}
+
+              {/* Validation Status */}
+              <div className="flex gap-3 mb-4">
+                <span className={`px-2 py-1 text-xs font-semibold rounded ${msg.emailVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  Email: {msg.emailVerified ? '✓ Verified' : '⏳ Unverified'}
+                </span>
+                {msg.phone && (
+                  <span className={`px-2 py-1 text-xs font-semibold rounded ${msg.phoneVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    Phone: {msg.phoneVerified ? '✓ Verified' : '⏳ Unverified'}
+                  </span>
+                )}
+              </div>
 
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <p className="text-gray-800">{msg.message}</p>
