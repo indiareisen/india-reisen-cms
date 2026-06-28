@@ -412,10 +412,10 @@ function App() {
     }
 
     switch(activeTab) {
-case 'website-home': return <HomePage />;
-  case 'website-journeys': return <JourneysPage />;
-  case 'website-blog': return <BlogPage />;
-  case 'website-contact': return <ContactPage />;
+case 'website-home': return <HomePage setActiveTab={setActiveTab} />;
+  case 'website-journeys': return <JourneysPage setActiveTab={setActiveTab} />;
+  case 'website-blog': return <BlogPage setActiveTab={setActiveTab} />;
+  case 'website-contact': return <ContactPage setActiveTab={setActiveTab} />;
      case 'dashboard': return <Dashboard setActiveTab={setActiveTab} />
 case 'media': return <MediaGallery />
 case 'itineraries': return <ItineraryManager />
@@ -428,7 +428,7 @@ case 'invoices': return <InvoiceMaker />
 case 'social': return <SocialMediaCreator />
 case 'admin': return <AdminSettings />
 case 'website': return <WebsiteLayout />
-case 'website-journeys': return <JourneysPage />
+case 'website-journeys': return <JourneysPage setActiveTab={setActiveTab} />
       default: return renderDashboard()
     }
   }

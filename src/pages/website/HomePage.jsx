@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getSetting } from '../../services/firebaseService';
+import WebsiteLayout from './WebsiteLayout';
 
-const HomePage = () => {
+const HomePage = ({ setActiveTab }) => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <WebsiteLayout setActiveTab={setActiveTab}>
       {/* Hero Section */}
       <div
         style={{
@@ -93,7 +94,7 @@ const HomePage = () => {
           </button>
         </div>
       </div>
-    </div>
+    </WebsiteLayout>
   );
 };
 
