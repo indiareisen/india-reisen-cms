@@ -5,6 +5,9 @@ import WebsiteLayout from './WebsiteLayout';
 const HomePage = ({ setActiveTab }) => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState('');
 
   useEffect(() => {
     loadSettings();
@@ -18,6 +21,32 @@ const HomePage = ({ setActiveTab }) => {
     } catch (error) {
       console.error('Error:', error);
       setLoading(false);
+    }
+  };
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    setNewsletterLoading(true);
+
+    try {
+      const response = await fetch('https://project-5alhy.vercel.app/api/send-newsletter-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setNewsletterMessage({ type: 'success', text: '✅ Subscribed! Check your email.' });
+        setNewsletterEmail('');
+      } else {
+        setNewsletterMessage({ type: 'error', text: '❌ Failed to subscribe.' });
+      }
+    } catch (error) {
+      setNewsletterMessage({ type: 'error', text: '❌ Error subscribing.' });
+    } finally {
+      setNewsletterLoading(false);
+      setTimeout(() => setNewsletterMessage(''), 3000);
     }
   };
 
@@ -64,6 +93,39 @@ const HomePage = ({ setActiveTab }) => {
           </div>
         </div>
       )}
+
+      {/* Newsletter */}
+      <div style={{ background: 'linear-gradient(135deg, #d1356f 0%, #e84a7f 100%)' }} className="py-16 px-6 text-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
+          <p className="text-lg mb-8 text-pink-100">Get travel tips, exclusive offers, and journey inspiration</p>
+          
+          <form onSubmit={handleNewsletterSubmit} className="flex gap-2 mb-4">
+            <input
+              type="email"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              required
+              placeholder="Enter your email"
+              className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={newsletterLoading}
+              style={{ backgroundColor: '#D4A574' }}
+              className="px-6 py-3 rounded-lg text-gray-900 font-semibold hover:opacity-90 transition disabled:opacity-50"
+            >
+              {newsletterLoading ? 'Subscribing...' : 'Subscribe'}
+            </button>
+          </form>
+
+          {newsletterMessage.text && (
+            <p className={`text-sm ${newsletterMessage.type === 'success' ? 'text-green-100' : 'text-red-100'}`}>
+              {newsletterMessage.text}
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* CTA */}
       <div style={{ background: 'linear-gradient(to right, #d1356f, #e84a7f)' }} className="py-16 px-6 text-white">
