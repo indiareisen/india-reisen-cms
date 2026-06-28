@@ -10,6 +10,7 @@ import ReviewsManager from './components/admin/reviews/ReviewsManager'
 import InvoiceMaker from './components/admin/finance/InvoiceMaker'
 import ClientManager from './components/admin/finance/ClientManager'
 import AdminSettings from './components/admin/settings/AdminSettings'
+import ContactMessages from './components/admin/ContactMessages';
 import WebsiteManager from './components/admin/website/WebsiteManager'
 import HomePage from './pages/website/HomePage';
 import JourneysPage from './pages/website/JourneysPage';
@@ -427,6 +428,7 @@ case 'clients': return <ClientManager />
 case 'invoices': return <InvoiceMaker />
 case 'social': return <SocialMediaCreator />
 case 'admin': return <AdminSettings />
+  case 'contact-messages': return <ContactMessages />
 case 'website': return <WebsiteLayout />
 case 'website-journeys': return <JourneysPage setActiveTab={setActiveTab} />
       default: return renderDashboard()
@@ -475,6 +477,7 @@ case 'website-journeys': return <JourneysPage setActiveTab={setActiveTab} />
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab, logoUrl, colors }) => {
 const navItems = [
+  { id: 'contact-messages', label: '💬 Contact Messages' },
   { id: 'dashboard', label: '📊 Dashboard' },
   { id: 'itineraries', label: '🗺️ Journeys' },
   { id: 'blogs', label: '📝 Blog' },

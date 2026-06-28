@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 import WebsiteLayout from './WebsiteLayout';
 
 const ContactPage = ({ setActiveTab }) => {
@@ -16,31 +18,20 @@ const ContactPage = ({ setActiveTab }) => {
     setLoading(true);
 
     try {
-      // Send via Web3Forms (free, no signup needed)
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key: '3d1e8f82-8b9c-4c3f-9e2a-5c7d9b1f4e6a', // Public key
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          message: formData.message,
-          from_name: 'India Reisen Contact Form',
-          to_email: 'team@indiareisen.com'
-        })
+      // Save to Firebase
+      await addDoc(collection(db, 'contactMessages'), {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        createdAt: serverTimestamp()
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setMessage({ type: 'success', text: '✅ Message sent! We\'ll reply within 24 hours.' });
-        setFormData({ name: '', email: '', phone: '', message: '' });
-        setTimeout(() => setMessage(''), 4000);
-      } else {
-        setMessage({ type: 'error', text: '❌ Failed to send message.' });
-      }
+      setMessage({ type: 'success', text: '✅ Message sent! We\'ll reply within 24 hours.' });
+      setFormData({ name: '', email: '', phone: '', message: '' });
+      setTimeout(() => setMessage(''), 4000);
     } catch (error) {
+      console.error('Error:', error);
       setMessage({ type: 'error', text: '❌ Error sending message.' });
     } finally {
       setLoading(false);
@@ -71,7 +62,6 @@ const ContactPage = ({ setActiveTab }) => {
                   onChange={handleChange} 
                   required 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
-                  placeholder="Your name"
                 />
               </div>
 
@@ -84,7 +74,6 @@ const ContactPage = ({ setActiveTab }) => {
                   onChange={handleChange} 
                   required 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
-                  placeholder="your@email.com"
                 />
               </div>
 
@@ -96,7 +85,6 @@ const ContactPage = ({ setActiveTab }) => {
                   value={formData.phone} 
                   onChange={handleChange} 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
-                  placeholder="+91 XXXXX XXXXX"
                 />
               </div>
 
@@ -109,7 +97,6 @@ const ContactPage = ({ setActiveTab }) => {
                   required 
                   rows="6" 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 resize-none"
-                  placeholder="Tell us about your travel plans..."
                 />
               </div>
 
@@ -124,7 +111,7 @@ const ContactPage = ({ setActiveTab }) => {
             </form>
 
             <div className="mt-10 p-6 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-4">Other Ways to Reach Us</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Contact Info</h3>
               <div className="space-y-3 text-sm text-gray-700">
                 <p>📧 team@indiareisen.com</p>
                 <p>📱 +91 98108 27785</p>
