@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'
-import { db } from './firebaseService'
+import { db } from './services/firebaseService'
 import AdminDashboard from './AdminDashboard'
 import MediaGallery from './components/admin/media/MediaGallery'
 import ItineraryManager from './components/admin/itineraries/ItineraryManager'

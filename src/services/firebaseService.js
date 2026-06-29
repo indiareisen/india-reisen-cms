@@ -193,3 +193,6 @@ export const updateSetting = async (key, data) => {
     updatedAt: Timestamp.now()
   }, { merge: true });
 };
+
+// Export db for use in other files
+export { db };
