@@ -41,8 +41,8 @@ const ContactPage = ({ setActiveTab }) => {
       const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedOTP(newOTP);
 
-      // Send SMS via Twilio
-      const response = await fetch('/api/send-sms', {
+      // Send SMS via backend project
+      const response = await fetch('https://project-5alhy.vercel.app/api/send-sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -53,10 +53,11 @@ const ContactPage = ({ setActiveTab }) => {
 
       if (response.ok) {
         setMessage({ type: 'success', text: `✅ OTP sent to ${formData.phone}` });
+        setStep(2);
       } else {
-        setMessage({ type: 'error', text: '❌ Failed to send OTP' });
+        const error = await response.json();
+        setMessage({ type: 'error', text: `❌ ${error.error || 'Failed to send OTP'}` });
       }
-      setStep(2);
     } catch (error) {
       console.error(error);
       setMessage({ type: 'error', text: '❌ Error sending OTP' });
