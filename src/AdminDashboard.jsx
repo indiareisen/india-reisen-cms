@@ -4,7 +4,7 @@ import {
   addDoc,
   Timestamp 
 } from 'firebase/firestore'
-import { db } from './config/firebase'
+import { db } from './firebase'
 
 const CLOUDINARY_CLOUD_NAME = 'dtz0urit6'
 
