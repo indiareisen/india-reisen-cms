@@ -24,9 +24,6 @@ const brandColors = {
 }
 
 function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, logoUrl, brandColors, loading, error, itineraries, blogs, team, reviews, selectedItinerary, setSelectedItinerary }) {
-  const [activeTab, setActiveTab] = useState('itineraries')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
   const clearMessages = () => {
@@ -104,8 +101,6 @@ function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, 
 
 function ItinerariesManager({ colors }) {
   const [showForm, setShowForm] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
   const [formData, setFormData] = useState({
