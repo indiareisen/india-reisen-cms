@@ -23,8 +23,8 @@ const brandColors = {
   warning: '#ffc107'
 }
 
-function AdminDashboard() {
-  const [adminTab, setAdminTab] = useState('itineraries')
+function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, logoUrl, brandColors, loading, error, itineraries, blogs, team, reviews, selectedItinerary, setSelectedItinerary }) {
+  const [activeTab, setActiveTab] = useState('itineraries')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
@@ -35,12 +35,12 @@ function AdminDashboard() {
   }
 
   const handleTabChange = (tab) => {
-    setAdminTab(tab)
+    setActiveTab(tab)
     clearMessages()
   }
 
   const renderContent = () => {
-    switch(adminTab) {
+    switch(activeTab) {
       case 'itineraries': return <ItinerariesManager colors={brandColors} />
       case 'blogs': return <PlaceholderManager title="Blog Posts" colors={brandColors} />
       case 'team': return <PlaceholderManager title="Team Members" colors={brandColors} />
@@ -80,12 +80,12 @@ function AdminDashboard() {
             onClick={() => handleTabChange(tab.id)}
             style={{
               padding: '12px 20px',
-              background: adminTab === tab.id ? brandColors.primary : brandColors.white,
-              color: adminTab === tab.id ? brandColors.white : brandColors.text,
-              border: `2px solid ${adminTab === tab.id ? brandColors.primary : brandColors.border}`,
+              background: activeTab === tab.id ? brandColors.primary : brandColors.white,
+              color: activeTab === tab.id ? brandColors.white : brandColors.text,
+              border: `2px solid ${activeTab === tab.id ? brandColors.primary : brandColors.border}`,
               borderRadius: '6px',
               cursor: 'pointer',
-              fontWeight: adminTab === tab.id ? '600' : '500',
+              fontWeight: activeTab === tab.id ? '600' : '500',
               transition: 'all 0.2s'
             }}
           >
