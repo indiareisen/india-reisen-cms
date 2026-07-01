@@ -1,10 +1,11 @@
+import SocialMediaCreator from './components/SocialMediaCreator';
 import { useState, useRef } from 'react'
 import { 
   collection, 
   addDoc,
   Timestamp 
 } from 'firebase/firestore'
-import { db } from './firebase'
+import { db } from './config/firebase'
 
 const CLOUDINARY_CLOUD_NAME = 'dtz0urit6'
 
@@ -23,7 +24,10 @@ const brandColors = {
   warning: '#ffc107'
 }
 
-function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, logoUrl, brandColors, loading, error, itineraries, blogs, team, reviews, selectedItinerary, setSelectedItinerary }) {
+function AdminDashboard() {
+  const [adminTab, setAdminTab] = useState('itineraries')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
   const clearMessages = () => {
@@ -32,16 +36,17 @@ function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, 
   }
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab)
+    setAdminTab(tab)
     clearMessages()
   }
 
   const renderContent = () => {
-    switch(activeTab) {
+    switch(adminTab) {
       case 'itineraries': return <ItinerariesManager colors={brandColors} />
       case 'blogs': return <PlaceholderManager title="Blog Posts" colors={brandColors} />
       case 'team': return <PlaceholderManager title="Team Members" colors={brandColors} />
       case 'reviews': return <PlaceholderManager title="Reviews" colors={brandColors} />
+      case 'social': return <SocialMediaCreator />
       case 'settings': return <PlaceholderManager title="Settings" colors={brandColors} />
       default: return null
     }
@@ -70,6 +75,7 @@ function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, 
           { id: 'blogs', label: '📝 Blog Posts' },
           { id: 'team', label: '👥 Team' },
           { id: 'reviews', label: '⭐ Reviews' },
+          { id: 'social', label: '📱 Social Content', icon: '📱' },
           { id: 'settings', label: '⚙️ Settings' }
         ].map((tab) => (
           <button
@@ -77,12 +83,12 @@ function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, 
             onClick={() => handleTabChange(tab.id)}
             style={{
               padding: '12px 20px',
-              background: activeTab === tab.id ? brandColors.primary : brandColors.white,
-              color: activeTab === tab.id ? brandColors.white : brandColors.text,
-              border: `2px solid ${activeTab === tab.id ? brandColors.primary : brandColors.border}`,
+              background: adminTab === tab.id ? brandColors.primary : brandColors.white,
+              color: adminTab === tab.id ? brandColors.white : brandColors.text,
+              border: `2px solid ${adminTab === tab.id ? brandColors.primary : brandColors.border}`,
               borderRadius: '6px',
               cursor: 'pointer',
-              fontWeight: activeTab === tab.id ? '600' : '500',
+              fontWeight: adminTab === tab.id ? '600' : '500',
               transition: 'all 0.2s'
             }}
           >
@@ -101,6 +107,8 @@ function AdminDashboard({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, 
 
 function ItinerariesManager({ colors }) {
   const [showForm, setShowForm] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
   const [formData, setFormData] = useState({
