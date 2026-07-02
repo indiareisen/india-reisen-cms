@@ -1,11 +1,3 @@
-import ContactMessages from '../../components/admin/ContactMessages'
-
-export default function ContactMessagesPage() {
-  return (
-    <div>
-      <h1>Contact Messages</h1>
-      <p>View and respond to customer inquiries</p>
-      <ContactMessages />
-    </div>
-  )
+export default function ContactMessages() {
+  return <div><h1>ContactMessages</h1><p>Page content coming soon...</p></div>
 }

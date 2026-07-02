@@ -1,11 +1,3 @@
-import InvoiceMaker from '../../components/admin/finance/InvoiceMaker'
-
-export default function InvoiceMakerPage() {
-  return (
-    <div>
-      <h1>Invoice Management</h1>
-      <p>Create and manage invoices</p>
-      <InvoiceMaker />
-    </div>
-  )
+export default function InvoiceMaker() {
+  return <div><h1>InvoiceMaker</h1><p>Page content coming soon...</p></div>
 }

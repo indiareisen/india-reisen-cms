@@ -1,11 +1,3 @@
-import ItineraryManager from '../../components/admin/itineraries/ItineraryManager'
-
 export default function JourneyManager() {
-  return (
-    <div>
-      <h1>Journey Management</h1>
-      <p>Create, edit, and manage travel journeys</p>
-      <ItineraryManager />
-    </div>
-  )
+  return <div><h1>JourneyManager</h1><p>Page content coming soon...</p></div>
 }

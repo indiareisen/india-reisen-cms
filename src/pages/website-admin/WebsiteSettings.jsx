@@ -1,11 +1,3 @@
-import AdminSettings from '../../components/admin/settings/AdminSettings'
-
-export default function WebsiteSettingsPage() {
-  return (
-    <div>
-      <h1>Website Settings</h1>
-      <p>Configure branding, colors, and website preferences</p>
-      <AdminSettings />
-    </div>
-  )
+export default function WebsiteSettings() {
+  return <div><h1>WebsiteSettings</h1><p>Page content coming soon...</p></div>
 }
