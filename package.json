@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist",
     "setup:admins": "node scripts/create-admins.js",
-    "add:content": "node scripts/add-sample-content.js"
+    "add:content": "node scripts/add-sample-content.js",
+    "add:more": "node scripts/add-more-content.js"
   },
   "dependencies": {
     "firebase": "^12.14.0",
