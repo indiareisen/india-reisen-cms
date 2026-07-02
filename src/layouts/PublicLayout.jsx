@@ -1,9 +1,6 @@
-import { Outlet } from 'react-router-dom'
-import { useState } from 'react'
+import { Outlet, Link } from 'react-router-dom'
 
 export default function PublicLayout() {
-  const [showNav, setShowNav] = useState(true)
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Navigation */}
@@ -16,11 +13,11 @@ export default function PublicLayout() {
         justifyContent: 'center',
         flexWrap: 'wrap'
       }}>
-        <a href="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>🏠 Home</a>
-        <a href="/journeys" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>🛣️ Journeys</a>
-        <a href="/blog" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>📝 Blog</a>
-        <a href="/contact" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>✉️ Contact</a>
-        <a href="/admin/login" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', marginLeft: 'auto' }}>🔐 Admin Login</a>
+        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>🏠 Home</Link>
+        <Link to="/journeys" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>🛣️ Journeys</Link>
+        <Link to="/blog" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>📝 Blog</Link>
+        <Link to="/contact" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>✉️ Contact</Link>
+        <Link to="/admin/login" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', marginLeft: 'auto' }}>🔐 Admin Login</Link>
       </nav>
 
       {/* Page Content */}
