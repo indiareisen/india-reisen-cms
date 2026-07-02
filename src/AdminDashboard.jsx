@@ -32,22 +32,22 @@ function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const menuItems = [
-    { id: 'contact', label: '💬 Contact Messages', icon: '💬' },
-    { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
-    { id: 'journeys', label: '🛣️ Journeys', icon: '🛣️' },
-    { id: 'blog', label: '📝 Blog', icon: '📝' },
-    { id: 'media', label: '🎬 Media', icon: '🎬' },
-    { id: 'team', label: '👥 Team', icon: '👥' },
-    { id: 'reviews', label: '⭐ Reviews', icon: '⭐' },
-    { id: 'clients', label: '👨‍💼 Manage Clients', icon: '👨‍💼' },
-    { id: 'invoices', label: '💰 Create Invoices', icon: '💰' },
-    { id: 'social', label: '📱 Social Content', icon: '📱' },
-    { id: 'settings', label: '⚙️ Admin', icon: '⚙️' },
-    { id: 'website-home', label: '🏠 Website Home', icon: '🏠' },
-    { id: 'website-journeys', label: '🗺️ Website Journeys', icon: '🗺️' },
-    { id: 'website-blog', label: '📖 Website Blog', icon: '📖' },
-    { id: 'website-contact', label: '✉️ Website Contact', icon: '✉️' },
-    { id: 'view-website', label: '🌐 View Website', icon: '🌐' }
+    { id: 'contact', label: 'Contact Messages', icon: '💬' },
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'journeys', label: 'Journeys', icon: '🛣️' },
+    { id: 'blog', label: 'Blog', icon: '📝' },
+    { id: 'media', label: 'Media', icon: '🎬' },
+    { id: 'team', label: 'Team', icon: '👥' },
+    { id: 'reviews', label: 'Reviews', icon: '⭐' },
+    { id: 'clients', label: 'Manage Clients', icon: '👨‍💼' },
+    { id: 'invoices', label: 'Create Invoices', icon: '💰' },
+    { id: 'social', label: 'Social Content', icon: '📱' },
+    { id: 'settings', label: 'Admin', icon: '⚙️' },
+    { id: 'website-home', label: 'Website Home', icon: '🏠' },
+    { id: 'website-journeys', label: 'Website Journeys', icon: '🗺️' },
+    { id: 'website-blog', label: 'Website Blog', icon: '📖' },
+    { id: 'website-contact', label: 'Website Contact', icon: '✉️' },
+    { id: 'view-website', label: 'View Website', icon: '🌐' }
   ]
 
   const renderContent = () => {
@@ -119,7 +119,7 @@ function AdminDashboard() {
               onMouseOver={(e) => activeTab !== item.id && (e.target.style.background = brandColors.secondary)}
               onMouseOut={(e) => activeTab !== item.id && (e.target.style.background = 'transparent')}
             >
-              <span>{item.icon}</span>
+              <span style={{ fontSize: '18px' }}>{item.icon}</span>
               {sidebarOpen && <span>{item.label}</span>}
             </button>
           ))}
