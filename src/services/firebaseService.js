@@ -1,3 +1,5 @@
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { 
   collection, 
   addDoc, 
@@ -194,5 +196,9 @@ export const updateSetting = async (key, data) => {
   }, { merge: true });
 };
 
-// Export db for use in other files
-export { db };
+
+// Export auth for AuthContext
+
+// Export auth and db
+const auth = getAuth();
+export { auth, db };
