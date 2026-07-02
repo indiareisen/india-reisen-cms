@@ -13,10 +13,10 @@ import JourneysPage from './pages/website/JourneysPage'
 import BlogPage from './pages/website/BlogPage'
 import ContactPage from './pages/website/ContactPage'
 
-// Auth Pages
+// Auth
 import AdminLogin from './pages/admin/AdminLogin'
 
-// Website Admin Pages
+// Website Admin
 import WebsiteAdminDashboard from './pages/website-admin/Dashboard'
 import JourneyManager from './pages/website-admin/JourneyManager'
 import BlogManager from './pages/website-admin/BlogManager'
@@ -26,20 +26,20 @@ import ReviewsManager from './pages/website-admin/ReviewsManager'
 import ContactMessages from './pages/website-admin/ContactMessages'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
 
-// Operations Pages
+// Operations
 import OperationsDashboard from './pages/operations/Dashboard'
 import ClientManager from './pages/operations/ClientManager'
 import InvoiceMaker from './pages/operations/InvoiceMaker'
+import FinancialReports from './pages/operations/FinancialReports'
 import SocialMediaCreator from './pages/operations/SocialMediaCreator'
 import AdminPanel from './pages/operations/AdminPanel'
-import FinancialReports from './pages/operations/FinancialReports'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-          {/* ========== PUBLIC ROUTES (No Login) ========== */}
+          {/* PUBLIC */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/journeys" element={<JourneysPage />} />
@@ -47,10 +47,10 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
           </Route>
 
-          {/* ========== AUTH ROUTES ========== */}
+          {/* AUTH */}
           <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* ========== WEBSITE ADMIN ROUTES (Protected) ========== */}
+          {/* WEBSITE ADMIN */}
           <Route element={<ProtectedRoute><WebsiteAdminLayout /></ProtectedRoute>}>
             <Route path="/admin/website/dashboard" element={<WebsiteAdminDashboard />} />
             <Route path="/admin/website/journeys" element={<JourneyManager />} />
@@ -62,17 +62,17 @@ function App() {
             <Route path="/admin/website/settings" element={<WebsiteSettings />} />
           </Route>
 
-          {/* ========== OPERATIONS ROUTES (Protected - Full Admin Only) ========== */}
+          {/* OPERATIONS (FULL ADMIN ONLY) */}
           <Route element={<ProtectedRoute requiredRole="full"><OperationsLayout /></ProtectedRoute>}>
             <Route path="/admin/operations/dashboard" element={<OperationsDashboard />} />
             <Route path="/admin/operations/clients" element={<ClientManager />} />
             <Route path="/admin/operations/invoices" element={<InvoiceMaker />} />
-            <Route path="/admin/operations/social" element={<SocialMediaCreator />} />
             <Route path="/admin/operations/reports" element={<FinancialReports />} />
+            <Route path="/admin/operations/social" element={<SocialMediaCreator />} />
             <Route path="/admin/operations/settings" element={<AdminPanel />} />
           </Route>
 
-          {/* Fallback */}
+          {/* FALLBACK - MUST BE LAST */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
