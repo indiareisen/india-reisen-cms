@@ -10,6 +10,10 @@ import ClientManager from './components/admin/finance/ClientManager'
 import AdminSettings from './components/admin/settings/AdminSettings'
 import ContactMessages from './components/admin/ContactMessages'
 import SocialMediaCreator from './components/SocialMediaCreator'
+import HomePage from './pages/website/HomePage'
+import JourneysPage from './pages/website/JourneysPage'
+import BlogPage from './pages/website/BlogPage'
+import ContactPage from './pages/website/ContactPage'
 
 const brandColors = {
   primary: '#d1356f',
@@ -59,6 +63,13 @@ function AdminDashboard() {
       case 'social': return <SocialMediaCreator />
       case 'settings': return <AdminSettings />
       case 'contact': return <ContactMessages />
+      case 'website-home': return <HomePage />
+      case 'website-journeys': return <JourneysPage />
+      case 'website-blog': return <BlogPage />
+      case 'website-contact': return <ContactPage />
+      case 'view-website': 
+        window.open('/', '_blank')
+        return <div style={{ padding: '20px', textAlign: 'center' }}><p>Opening website...</p></div>
       default: return <Dashboard />
     }
   }
@@ -105,7 +116,7 @@ function AdminDashboard() {
                 alignItems: 'center',
                 gap: '10px'
               }}
-              onMouseOver={(e) => !activeTab === item.id && (e.target.style.background = brandColors.secondary)}
+              onMouseOver={(e) => activeTab !== item.id && (e.target.style.background = brandColors.secondary)}
               onMouseOut={(e) => activeTab !== item.id && (e.target.style.background = 'transparent')}
             >
               <span>{item.icon}</span>
