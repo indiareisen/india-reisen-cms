@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('team@indiareisen.com')
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('demo')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { handleLogin, user } = useAuth()
@@ -19,7 +19,8 @@ export default function AdminLogin() {
     setError('')
     setLoading(true)
     try {
-      await handleLogin(email, password, false)
+      await handleLogin(email, password)
+      navigate('/admin/website/dashboard')
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {
@@ -66,7 +67,12 @@ export default function AdminLogin() {
       </form>
       
       <hr style={{ margin: '20px 0', borderColor: '#ddd' }} />
-      <p style={{ fontSize: '12px', color: '#999', textAlign: 'center' }}>Demo credentials:<br />team@indiareisen.com</p>
+      <p style={{ fontSize: '12px', color: '#999', textAlign: 'center' }}>
+        <strong>Demo Admin Accounts (Bypass Mode):</strong><br/>
+        📧 ambuj@indiareisen.com (Full Access)<br/>
+        📧 team@indiareisen.com (Limited Access)<br/>
+        🔑 Password: anything
+      </p>
     </div>
   )
 }

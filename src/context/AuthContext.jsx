@@ -1,161 +1,91 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  sendPasswordResetEmail 
-} from 'firebase/auth';
-import { auth, db } from '../services/firebaseService';
-import { doc, getDoc } from 'firebase/firestore';
+import { createContext, useContext, useState, useEffect } from 'react'
 
-const AuthContext = createContext();
+const AuthContext = createContext()
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [adminRole, setAdminRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const inactivityTimer = useRef(null);
-  const lastActivityTime = useRef(Date.now());
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [adminRole, setAdminRole] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  const fetchAdminRole = async (uid) => {
+  // Bypass login - no Firebase needed
+  const handleLogin = async (email, password) => {
+    setLoading(true)
     try {
-      const adminDoc = await getDoc(doc(db, 'admins', uid));
-      if (adminDoc.exists()) {
-        setAdminRole(adminDoc.data().role);
+      // Simulate login delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Define admin users
+      const admins = {
+        'ambuj@indiareisen.com': { email: 'ambuj@indiareisen.com', role: 'full' },
+        'team@indiareisen.com': { email: 'team@indiareisen.com', role: 'limited' },
+        'pulkit@indiareisen.com': { email: 'pulkit@indiareisen.com', role: 'limited' },
+        'gunjan@indiareisen.com': { email: 'gunjan@indiareisen.com', role: 'limited' }
+      }
+
+      // Check if user exists
+      if (admins[email]) {
+        const admin = admins[email]
+        // Store in localStorage
+        localStorage.setItem('user', JSON.stringify(admin))
+        setUser(admin)
+        setAdminRole(admin.role)
       } else {
-        setAdminRole('limited');
+        throw new Error('User not found. Use a demo admin account.')
       }
-    } catch (err) {
-      console.error('Error fetching admin role:', err);
-      setAdminRole('limited');
+    } catch (error) {
+      throw new Error(error.message || 'Login failed')
+    } finally {
+      setLoading(false)
     }
-  };
-
-  const resetInactivityTimer = () => {
-    lastActivityTime.current = Date.now();
-    
-    if (inactivityTimer.current) {
-      clearTimeout(inactivityTimer.current);
-    }
-
-    if (user) {
-      inactivityTimer.current = setTimeout(() => {
-        console.log('15 minutes of inactivity - logging out');
-        handleLogout();
-      }, 15 * 60 * 1000);
-    }
-  };
-
-  useEffect(() => {
-    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-    
-    const handleActivity = () => {
-      resetInactivityTimer();
-    };
-
-    if (user) {
-      activityEvents.forEach(event => {
-        window.addEventListener(event, handleActivity);
-      });
-
-      resetInactivityTimer();
-    }
-
-    return () => {
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, handleActivity);
-      });
-      if (inactivityTimer.current) {
-        clearTimeout(inactivityTimer.current);
-      }
-    };
-  }, [user]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      if (authUser) {
-        setUser(authUser);
-        await fetchAdminRole(authUser.email);
-      } else {
-        setUser(null);
-        setAdminRole(null);
-      }
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const handleLogin = async (email, password, rememberMe) => {
-    setError(null);
-    try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      
-      if (rememberMe) {
-        localStorage.setItem('rememberEmail', email);
-      } else {
-        localStorage.removeItem('rememberEmail');
-      }
-      
-      return result.user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
+  }
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      setAdminRole(null);
-      localStorage.removeItem('rememberEmail');
-      if (inactivityTimer.current) {
-        clearTimeout(inactivityTimer.current);
-      }
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
+    localStorage.removeItem('user')
+    setUser(null)
+    setAdminRole(null)
+  }
 
   const handlePasswordReset = async (email) => {
-    setError(null);
-    try {
-      await sendPasswordResetEmail(auth, email);
-      return { success: true, message: 'Password reset email sent' };
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
+    console.log('Password reset requested for:', email)
+    // Mock implementation
+  }
 
   const hasPermission = (requiredRole) => {
-    if (adminRole === 'full') return true;
-    if (requiredRole === 'limited') return true;
-    return false;
-  };
-
-  const value = {
-    user,
-    adminRole,
-    loading,
-    error,
-    handleLogin,
-    handleLogout,
-    handlePasswordReset,
-    hasPermission,
-    isAdmin: !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    if (!user) return false
+    if (requiredRole === 'full') return adminRole === 'full'
+    if (requiredRole === 'limited') return adminRole === 'limited' || adminRole === 'full'
+    return true
   }
-  return context;
-};
+
+  const isAdmin = () => !!user
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('user')
+    if (savedUser) {
+      const user = JSON.parse(savedUser)
+      setUser(user)
+      setAdminRole(user.role)
+    }
+    setLoading(false)
+  }, [])
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      adminRole,
+      loading,
+      handleLogin,
+      handleLogout,
+      handlePasswordReset,
+      hasPermission,
+      isAdmin
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  return useContext(AuthContext)
+}
