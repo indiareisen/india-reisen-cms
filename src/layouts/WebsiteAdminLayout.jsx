@@ -39,7 +39,7 @@ export default function WebsiteAdminLayout() {
       }}>
         {sidebarOpen && (
           <>
-            <h2 style={{ marginTop: 0 }}>📱 Website Admin</h2>
+            <h2 style={{ marginTop: 0 }}>Website Admin</h2>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {menuItems.map(item => (
                 <Link
@@ -54,33 +54,23 @@ export default function WebsiteAdminLayout() {
                     display: 'block',
                     transition: 'all 0.2s'
                   }}
-                  onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
-                  onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
-
-            <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '20px 0' }} />
-
-            
-              href="/"
-              style={{
-                color: 'white',
-                textDecoration: 'none',
-                padding: '12px',
-                background: 'rgba(255,255,255,0.2)',
-                borderRadius: '6px',
-                display: 'block',
-                transition: 'all 0.2s',
-                textAlign: 'center',
-                fontWeight: 'bold'
-              }}
-              onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-              onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
-            >
-              🌐 View Website
+            <hr style={{ borderColor: 'rgba(255,255,255,0.2)' }} />
+            <a href="/" style={{
+              color: 'white',
+              textDecoration: 'none',
+              padding: '12px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '6px',
+              display: 'block',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              View Website
             </a>
           </>
         )}
@@ -106,9 +96,9 @@ export default function WebsiteAdminLayout() {
               cursor: 'pointer'
             }}
           >
-            {sidebarOpen ? '☰' : '→'}
+            {sidebarOpen ? 'Menu' : 'Show'}
           </button>
-          <h1>Website Admin Portal</h1>
+          <h1>Website Admin</h1>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <span>{user?.email}</span>
             <LogoutButton />
