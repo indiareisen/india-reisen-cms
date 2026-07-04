@@ -25,8 +25,8 @@ import TeamManager from './pages/website-admin/TeamManager'
 import ReviewsManager from './pages/website-admin/ReviewsManager'
 import ContactMessages from './pages/website-admin/ContactMessages'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
-import InvoiceMaker from "./pages/website-admin/InvoiceMaker"
-import SocialMediaCreator from "./pages/website-admin/SocialMediaCreator"
+import WebsiteInvoiceMaker from './pages/website-admin/InvoiceMaker'
+import WebsiteSocialMediaCreator from './pages/website-admin/SocialMediaCreator'
 
 // Operations
 import OperationsDashboard from './pages/operations/Dashboard'
@@ -62,8 +62,8 @@ function App() {
             <Route path="/admin/website/reviews" element={<ReviewsManager />} />
             <Route path="/admin/website/messages" element={<ContactMessages />} />
             <Route path="/admin/website/settings" element={<WebsiteSettings />} />
-            <Route path="/admin/website/invoices" element={<InvoiceMaker />} />
-            <Route path="/admin/website/social" element={<SocialMediaCreator />} />
+            <Route path="/admin/website/invoices" element={<WebsiteInvoiceMaker />} />
+            <Route path="/admin/website/social" element={<WebsiteSocialMediaCreator />} />
           </Route>
 
           {/* OPERATIONS (FULL ADMIN ONLY) */}
