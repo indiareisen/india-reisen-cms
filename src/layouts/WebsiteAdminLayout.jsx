@@ -40,7 +40,7 @@ export default function WebsiteAdminLayout() {
         {sidebarOpen && (
           <>
             <h2 style={{ marginTop: 0 }}>📱 Website Admin</h2>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {menuItems.map(item => (
                 <Link
                   key={item.id}
@@ -61,6 +61,27 @@ export default function WebsiteAdminLayout() {
                 </Link>
               ))}
             </nav>
+
+            <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '20px 0' }} />
+
+            
+              href="/"
+              style={{
+                color: 'white',
+                textDecoration: 'none',
+                padding: '12px',
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '6px',
+                display: 'block',
+                transition: 'all 0.2s',
+                textAlign: 'center',
+                fontWeight: 'bold'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
+              onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+            >
+              🌐 View Website
+            </a>
           </>
         )}
       </div>
