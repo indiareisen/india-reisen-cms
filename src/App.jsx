@@ -27,6 +27,7 @@ import ContactMessages from './pages/website-admin/ContactMessages'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
 import WebsiteInvoiceMaker from './pages/website-admin/InvoiceMaker'
 import WebsiteSocialMediaCreator from './pages/website-admin/SocialMediaCreator'
+import WebsiteClientManager from "./pages/website-admin/ClientManager"
 
 // Operations
 import OperationsDashboard from './pages/operations/Dashboard'
@@ -64,6 +65,7 @@ function App() {
             <Route path="/admin/website/settings" element={<WebsiteSettings />} />
             <Route path="/admin/website/invoices" element={<WebsiteInvoiceMaker />} />
             <Route path="/admin/website/social" element={<WebsiteSocialMediaCreator />} />
+            <Route path="/admin/website/clients" element={<WebsiteClientManager />} />
           </Route>
 
           {/* OPERATIONS (FULL ADMIN ONLY) */}

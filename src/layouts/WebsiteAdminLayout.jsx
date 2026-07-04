@@ -21,6 +21,7 @@ export default function WebsiteAdminLayout() {
     { id: 'team', label: '👥 Team', path: '/admin/website/team' },
     { id: 'reviews', label: '⭐ Reviews', path: '/admin/website/reviews' },
     { id: 'messages', label: '💬 Messages', path: '/admin/website/messages' },
+    { id: 'clients', label: '👨‍💼 Clients', path: '/admin/website/clients' },
     { id: 'invoices', label: '💰 Invoices', path: '/admin/website/invoices' },
     { id: 'social', label: '📱 Social Media', path: '/admin/website/social' },
     { id: 'settings', label: '⚙️ Settings', path: '/admin/website/settings' }
