@@ -14,17 +14,17 @@ export default function WebsiteAdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const menuItems = [
-    { id: 'dashboard', label: '📊 Dashboard', path: '/admin/website/dashboard' },
-    { id: 'journeys', label: '🛣️ Journeys', path: '/admin/website/journeys' },
-    { id: 'blog', label: '📝 Blog', path: '/admin/website/blog' },
-    { id: 'media', label: '🎬 Media', path: '/admin/website/media' },
-    { id: 'team', label: '👥 Team', path: '/admin/website/team' },
-    { id: 'reviews', label: '⭐ Reviews', path: '/admin/website/reviews' },
-    { id: 'messages', label: '💬 Messages', path: '/admin/website/messages' },
-    { id: 'clients', label: '👨‍💼 Clients', path: '/admin/website/clients' },
-    { id: 'invoices', label: '💰 Invoices', path: '/admin/website/invoices' },
-    { id: 'social', label: '📱 Social Media', path: '/admin/website/social' },
-    { id: 'settings', label: '⚙️ Settings', path: '/admin/website/settings' }
+    { id: 'dashboard', label: 'Dashboard', path: '/admin/website/dashboard' },
+    { id: 'journeys', label: 'Journeys', path: '/admin/website/journeys' },
+    { id: 'blog', label: 'Blog', path: '/admin/website/blog' },
+    { id: 'media', label: 'Media', path: '/admin/website/media' },
+    { id: 'team', label: 'Team', path: '/admin/website/team' },
+    { id: 'reviews', label: 'Reviews', path: '/admin/website/reviews' },
+    { id: 'messages', label: 'Messages', path: '/admin/website/messages' },
+    { id: 'clients', label: 'Clients', path: '/admin/website/clients' },
+    { id: 'invoices', label: 'Invoices', path: '/admin/website/invoices' },
+    { id: 'social', label: 'Social Media', path: '/admin/website/social' },
+    { id: 'settings', label: 'Settings', path: '/admin/website/settings' }
   ]
 
   return (
@@ -59,19 +59,6 @@ export default function WebsiteAdminLayout() {
                 </Link>
               ))}
             </nav>
-            <hr style={{ borderColor: 'rgba(255,255,255,0.2)' }} />
-            <a href="/" style={{
-              color: 'white',
-              textDecoration: 'none',
-              padding: '12px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '6px',
-              display: 'block',
-              textAlign: 'center',
-              fontWeight: 'bold'
-            }}>
-              View Website
-            </a>
           </>
         )}
       </div>
@@ -96,10 +83,20 @@ export default function WebsiteAdminLayout() {
               cursor: 'pointer'
             }}
           >
-            {sidebarOpen ? 'Menu' : 'Show'}
+            Menu
           </button>
-          <h1>Website Admin</h1>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <h1>Website Admin Portal</h1>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <a href="/" style={{
+              background: '#28a745',
+              color: 'white',
+              padding: '8px 15px',
+              borderRadius: '4px',
+              textDecoration: 'none',
+              fontWeight: 'bold'
+            }}>
+              View Website
+            </a>
             <span>{user?.email}</span>
             <LogoutButton />
           </div>
