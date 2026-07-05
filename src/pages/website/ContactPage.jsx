@@ -10,24 +10,41 @@ export default function ContactPage() {
     journey: '',
     message: ''
   })
-  const [settings, setSettings] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [settings, setSettings] = useState({
+    email: 'team@indiareisen.com',
+    phone: '+91 98108 27785',
+    address: 'Ghaziabad, Uttar Pradesh, India',
+    primaryColor: '#d1356f',
+    facebook: 'indiareisenofficial',
+    instagram: '@indiareisen',
+    youtube: '@indiareisen'
+  })
+  const [loadingSettings, setLoadingSettings] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchSettings()
+    loadSettingsFromDB()
   }, [])
 
-  const fetchSettings = async () => {
+  const loadSettingsFromDB = async () => {
     try {
       const docRef = doc(db, 'settings', 'general')
       const docSnap = await getDoc(docRef)
+      
       if (docSnap.exists()) {
-        setSettings(docSnap.data())
+        const dbSettings = docSnap.data()
+        setSettings(prev => ({
+          ...prev,
+          ...dbSettings
+        }))
       }
     } catch (err) {
       console.error('Error fetching settings:', err)
+      // Use default settings if fetch fails
+    } finally {
+      setLoadingSettings(false)
     }
   }
 
@@ -38,7 +55,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setSubmitting(true)
     setError('')
 
     try {
@@ -54,7 +71,7 @@ export default function ContactPage() {
       setError('Failed to send message. Please try again.')
       console.error('Error:', err)
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -188,7 +205,7 @@ export default function ContactPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -196,12 +213,13 @@ export default function ContactPage() {
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: 'pointer',
+                cursor: submitting ? 'not-allowed' : 'pointer',
                 fontWeight: 'bold',
-                fontSize: '16px'
+                fontSize: '16px',
+                opacity: submitting ? 0.7 : 1
               }}
             >
-              {loading ? 'Sending...' : 'Send Message'}
+              {submitting ? 'Sending...' : 'Send Message'}
             </button>
           </form>
         </div>
@@ -210,83 +228,86 @@ export default function ContactPage() {
         <div>
           <h2 style={{ color: brandColor, marginBottom: '20px' }}>Contact Information</h2>
           
-          {settings ? (
+          {loadingSettings ? (
+            <p>Loading contact information...</p>
+          ) : (
             <>
               <div style={{ marginBottom: '30px' }}>
                 <h3 style={{ margin: '0 0 10px 0' }}>Email</h3>
-                <a href={`mailto:${settings.email}`} style={{ color: brandColor, textDecoration: 'none', fontWeight: 'bold' }}>
+                <a href={`mailto:${settings.email}`} style={{ color: brandColor, textDecoration: 'none', fontWeight: 'bold', fontSize: '16px' }}>
                   {settings.email}
                 </a>
               </div>
 
               <div style={{ marginBottom: '30px' }}>
                 <h3 style={{ margin: '0 0 10px 0' }}>Phone</h3>
-                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} style={{ color: brandColor, textDecoration: 'none', fontWeight: 'bold' }}>
+                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} style={{ color: brandColor, textDecoration: 'none', fontWeight: 'bold', fontSize: '16px' }}>
                   {settings.phone}
                 </a>
               </div>
 
               <div style={{ marginBottom: '30px' }}>
                 <h3 style={{ margin: '0 0 10px 0' }}>Address</h3>
-                <p style={{ color: '#666', margin: 0 }}>
+                <p style={{ color: '#666', margin: 0, fontSize: '16px' }}>
                   {settings.address}
                 </p>
               </div>
-            </>
-          ) : (
-            <p>Loading contact information...</p>
-          )}
 
-          <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ margin: '0 0 15px 0' }}>Follow Us</h3>
-            <div style={{ display: 'flex', gap: '15px' }}>
-              {settings?.facebook && (
-                <a href={`https://facebook.com/${settings.facebook}`} target="_blank" rel="noopener noreferrer" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: brandColor,
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none'
-                }}>
-                  f
-                </a>
-              )}
-              {settings?.instagram && (
-                <a href={`https://instagram.com/${settings.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: brandColor,
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none'
-                }}>
-                  in
-                </a>
-              )}
-              {settings?.youtube && (
-                <a href={`https://youtube.com/${settings.youtube.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: brandColor,
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none'
-                }}>
-                  ▶
-                </a>
-              )}
-            </div>
-          </div>
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ margin: '0 0 15px 0' }}>Follow Us</h3>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                  {settings.facebook && (
+                    <a href={`https://facebook.com/${settings.facebook}`} target="_blank" rel="noopener noreferrer" title="Facebook" style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '40px',
+                      height: '40px',
+                      background: brandColor,
+                      color: 'white',
+                      borderRadius: '50%',
+                      textDecoration: 'none',
+                      fontSize: '18px'
+                    }}>
+                      f
+                    </a>
+                  )}
+                  {settings.instagram && (
+                    <a href={`https://instagram.com/${settings.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="Instagram" style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '40px',
+                      height: '40px',
+                      background: brandColor,
+                      color: 'white',
+                      borderRadius: '50%',
+                      textDecoration: 'none',
+                      fontSize: '18px'
+                    }}>
+                      📷
+                    </a>
+                  )}
+                  {settings.youtube && (
+                    <a href={`https://youtube.com/${settings.youtube.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="YouTube" style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '40px',
+                      height: '40px',
+                      background: brandColor,
+                      color: 'white',
+                      borderRadius: '50%',
+                      textDecoration: 'none',
+                      fontSize: '18px'
+                    }}>
+                      ▶
+                    </a>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
           <div style={{
             background: '#f9f9f9',
