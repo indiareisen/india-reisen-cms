@@ -27,9 +27,8 @@ export default function WebsiteSettings() {
         { label: 'Destinations', value: '15+' },
         { label: 'Local Partners', value: '50+' }
       ],
-      showTestimonials: true,
       ctaHeading: 'Ready to Explore India?',
-      ctaText: 'Start your journey with us today. Personalized itineraries tailored to your dreams.',
+      ctaText: 'Start your journey with us today.',
       ctaButtonText: 'Browse All Journeys'
     }
   })
@@ -37,7 +36,7 @@ export default function WebsiteSettings() {
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadMessage, setUploadMessage] = useState('')
 
   useEffect(() => {
     fetchSettings()
@@ -71,58 +70,46 @@ export default function WebsiteSettings() {
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
       console.error('Error saving:', error)
+      alert('Error saving settings')
     }
   }
 
-  const handleImageUpload = async (e, field) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
 
     setUploading(true)
-    setUploadProgress(0)
+    setUploadMessage('Uploading...')
 
     try {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('upload_preset', 'india_reisen')
-      formData.append('cloud_name', 'dl1q4dw72')
 
-      const xhr = new XMLHttpRequest()
+      const response = await fetch('https://api.cloudinary.com/v1_1/dl1q4dw72/image/upload', {
+        method: 'POST',
+        body: formData
+      })
 
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100
-          setUploadProgress(percentComplete)
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      setSettings({
+        ...settings,
+        homePage: {
+          ...settings.homePage,
+          heroImage: data.secure_url
         }
       })
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText)
-          if (field === 'hero') {
-            setSettings({
-              ...settings,
-              homePage: {
-                ...settings.homePage,
-                heroImage: response.secure_url
-              }
-            })
-          }
-          setUploading(false)
-          setUploadProgress(0)
-        }
-      })
-
-      xhr.addEventListener('error', () => {
-        console.error('Upload failed')
-        setUploading(false)
-        setUploadProgress(0)
-      })
-
-      xhr.open('POST', 'https://api.cloudinary.com/v1_1/dl1q4dw72/image/upload')
-      xhr.send(formData)
+      setUploadMessage('✓ Image uploaded successfully!')
+      setTimeout(() => setUploadMessage(''), 3000)
     } catch (error) {
       console.error('Error:', error)
+      setUploadMessage('✗ Upload failed. Please try again.')
+      setTimeout(() => setUploadMessage(''), 3000)
+    } finally {
       setUploading(false)
     }
   }
@@ -395,10 +382,23 @@ export default function WebsiteSettings() {
               />
             </div>
 
-            {/* Hero Image Upload */}
-            <div style={{ marginBottom: '20px', border: '2px dashed #ddd', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>📸 Hero Image</label>
+            {/* Hero Image Section */}
+            <div style={{ marginBottom: '20px', border: '2px solid #d1356f', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
+              <h3 style={{ marginTop: '0' }}>📸 Hero Image</h3>
               
+              {uploadMessage && (
+                <div style={{
+                  background: uploadMessage.includes('✓') ? '#d4edda' : '#f8d7da',
+                  color: uploadMessage.includes('✓') ? '#155724' : '#721c24',
+                  padding: '10px',
+                  borderRadius: '4px',
+                  marginBottom: '15px',
+                  fontWeight: 'bold'
+                }}>
+                  {uploadMessage}
+                </div>
+              )}
+
               {settings.homePage.heroImage && (
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Current Image:</p>
@@ -407,33 +407,19 @@ export default function WebsiteSettings() {
               )}
 
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Upload New Image</label>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>Upload New Image</label>
                 <input 
                   type="file" 
                   accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'hero')}
+                  onChange={handleImageUpload}
                   disabled={uploading}
                   style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
                 />
-                {uploading && (
-                  <div style={{ marginTop: '10px' }}>
-                    <div style={{ background: '#e0e0e0', borderRadius: '4px', height: '20px', overflow: 'hidden' }}>
-                      <div style={{
-                        background: '#d1356f',
-                        height: '100%',
-                        width: `${uploadProgress}%`,
-                        transition: 'width 0.3s'
-                      }}></div>
-                    </div>
-                    <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      Uploading... {Math.round(uploadProgress)}%
-                    </p>
-                  </div>
-                )}
+                <small style={{ color: '#666' }}>Max 5MB. Recommended: 1920x600px or higher</small>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Or Paste Image URL</label>
+              <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Or paste Image URL:</label>
                 <input 
                   type="url" 
                   value={settings.homePage.heroImage} 
@@ -441,7 +427,6 @@ export default function WebsiteSettings() {
                   placeholder="https://example.com/image.jpg"
                   style={inputStyle}
                 />
-                <small style={{ color: '#666' }}>Recommended: 1920x600px or higher</small>
               </div>
             </div>
 
@@ -451,61 +436,38 @@ export default function WebsiteSettings() {
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>About Heading</label>
               <input 
                 type="text" 
-                value={settings.homePage.aboutHeading} 
+                value={settings.homePage.aboutHeading || 'Why Choose India Reisen?'} 
                 onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, aboutHeading: e.target.value}})}
                 style={inputStyle}
               />
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>About Content</label>
-              <textarea 
-                value={settings.homePage.aboutContent} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, aboutContent: e.target.value}})}
-                style={{ ...inputStyle, minHeight: '100px' }}
-              />
-            </div>
-
-            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Statistics Section</h3>
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Statistics</h3>
             
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={settings.homePage.showStats} 
-                  onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, showStats: e.target.checked}})}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span style={{ fontWeight: 'bold' }}>Show Statistics</span>
-              </label>
-            </div>
-
-            {settings.homePage.showStats && (
-              <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '20px' }}>
-                {settings.homePage.stats.map((stat, index) => (
-                  <div key={index} style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Label {index + 1}</label>
-                      <input 
-                        type="text" 
-                        value={stat.label} 
-                        onChange={(e) => handleStatChange(index, 'label', e.target.value)}
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Value {index + 1}</label>
-                      <input 
-                        type="text" 
-                        value={stat.value} 
-                        onChange={(e) => handleStatChange(index, 'value', e.target.value)}
-                        style={inputStyle}
-                      />
-                    </div>
+            <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '20px' }}>
+              {settings.homePage.stats.map((stat, index) => (
+                <div key={index} style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Label {index + 1}</label>
+                    <input 
+                      type="text" 
+                      value={stat.label} 
+                      onChange={(e) => handleStatChange(index, 'label', e.target.value)}
+                      style={inputStyle}
+                    />
                   </div>
-                ))}
-              </div>
-            )}
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Value {index + 1}</label>
+                    <input 
+                      type="text" 
+                      value={stat.value} 
+                      onChange={(e) => handleStatChange(index, 'value', e.target.value)}
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>CTA Section</h3>
             
@@ -544,7 +506,7 @@ export default function WebsiteSettings() {
         {activeTab === 'social' && (
           <div>
             <h2>Social Media</h2>
-            <p style={{ color: '#666', marginBottom: '20px' }}>Add or edit your social media handles. These will be displayed throughout your website.</p>
+            <p style={{ color: '#666', marginBottom: '20px' }}>Add or edit your social media handles.</p>
 
             <div style={{ display: 'grid', gap: '20px' }}>
               {settings.socialMedia && Object.entries(settings.socialMedia).map(([platform, data]) => (
@@ -558,7 +520,7 @@ export default function WebsiteSettings() {
                         type="checkbox" 
                         checked={data.enabled} 
                         onChange={() => toggleSocialMedia(platform)}
-                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                        style={{ width: '20px', height: '20px' }}
                       />
                       <span>{data.enabled ? 'Enabled' : 'Disabled'}</span>
                     </label>
@@ -594,7 +556,7 @@ export default function WebsiteSettings() {
         )}
 
         {/* Save Button */}
-        <div style={{ marginTop: '30px', display: 'flex', gap: '10px' }}>
+        <div style={{ marginTop: '30px' }}>
           <button 
             type="submit"
             style={{ padding: '12px 30px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
