@@ -2,6 +2,81 @@ import { useState, useEffect } from 'react'
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 
+const COLOR_PALETTES = [
+  {
+    name: 'India Reisen (Default)',
+    primary: '#d1356f',
+    secondary: '#D4A574',
+    description: 'Elegant pink and gold'
+  },
+  {
+    name: 'Sunset Orange',
+    primary: '#FF6B35',
+    secondary: '#FFA500',
+    description: 'Warm orange tones'
+  },
+  {
+    name: 'Ocean Blue',
+    primary: '#0077BE',
+    secondary: '#4FA3FF',
+    description: 'Deep blue and sky blue'
+  },
+  {
+    name: 'Forest Green',
+    primary: '#2D6A4F',
+    secondary: '#52B788',
+    description: 'Natural green shades'
+  },
+  {
+    name: 'Royal Purple',
+    primary: '#7209B7',
+    secondary: '#B5179E',
+    description: 'Rich purple tones'
+  },
+  {
+    name: 'Burgundy Wine',
+    primary: '#8B0000',
+    secondary: '#DC143C',
+    description: 'Deep burgundy tones'
+  },
+  {
+    name: 'Teal Elegance',
+    primary: '#008080',
+    secondary: '#20B2AA',
+    description: 'Teal and light sea green'
+  },
+  {
+    name: 'Rose Gold',
+    primary: '#B76E79',
+    secondary: '#C9A875',
+    description: 'Soft rose and gold'
+  },
+  {
+    name: 'Emerald',
+    primary: '#50C878',
+    secondary: '#00A86B',
+    description: 'Bright emerald shades'
+  },
+  {
+    name: 'Midnight Navy',
+    primary: '#001F3F',
+    secondary: '#003D82',
+    description: 'Deep navy tones'
+  },
+  {
+    name: 'Coral Reef',
+    primary: '#FF7F50',
+    secondary: '#FF6347',
+    description: 'Coral and tomato'
+  },
+  {
+    name: 'Lavender Dream',
+    primary: '#B19CD9',
+    secondary: '#DDA0DD',
+    description: 'Soft purple shades'
+  }
+]
+
 export default function WebsiteSettings() {
   const [settings, setSettings] = useState({
     siteName: 'India Reisen',
@@ -113,6 +188,14 @@ export default function WebsiteSettings() {
     } finally {
       setUploading(false)
     }
+  }
+
+  const handlePaletteSelect = (palette) => {
+    setSettings({
+      ...settings,
+      primaryColor: palette.primary,
+      secondaryColor: palette.secondary
+    })
   }
 
   const handleSocialMediaChange = (platform, field, value) => {
@@ -241,34 +324,116 @@ export default function WebsiteSettings() {
         {activeTab === 'colors' && (
           <div>
             <h2>Brand Colors</h2>
+            <p style={{ color: '#666', marginBottom: '20px' }}>Choose from pre-designed color palettes or customize your own</p>
+
+            {/* Color Palettes */}
+            <h3 style={{ marginBottom: '20px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Color Palettes</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px', marginBottom: '40px' }}>
+              {COLOR_PALETTES.map((palette, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => handlePaletteSelect(palette)}
+                  style={{
+                    border: settings.primaryColor === palette.primary ? '3px solid #333' : '2px solid #ddd',
+                    borderRadius: '8px',
+                    padding: '15px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    background: 'white',
+                    boxShadow: settings.primaryColor === palette.primary ? '0 4px 12px rgba(0,0,0,0.2)' : 'none'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
+                  onMouseOut={(e) => {
+                    if (settings.primaryColor !== palette.primary) {
+                      e.currentTarget.style.boxShadow = 'none'
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      background: palette.primary,
+                      borderRadius: '4px'
+                    }}></div>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      background: palette.secondary,
+                      borderRadius: '4px'
+                    }}></div>
+                  </div>
+                  <h4 style={{ margin: '0 0 5px 0' }}>{palette.name}</h4>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{palette.description}</p>
+                  {settings.primaryColor === palette.primary && (
+                    <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#d1356f', fontWeight: 'bold' }}>✓ Selected</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Custom Colors */}
+            <h3 style={{ marginBottom: '20px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Custom Colors</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Primary Color</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input type="color" value={settings.primaryColor} onChange={(e) => setSettings({...settings, primaryColor: e.target.value})} style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }} />
-                  <input type="text" value={settings.primaryColor} onChange={(e) => setSettings({...settings, primaryColor: e.target.value})} style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                  <input 
+                    type="color" 
+                    value={settings.primaryColor} 
+                    onChange={(e) => setSettings({...settings, primaryColor: e.target.value})}
+                    style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
+                  />
+                  <input 
+                    type="text" 
+                    value={settings.primaryColor} 
+                    onChange={(e) => setSettings({...settings, primaryColor: e.target.value})}
+                    style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
                 </div>
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Secondary Color</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input type="color" value={settings.secondaryColor} onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})} style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }} />
-                  <input type="text" value={settings.secondaryColor} onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})} style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                  <input 
+                    type="color" 
+                    value={settings.secondaryColor} 
+                    onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})}
+                    style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
+                  />
+                  <input 
+                    type="text" 
+                    value={settings.secondaryColor} 
+                    onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})}
+                    style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
                 </div>
               </div>
             </div>
-            <div style={{ marginTop: '20px', padding: '20px', background: '#f9f9f9', borderRadius: '4px' }}>
-              <h3>Preview</h3>
-              <div style={{ display: 'flex', gap: '20px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontWeight: 'bold' }}>Primary</p>
-                  <div style={{ width: '100px', height: '100px', background: settings.primaryColor, borderRadius: '4px' }}></div>
+
+            {/* Live Preview */}
+            <div style={{ marginTop: '30px', padding: '20px', background: `linear-gradient(135deg, ${settings.primaryColor}, ${settings.secondaryColor})`, borderRadius: '8px', color: 'white', textAlign: 'center' }}>
+              <h3 style={{ margin: '0 0 10px 0' }}>Live Preview</h3>
+              <p style={{ margin: '0 0 20px 0' }}>Your site will look like this with these colors</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '15px', borderRadius: '4px' }}>
+                  <p style={{ margin: 0, fontWeight: 'bold' }}>Button</p>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontWeight: 'bold' }}>Secondary</p>
-                  <div style={{ width: '100px', height: '100px', background: settings.secondaryColor, borderRadius: '4px' }}></div>
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '15px', borderRadius: '4px' }}>
+                  <p style={{ margin: 0, fontWeight: 'bold' }}>Links</p>
                 </div>
               </div>
+              <button style={{
+                background: 'white',
+                color: settings.primaryColor,
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '4px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}>
+                Learn More
+              </button>
             </div>
           </div>
         )}
