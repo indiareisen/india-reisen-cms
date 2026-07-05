@@ -9,11 +9,7 @@ export default function Footer() {
     phone: '+91 98108 27785',
     address: 'Ghaziabad, Uttar Pradesh, India',
     primaryColor: '#d1356f',
-    secondaryColor: '#D4A574',
-    facebook: 'indiareisenofficial',
-    instagram: '@indiareisen',
-    twitter: '@IndiaReisen',
-    youtube: '@indiareisen'
+    socialMedia: {}
   })
 
   useEffect(() => {
@@ -33,6 +29,25 @@ export default function Footer() {
     } catch (err) {
       console.error('Error fetching settings:', err)
     }
+  }
+
+  const getSocialIcon = (platform) => {
+    const icons = {
+      facebook: 'f',
+      instagram: '📷',
+      twitter: '𝕏',
+      youtube: '▶',
+      linkedin: 'in',
+      whatsapp: '💬'
+    }
+    return icons[platform] || '•'
+  }
+
+  const getSocialLink = (platform, data) => {
+    if (platform === 'whatsapp') {
+      return data.url
+    }
+    return data.url
   }
 
   return (
@@ -89,82 +104,34 @@ export default function Footer() {
           <div>
             <h3 style={{ margin: '0 0 15px 0' }}>Follow Us</h3>
             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-              {settings.facebook && (
-                <a href={`https://facebook.com/${settings.facebook}`} target="_blank" rel="noopener noreferrer" title="Facebook" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
-                >
-                  f
-                </a>
-              )}
-              {settings.instagram && (
-                <a href={`https://instagram.com/${settings.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="Instagram" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
-                >
-                  📷
-                </a>
-              )}
-              {settings.twitter && (
-                <a href={`https://twitter.com/${settings.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="Twitter" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
-                >
-                  𝕏
-                </a>
-              )}
-              {settings.youtube && (
-                <a href={`https://youtube.com/${settings.youtube.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="YouTube" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  textDecoration: 'none',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
-                >
-                  ▶
-                </a>
-              )}
+              {settings.socialMedia && Object.entries(settings.socialMedia).map(([platform, data]) => (
+                data.enabled && (
+                  <a 
+                    key={platform}
+                    href={getSocialLink(platform, data)} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    title={platform.charAt(0).toUpperCase() + platform.slice(1)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '40px',
+                      height: '40px',
+                      background: 'rgba(255,255,255,0.2)',
+                      color: 'white',
+                      borderRadius: '50%',
+                      textDecoration: 'none',
+                      transition: 'background 0.2s',
+                      fontSize: '16px'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
+                    onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+                  >
+                    {getSocialIcon(platform)}
+                  </a>
+                )
+              ))}
             </div>
           </div>
         </div>
