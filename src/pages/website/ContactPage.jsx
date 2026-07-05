@@ -32,17 +32,14 @@ export default function ContactPage() {
     try {
       const docRef = doc(db, 'settings', 'general')
       const docSnap = await getDoc(docRef)
-      
       if (docSnap.exists()) {
-        const dbSettings = docSnap.data()
         setSettings(prev => ({
           ...prev,
-          ...dbSettings
+          ...docSnap.data()
         }))
       }
     } catch (err) {
       console.error('Error fetching settings:', err)
-      // Use default settings if fetch fails
     } finally {
       setLoadingSettings(false)
     }
@@ -286,6 +283,22 @@ export default function ContactPage() {
                       fontSize: '18px'
                     }}>
                       📷
+                    </a>
+                  )}
+                  {settings.twitter && (
+                    <a href={`https://twitter.com/${settings.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="Twitter" style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '40px',
+                      height: '40px',
+                      background: brandColor,
+                      color: 'white',
+                      borderRadius: '50%',
+                      textDecoration: 'none',
+                      fontSize: '18px'
+                    }}>
+                      𝕏
                     </a>
                   )}
                   {settings.youtube && (
