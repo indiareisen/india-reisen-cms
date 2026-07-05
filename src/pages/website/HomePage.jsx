@@ -42,35 +42,66 @@ export default function HomePage() {
     <div>
       {/* Hero Section */}
       <section style={{
-        backgroundImage: `linear-gradient(135deg, rgba(209, 53, 111, 0.7), rgba(212, 165, 116, 0.7)), url('${heroImage}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        position: 'relative',
         color: 'white',
         padding: '140px 20px',
         textAlign: 'center',
-        position: 'relative',
         minHeight: '600px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '800px', position: 'relative', zIndex: 2 }}>
-          <h1 style={{ fontSize: '56px', margin: '0 0 10px 0', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+        {/* Background Image */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `url('${heroImage}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          zIndex: 1
+        }}></div>
+
+        {/* Overlay with improved transparency */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(135deg, rgba(209, 53, 111, 0.4), rgba(212, 165, 116, 0.4))`,
+          zIndex: 2
+        }}></div>
+
+        {/* Content */}
+        <div style={{ maxWidth: '800px', position: 'relative', zIndex: 3 }}>
+          <h1 style={{ 
+            fontSize: '56px', 
+            margin: '0 0 10px 0', 
+            fontWeight: 'bold', 
+            textShadow: '2px 2px 8px rgba(0,0,0,0.5)' 
+          }}>
             {hp.heroTitle}
           </h1>
-          <p style={{ fontSize: '28px', margin: '0 0 20px 0', opacity: 0.95, textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
+          <p style={{ 
+            fontSize: '28px', 
+            margin: '0 0 20px 0', 
+            textShadow: '2px 2px 6px rgba(0,0,0,0.5)' 
+          }}>
             {hp.heroSubtitle}
           </p>
           <p style={{ 
             fontSize: '18px', 
             margin: '0 0 30px 0', 
-            opacity: 0.9, 
             maxWidth: '600px', 
             marginLeft: 'auto', 
             marginRight: 'auto', 
             lineHeight: '1.6',
-            textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+            textShadow: '1px 1px 4px rgba(0,0,0,0.5)'
           }}>
             {hp.heroDescription}
           </p>
@@ -118,8 +149,18 @@ export default function HomePage() {
                 padding: '30px',
                 background: '#f9f9f9',
                 borderRadius: '8px',
-                border: `3px solid ${primaryColor}`
-              }}>
+                border: `3px solid ${primaryColor}`,
+                transition: 'transform 0.3s, box-shadow 0.3s'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)'
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+              >
                 <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
                   {stat.value}
                 </h3>
@@ -196,8 +237,12 @@ export default function HomePage() {
                       fontWeight: 'bold',
                       textDecoration: 'none',
                       display: 'block',
-                      textAlign: 'center'
-                    }}>
+                      textAlign: 'center',
+                      transition: 'background 0.3s'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = secondaryColor}
+                    onMouseOut={(e) => e.target.style.background = primaryColor}
+                    >
                       Learn More
                     </a>
                   </div>
@@ -220,8 +265,18 @@ export default function HomePage() {
                 background: '#f9f9f9',
                 padding: '30px',
                 borderRadius: '12px',
-                border: `2px solid ${primaryColor}`
-              }}>
+                border: `2px solid ${primaryColor}`,
+                transition: 'transform 0.3s, box-shadow 0.3s'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)'
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+              >
                 <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
                   {'⭐'.repeat(review.rating)}
                 </div>
@@ -266,8 +321,12 @@ export default function HomePage() {
             fontWeight: 'bold',
             fontSize: '18px',
             display: 'inline-block',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-          }}>
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            transition: 'transform 0.3s'
+          }}
+          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
+          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
             {hp.ctaButtonText || 'Browse All Journeys'}
           </a>
         </div>

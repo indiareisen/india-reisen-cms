@@ -20,6 +20,7 @@ export default function WebsiteSettings() {
       heroDescription: 'Discover luxury bespoke journeys into the rich heritage and timeless charm of India.',
       heroCTA: 'Explore Journeys',
       heroImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop',
+      heroOverlayOpacity: 0.4,
       showStats: true,
       stats: [
         { label: 'Journeys Offered', value: '10+' },
@@ -35,8 +36,8 @@ export default function WebsiteSettings() {
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
-  const [uploading, setUploading] = useState(false)
   const [uploadMessage, setUploadMessage] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     fetchSettings()
@@ -183,7 +184,6 @@ export default function WebsiteSettings() {
         </div>
       )}
 
-      {/* Tab Navigation */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '0', borderBottom: '2px solid #ddd', overflowX: 'auto' }}>
         <button style={tabStyle('basic')} onClick={() => setActiveTab('basic')}>📋 Basic Info</button>
         <button style={tabStyle('contact')} onClick={() => setActiveTab('contact')}>📞 Contact</button>
@@ -194,132 +194,69 @@ export default function WebsiteSettings() {
 
       <form onSubmit={handleSave} style={{ background: 'white', padding: '30px', borderRadius: '0 0 8px 8px' }}>
         
-        {/* Basic Info Tab */}
         {activeTab === 'basic' && (
           <div>
             <h2>Basic Information</h2>
-            
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Site Name</label>
-                <input 
-                  type="text" 
-                  value={settings.siteName} 
-                  onChange={(e) => setSettings({...settings, siteName: e.target.value})}
-                  style={inputStyle}
-                />
+                <input type="text" value={settings.siteName} onChange={(e) => setSettings({...settings, siteName: e.target.value})} style={inputStyle} />
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Tagline</label>
-                <input 
-                  type="text" 
-                  value={settings.tagline} 
-                  onChange={(e) => setSettings({...settings, tagline: e.target.value})}
-                  style={inputStyle}
-                />
+                <input type="text" value={settings.tagline} onChange={(e) => setSettings({...settings, tagline: e.target.value})} style={inputStyle} />
               </div>
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Description</label>
-              <textarea 
-                value={settings.description} 
-                onChange={(e) => setSettings({...settings, description: e.target.value})}
-                style={{ ...inputStyle, minHeight: '100px' }}
-              />
+              <textarea value={settings.description} onChange={(e) => setSettings({...settings, description: e.target.value})} style={{ ...inputStyle, minHeight: '100px' }} />
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>About Text</label>
-              <textarea 
-                value={settings.aboutText} 
-                onChange={(e) => setSettings({...settings, aboutText: e.target.value})}
-                style={{ ...inputStyle, minHeight: '120px' }}
-              />
+              <textarea value={settings.aboutText} onChange={(e) => setSettings({...settings, aboutText: e.target.value})} style={{ ...inputStyle, minHeight: '120px' }} />
             </div>
           </div>
         )}
 
-        {/* Contact Tab */}
         {activeTab === 'contact' && (
           <div>
             <h2>Contact Information</h2>
-            
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Email</label>
-                <input 
-                  type="email" 
-                  value={settings.email} 
-                  onChange={(e) => setSettings({...settings, email: e.target.value})}
-                  style={inputStyle}
-                />
+                <input type="email" value={settings.email} onChange={(e) => setSettings({...settings, email: e.target.value})} style={inputStyle} />
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Phone</label>
-                <input 
-                  type="tel" 
-                  value={settings.phone} 
-                  onChange={(e) => setSettings({...settings, phone: e.target.value})}
-                  style={inputStyle}
-                />
+                <input type="tel" value={settings.phone} onChange={(e) => setSettings({...settings, phone: e.target.value})} style={inputStyle} />
               </div>
             </div>
-
             <div>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Address</label>
-              <input 
-                type="text" 
-                value={settings.address} 
-                onChange={(e) => setSettings({...settings, address: e.target.value})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.address} onChange={(e) => setSettings({...settings, address: e.target.value})} style={inputStyle} />
             </div>
           </div>
         )}
 
-        {/* Colors Tab */}
         {activeTab === 'colors' && (
           <div>
             <h2>Brand Colors</h2>
-            
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Primary Color</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input 
-                    type="color" 
-                    value={settings.primaryColor} 
-                    onChange={(e) => setSettings({...settings, primaryColor: e.target.value})}
-                    style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
-                  />
-                  <input 
-                    type="text" 
-                    value={settings.primaryColor} 
-                    onChange={(e) => setSettings({...settings, primaryColor: e.target.value})}
-                    style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
+                  <input type="color" value={settings.primaryColor} onChange={(e) => setSettings({...settings, primaryColor: e.target.value})} style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }} />
+                  <input type="text" value={settings.primaryColor} onChange={(e) => setSettings({...settings, primaryColor: e.target.value})} style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
                 </div>
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Secondary Color</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input 
-                    type="color" 
-                    value={settings.secondaryColor} 
-                    onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})}
-                    style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
-                  />
-                  <input 
-                    type="text" 
-                    value={settings.secondaryColor} 
-                    onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})}
-                    style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
+                  <input type="color" value={settings.secondaryColor} onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})} style={{ width: '60px', height: '40px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }} />
+                  <input type="text" value={settings.secondaryColor} onChange={(e) => setSettings({...settings, secondaryColor: e.target.value})} style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
                 </div>
               </div>
             </div>
-
             <div style={{ marginTop: '20px', padding: '20px', background: '#f9f9f9', borderRadius: '4px' }}>
               <h3>Preview</h3>
               <div style={{ display: 'flex', gap: '20px' }}>
@@ -336,50 +273,29 @@ export default function WebsiteSettings() {
           </div>
         )}
 
-        {/* HomePage Tab */}
         {activeTab === 'homepage' && (
           <div>
             <h2>Home Page Content</h2>
-
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Hero Section</h3>
             
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Title</label>
-              <input 
-                type="text" 
-                value={settings.homePage.heroTitle} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroTitle: e.target.value}})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.homePage.heroTitle} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroTitle: e.target.value}})} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Subtitle</label>
-              <input 
-                type="text" 
-                value={settings.homePage.heroSubtitle} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroSubtitle: e.target.value}})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.homePage.heroSubtitle} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroSubtitle: e.target.value}})} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Description</label>
-              <textarea 
-                value={settings.homePage.heroDescription} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroDescription: e.target.value}})}
-                style={{ ...inputStyle, minHeight: '80px' }}
-              />
+              <textarea value={settings.homePage.heroDescription} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroDescription: e.target.value}})} style={{ ...inputStyle, minHeight: '80px' }} />
             </div>
 
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Button Text</label>
-              <input 
-                type="text" 
-                value={settings.homePage.heroCTA} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroCTA: e.target.value}})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.homePage.heroCTA} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroCTA: e.target.value}})} style={inputStyle} />
             </div>
 
             {/* Hero Image Section */}
@@ -408,106 +324,78 @@ export default function WebsiteSettings() {
 
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>Upload New Image</label>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                  style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
-                />
+                <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
                 <small style={{ color: '#666' }}>Max 5MB. Recommended: 1920x600px or higher</small>
               </div>
 
               <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Or paste Image URL:</label>
+                <input type="url" value={settings.homePage.heroImage} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroImage: e.target.value}})} placeholder="https://example.com/image.jpg" style={inputStyle} />
+              </div>
+            </div>
+
+            {/* Transparency Control */}
+            <div style={{ marginBottom: '20px', border: '2px solid #D4A574', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
+              <h3 style={{ marginTop: '0' }}>✨ Hero Overlay Transparency</h3>
+              <p style={{ color: '#666', marginBottom: '15px' }}>Adjust how much the hero image shows through (0.1 = very transparent, 0.7 = dark overlay)</p>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                 <input 
-                  type="url" 
-                  value={settings.homePage.heroImage} 
-                  onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroImage: e.target.value}})}
-                  placeholder="https://example.com/image.jpg"
-                  style={inputStyle}
+                  type="range" 
+                  min="0.1" 
+                  max="0.7" 
+                  step="0.05"
+                  value={settings.homePage.heroOverlayOpacity || 0.4}
+                  onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroOverlayOpacity: parseFloat(e.target.value)}})}
+                  style={{ flex: 1, height: '8px', cursor: 'pointer' }}
                 />
+                <span style={{ fontWeight: 'bold', minWidth: '50px', background: '#fff', padding: '5px 10px', borderRadius: '4px', border: '1px solid #ddd' }}>
+                  {(settings.homePage.heroOverlayOpacity || 0.4).toFixed(2)}
+                </span>
               </div>
             </div>
 
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>About Section</h3>
-            
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>About Heading</label>
-              <input 
-                type="text" 
-                value={settings.homePage.aboutHeading || 'Why Choose India Reisen?'} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, aboutHeading: e.target.value}})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.homePage.aboutHeading || 'Why Choose India Reisen?'} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, aboutHeading: e.target.value}})} style={inputStyle} />
             </div>
 
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Statistics</h3>
-            
             <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '20px' }}>
               {settings.homePage.stats.map((stat, index) => (
                 <div key={index} style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Label {index + 1}</label>
-                    <input 
-                      type="text" 
-                      value={stat.label} 
-                      onChange={(e) => handleStatChange(index, 'label', e.target.value)}
-                      style={inputStyle}
-                    />
+                    <input type="text" value={stat.label} onChange={(e) => handleStatChange(index, 'label', e.target.value)} style={inputStyle} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Value {index + 1}</label>
-                    <input 
-                      type="text" 
-                      value={stat.value} 
-                      onChange={(e) => handleStatChange(index, 'value', e.target.value)}
-                      style={inputStyle}
-                    />
+                    <input type="text" value={stat.value} onChange={(e) => handleStatChange(index, 'value', e.target.value)} style={inputStyle} />
                   </div>
                 </div>
               ))}
             </div>
 
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>CTA Section</h3>
-            
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>CTA Heading</label>
-              <input 
-                type="text" 
-                value={settings.homePage.ctaHeading} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaHeading: e.target.value}})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.homePage.ctaHeading} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaHeading: e.target.value}})} style={inputStyle} />
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>CTA Description</label>
-              <textarea 
-                value={settings.homePage.ctaText} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaText: e.target.value}})}
-                style={{ ...inputStyle, minHeight: '80px' }}
-              />
+              <textarea value={settings.homePage.ctaText} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaText: e.target.value}})} style={{ ...inputStyle, minHeight: '80px' }} />
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>CTA Button Text</label>
-              <input 
-                type="text" 
-                value={settings.homePage.ctaButtonText} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaButtonText: e.target.value}})}
-                style={inputStyle}
-              />
+              <input type="text" value={settings.homePage.ctaButtonText} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaButtonText: e.target.value}})} style={inputStyle} />
             </div>
           </div>
         )}
 
-        {/* Social Media Tab */}
         {activeTab === 'social' && (
           <div>
             <h2>Social Media</h2>
             <p style={{ color: '#666', marginBottom: '20px' }}>Add or edit your social media handles.</p>
-
             <div style={{ display: 'grid', gap: '20px' }}>
               {settings.socialMedia && Object.entries(settings.socialMedia).map(([platform, data]) => (
                 <div key={platform} style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
@@ -516,36 +404,19 @@ export default function WebsiteSettings() {
                       {platform === 'whatsapp' ? 'WhatsApp' : platform.charAt(0).toUpperCase() + platform.slice(1)}
                     </h3>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={data.enabled} 
-                        onChange={() => toggleSocialMedia(platform)}
-                        style={{ width: '20px', height: '20px' }}
-                      />
+                      <input type="checkbox" checked={data.enabled} onChange={() => toggleSocialMedia(platform)} style={{ width: '20px', height: '20px' }} />
                       <span>{data.enabled ? 'Enabled' : 'Disabled'}</span>
                     </label>
                   </div>
-
                   {data.enabled && (
                     <>
                       <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Handle</label>
-                        <input 
-                          type="text" 
-                          value={data.handle} 
-                          onChange={(e) => handleSocialMediaChange(platform, 'handle', e.target.value)}
-                          style={inputStyle}
-                        />
+                        <input type="text" value={data.handle} onChange={(e) => handleSocialMediaChange(platform, 'handle', e.target.value)} style={inputStyle} />
                       </div>
-
                       <div>
                         <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Full URL</label>
-                        <input 
-                          type="url" 
-                          value={data.url} 
-                          onChange={(e) => handleSocialMediaChange(platform, 'url', e.target.value)}
-                          style={inputStyle}
-                        />
+                        <input type="url" value={data.url} onChange={(e) => handleSocialMediaChange(platform, 'url', e.target.value)} style={inputStyle} />
                       </div>
                     </>
                   )}
@@ -555,12 +426,8 @@ export default function WebsiteSettings() {
           </div>
         )}
 
-        {/* Save Button */}
         <div style={{ marginTop: '30px' }}>
-          <button 
-            type="submit"
-            style={{ padding: '12px 30px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
-          >
+          <button type="submit" style={{ padding: '12px 30px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
             💾 Save All Settings
           </button>
         </div>
