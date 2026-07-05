@@ -5,6 +5,7 @@ import { db } from '../../services/firebaseService'
 export default function HomePage() {
   const [journeys, setJourneys] = useState([])
   const [reviews, setReviews] = useState([])
+  const [galleryMedia, setGalleryMedia] = useState([])
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -26,6 +27,10 @@ export default function HomePage() {
       const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3))
       const reviewsSnap = await getDocs(reviewsQuery)
       setReviews(reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+
+      const mediaQuery = query(collection(db, 'media'), orderBy('createdAt', 'desc'), limit(6))
+      const mediaSnap = await getDocs(mediaQuery)
+      setGalleryMedia(mediaSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -52,7 +57,6 @@ export default function HomePage() {
         justifyContent: 'center',
         overflow: 'hidden'
       }}>
-        {/* Background Image */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -66,18 +70,16 @@ export default function HomePage() {
           zIndex: 1
         }}></div>
 
-        {/* Overlay with improved transparency */}
         <div style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: `linear-gradient(135deg, rgba(209, 53, 111, 0.4), rgba(212, 165, 116, 0.4))`,
+          background: `linear-gradient(135deg, rgba(209, 53, 111, ${settings?.homePage?.heroOverlayOpacity || 0.4}), rgba(212, 165, 116, ${settings?.homePage?.heroOverlayOpacity || 0.4}))`,
           zIndex: 2
         }}></div>
 
-        {/* Content */}
         <div style={{ maxWidth: '800px', position: 'relative', zIndex: 3 }}>
           <h1 style={{ 
             fontSize: '56px', 
@@ -140,7 +142,6 @@ export default function HomePage() {
           {hp.aboutContent || settings?.aboutText}
         </p>
 
-        {/* Statistics */}
         {hp.showStats && hp.stats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', marginTop: '50px' }}>
             {hp.stats.map((stat, idx) => (
@@ -173,8 +174,67 @@ export default function HomePage() {
         )}
       </section>
 
+      {/* Media Gallery Section */}
+      {galleryMedia.length > 0 && (
+        <section style={{ background: '#f9f9f9', padding: '80px 20px' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
+              Gallery
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+              {galleryMedia.map(item => (
+                <div key={item.id} style={{
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  background: 'white',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.3s, box-shadow 0.3s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+                >
+                  <div style={{
+                    width: '100%',
+                    height: '200px',
+                    background: '#f0f0f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    {item.type === 'video' ? (
+                      <>
+                        <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', fontSize: '40px', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}>▶️</div>
+                      </>
+                    ) : (
+                      <img src={item.url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    )}
+                  </div>
+                  <div style={{ padding: '20px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', color: primaryColor }}>
+                      {item.title}
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#999' }}>
+                      {item.category}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Featured Journeys */}
-      <section style={{ background: '#f9f9f9', padding: '80px 20px' }}>
+      <section style={{ background: journeys.length > 0 && galleryMedia.length > 0 ? 'white' : '#f9f9f9', padding: '80px 20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
             Featured Journeys
@@ -237,12 +297,8 @@ export default function HomePage() {
                       fontWeight: 'bold',
                       textDecoration: 'none',
                       display: 'block',
-                      textAlign: 'center',
-                      transition: 'background 0.3s'
-                    }}
-                    onMouseOver={(e) => e.target.style.background = secondaryColor}
-                    onMouseOut={(e) => e.target.style.background = primaryColor}
-                    >
+                      textAlign: 'center'
+                    }}>
                       Learn More
                     </a>
                   </div>

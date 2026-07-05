@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, addDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore'
+import { collection, getDocs, addDoc, deleteDoc, doc, Timestamp, setDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 
 export default function MediaGallery() {
@@ -14,13 +14,26 @@ export default function MediaGallery() {
   const [categories, setCategories] = useState(['General', 'Hero Images', 'Blog Posts', 'Journeys', 'Team', 'Reviews'])
 
   useEffect(() => {
+    fetchSettings()
     fetchMedia()
   }, [])
+
+  const fetchSettings = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'settings'))
+      const settingsDoc = snap.docs.find(d => d.id === 'general')
+      if (settingsDoc?.data()?.mediaCategories) {
+        setCategories(settingsDoc.data().mediaCategories)
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error)
+    }
+  }
 
   const fetchMedia = async () => {
     try {
       const snap = await getDocs(collection(db, 'media'))
-      setMedia(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+      setMedia(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     } catch (error) {
       console.error('Error fetching media:', error)
     } finally {
@@ -105,11 +118,33 @@ export default function MediaGallery() {
     }
   }
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (newCategory && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory])
+      const updatedCategories = [...categories, newCategory]
+      setCategories(updatedCategories)
       setSelectedCategory(newCategory)
       setNewCategory('')
+      
+      // Save to database
+      try {
+        const settingsRef = doc(db, 'settings', 'general')
+        await setDoc(settingsRef, { mediaCategories: updatedCategories }, { merge: true })
+      } catch (error) {
+        console.error('Error saving categories:', error)
+      }
+    }
+  }
+
+  const handleDeleteCategory = async (catToDelete) => {
+    const updatedCategories = categories.filter(cat => cat !== catToDelete)
+    setCategories(updatedCategories)
+    
+    // Save to database
+    try {
+      const settingsRef = doc(db, 'settings', 'general')
+      await setDoc(settingsRef, { mediaCategories: updatedCategories }, { merge: true })
+    } catch (error) {
+      console.error('Error saving categories:', error)
     }
   }
 
@@ -256,21 +291,44 @@ export default function MediaGallery() {
           All ({media.length})
         </button>
         {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setFilterCategory(cat)}
-            style={{
-              padding: '8px 15px',
-              background: filterCategory === cat ? '#d1356f' : 'white',
-              color: filterCategory === cat ? 'white' : '#333',
-              border: `2px solid ${filterCategory === cat ? '#d1356f' : '#ddd'}`,
-              borderRadius: '20px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            {cat} ({media.filter(m => m.category === cat).length})
-          </button>
+          <div key={cat} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setFilterCategory(cat)}
+              style={{
+                padding: '8px 15px',
+                background: filterCategory === cat ? '#d1356f' : 'white',
+                color: filterCategory === cat ? 'white' : '#333',
+                border: `2px solid ${filterCategory === cat ? '#d1356f' : '#ddd'}`,
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {cat} ({media.filter(m => m.category === cat).length})
+            </button>
+            {cat !== 'General' && (
+              <button
+                onClick={() => handleDeleteCategory(cat)}
+                title="Delete category"
+                style={{
+                  position: 'absolute',
+                  top: '-8px',
+                  right: '-8px',
+                  width: '20px',
+                  height: '20px',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontSize: '12px'
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
         ))}
       </div>
 
