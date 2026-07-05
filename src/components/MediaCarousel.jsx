@@ -6,7 +6,7 @@ export default function MediaCarousel() {
   const [media, setMedia] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [isHovered, setIsHovered] = useState(false)
+  const [isEnlarged, setIsEnlarged] = useState(false)
 
   useEffect(() => {
     fetchMedia()
@@ -39,27 +39,32 @@ export default function MediaCarousel() {
 
   const current = media[currentIndex]
 
+  const containerStyle = {
+    position: 'relative',
+    width: '100%',
+    paddingBottom: '56.25%',
+    maxHeight: '280px',
+    background: '#f0f0f0',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    cursor: 'pointer'
+  }
+
   return (
     <>
-      {/* Small Carousel Container */}
+      {/* Small Carousel */}
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          position: 'relative',
-          width: '100%',
-          paddingBottom: '56.25%', // 16:9 aspect ratio
-          maxHeight: '280px',
-          background: '#f0f0f0',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          transform: isHovered ? 'scale(1.02)' : 'scale(1)'
+        style={containerStyle}
+        onMouseEnter={() => {
+          console.log('Mouse entered')
+          setIsEnlarged(true)
+        }}
+        onMouseLeave={() => {
+          console.log('Mouse left')
+          setIsEnlarged(false)
         }}
       >
-        {/* Media Container */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -92,12 +97,12 @@ export default function MediaCarousel() {
             right: 0,
             background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
             color: 'white',
-            padding: '20px 15px 15px 15px',
+            padding: '15px 10px 10px 10px',
             textAlign: 'center'
           }}>
-            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>
               {current.title}
-            </h4>
+            </p>
           </div>
 
           {/* Navigation Dots */}
@@ -107,7 +112,7 @@ export default function MediaCarousel() {
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
-            gap: '6px',
+            gap: '4px',
             zIndex: 10
           }}>
             {media.map((_, idx) => (
@@ -115,13 +120,12 @@ export default function MediaCarousel() {
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 style={{
-                  width: '8px',
-                  height: '8px',
+                  width: '6px',
+                  height: '6px',
                   borderRadius: '50%',
                   border: '1px solid white',
                   background: idx === currentIndex ? 'white' : 'rgba(255,255,255,0.3)',
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
                   padding: 0
                 }}
               />
@@ -133,23 +137,20 @@ export default function MediaCarousel() {
             onClick={() => setCurrentIndex((prev) => (prev - 1 + media.length) % media.length)}
             style={{
               position: 'absolute',
-              left: '10px',
+              left: '8px',
               top: '50%',
               transform: 'translateY(-50%)',
               background: 'rgba(0,0,0,0.4)',
               color: 'white',
               border: 'none',
-              width: '36px',
-              height: '36px',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
               cursor: 'pointer',
-              fontSize: '18px',
+              fontSize: '16px',
               fontWeight: 'bold',
-              transition: 'all 0.2s',
               zIndex: 10
             }}
-            onMouseOver={(e) => e.target.style.background = 'rgba(0,0,0,0.7)'}
-            onMouseOut={(e) => e.target.style.background = 'rgba(0,0,0,0.4)'}
           >
             ❮
           </button>
@@ -159,23 +160,20 @@ export default function MediaCarousel() {
             onClick={() => setCurrentIndex((prev) => (prev + 1) % media.length)}
             style={{
               position: 'absolute',
-              right: '10px',
+              right: '8px',
               top: '50%',
               transform: 'translateY(-50%)',
               background: 'rgba(0,0,0,0.4)',
               color: 'white',
               border: 'none',
-              width: '36px',
-              height: '36px',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
               cursor: 'pointer',
-              fontSize: '18px',
+              fontSize: '16px',
               fontWeight: 'bold',
-              transition: 'all 0.2s',
               zIndex: 10
             }}
-            onMouseOver={(e) => e.target.style.background = 'rgba(0,0,0,0.7)'}
-            onMouseOut={(e) => e.target.style.background = 'rgba(0,0,0,0.4)'}
           >
             ❯
           </button>
@@ -183,31 +181,30 @@ export default function MediaCarousel() {
           {/* Counter */}
           <div style={{
             position: 'absolute',
-            top: '10px',
-            right: '10px',
+            top: '8px',
+            right: '8px',
             background: 'rgba(0,0,0,0.6)',
             color: 'white',
-            padding: '6px 10px',
-            borderRadius: '15px',
-            fontSize: '11px',
+            padding: '4px 8px',
+            borderRadius: '12px',
+            fontSize: '10px',
             fontWeight: 'bold',
             zIndex: 10
           }}>
             {currentIndex + 1} / {media.length}
           </div>
 
-          {/* Hover Indicator */}
-          {!isHovered && (
+          {/* Hover Text */}
+          {!isEnlarged && (
             <div style={{
               position: 'absolute',
-              bottom: '10px',
+              bottom: '8px',
               left: '50%',
               transform: 'translateX(-50%)',
               color: 'white',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: 'bold',
-              animation: 'pulse 1.5s ease-in-out infinite',
-              zIndex: 10
+              textAlign: 'center'
             }}>
               🔍 Hover to enlarge
             </div>
@@ -215,25 +212,27 @@ export default function MediaCarousel() {
         </div>
       </div>
 
-      {/* Enlarged Modal */}
-      {isHovered && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px',
-          animation: 'fadeIn 0.3s ease'
-        }}>
+      {/* Enlarged Modal - Only shows on hover */}
+      {isEnlarged && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onMouseLeave={() => setIsEnlarged(false)}
+        >
           {/* Close Button */}
           <button
-            onClick={() => setIsHovered(false)}
+            onClick={() => setIsEnlarged(false)}
             style={{
               position: 'absolute',
               top: '20px',
@@ -241,17 +240,14 @@ export default function MediaCarousel() {
               background: 'rgba(255,255,255,0.2)',
               color: 'white',
               border: 'none',
-              width: '50px',
-              height: '50px',
+              width: '45px',
+              height: '45px',
               borderRadius: '50%',
               cursor: 'pointer',
-              fontSize: '28px',
+              fontSize: '24px',
               fontWeight: 'bold',
-              zIndex: 1001,
-              transition: 'all 0.3s'
+              zIndex: 10000
             }}
-            onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-            onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
           >
             ✕
           </button>
@@ -260,12 +256,11 @@ export default function MediaCarousel() {
           <div style={{
             position: 'relative',
             width: '90%',
-            maxWidth: '1000px',
+            maxWidth: '900px',
             aspectRatio: '16/9',
-            background: '#f0f0f0',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+            background: '#000',
+            borderRadius: '8px',
+            overflow: 'hidden'
           }}>
             {/* Media Display */}
             {current.type === 'video' ? (
@@ -284,97 +279,76 @@ export default function MediaCarousel() {
               />
             )}
 
-            {/* Large Title */}
+            {/* Title */}
             <div style={{
               position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
               color: 'white',
-              padding: '40px 30px 30px 30px',
+              padding: '30px 20px 20px 20px',
               textAlign: 'center'
             }}>
-              <h2 style={{ margin: '0 0 10px 0', fontSize: '28px', fontWeight: 'bold' }}>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold' }}>
                 {current.title}
               </h2>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>
-                {current.type === 'video' ? '🎬 Video' : '🖼️ Image'}
-              </p>
             </div>
 
-            {/* Previous Button - Large */}
+            {/* Previous Button */}
             <button
               onClick={() => setCurrentIndex((prev) => (prev - 1 + media.length) % media.length)}
               style={{
                 position: 'absolute',
-                left: '20px',
+                left: '15px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'rgba(0,0,0,0.5)',
                 color: 'white',
                 border: 'none',
-                width: '50px',
-                height: '50px',
+                width: '45px',
+                height: '45px',
                 borderRadius: '50%',
                 cursor: 'pointer',
-                fontSize: '24px',
+                fontSize: '20px',
                 fontWeight: 'bold',
-                transition: 'all 0.2s',
                 zIndex: 10
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = 'rgba(0,0,0,0.8)'
-                e.target.style.transform = 'translateY(-50%) scale(1.15)'
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = 'rgba(0,0,0,0.5)'
-                e.target.style.transform = 'translateY(-50%) scale(1)'
               }}
             >
               ❮
             </button>
 
-            {/* Next Button - Large */}
+            {/* Next Button */}
             <button
               onClick={() => setCurrentIndex((prev) => (prev + 1) % media.length)}
               style={{
                 position: 'absolute',
-                right: '20px',
+                right: '15px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'rgba(0,0,0,0.5)',
                 color: 'white',
                 border: 'none',
-                width: '50px',
-                height: '50px',
+                width: '45px',
+                height: '45px',
                 borderRadius: '50%',
                 cursor: 'pointer',
-                fontSize: '24px',
+                fontSize: '20px',
                 fontWeight: 'bold',
-                transition: 'all 0.2s',
                 zIndex: 10
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = 'rgba(0,0,0,0.8)'
-                e.target.style.transform = 'translateY(-50%) scale(1.15)'
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = 'rgba(0,0,0,0.5)'
-                e.target.style.transform = 'translateY(-50%) scale(1)'
               }}
             >
               ❯
             </button>
 
-            {/* Navigation Dots - Large */}
+            {/* Navigation Dots */}
             <div style={{
               position: 'absolute',
-              bottom: '80px',
+              bottom: '70px',
               left: '50%',
               transform: 'translateX(-50%)',
               display: 'flex',
-              gap: '10px',
+              gap: '8px',
               zIndex: 10
             }}>
               {media.map((_, idx) => (
@@ -382,29 +356,28 @@ export default function MediaCarousel() {
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
                   style={{
-                    width: '14px',
-                    height: '14px',
+                    width: '10px',
+                    height: '10px',
                     borderRadius: '50%',
                     border: '2px solid white',
-                    background: idx === currentIndex ? 'white' : 'rgba(255,255,255,0.4)',
+                    background: idx === currentIndex ? 'white' : 'rgba(255,255,255,0.3)',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
                     padding: 0
                   }}
                 />
               ))}
             </div>
 
-            {/* Counter - Large */}
+            {/* Counter */}
             <div style={{
               position: 'absolute',
-              top: '20px',
-              right: '20px',
+              top: '15px',
+              right: '15px',
               background: 'rgba(0,0,0,0.7)',
               color: 'white',
-              padding: '10px 16px',
-              borderRadius: '25px',
-              fontSize: '14px',
+              padding: '8px 12px',
+              borderRadius: '20px',
+              fontSize: '12px',
               fontWeight: 'bold',
               zIndex: 10
             }}>
@@ -413,19 +386,6 @@ export default function MediaCarousel() {
           </div>
         </div>
       )}
-
-      {/* CSS Animations */}
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 1; }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
     </>
   )
 }
