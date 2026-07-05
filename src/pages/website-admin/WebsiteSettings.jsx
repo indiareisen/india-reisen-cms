@@ -20,8 +20,6 @@ export default function WebsiteSettings() {
       heroDescription: 'Discover luxury bespoke journeys into the rich heritage and timeless charm of India.',
       heroCTA: 'Explore Journeys',
       heroImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop',
-      aboutHeading: 'Why Choose India Reisen?',
-      aboutContent: 'Every journey is more than just a trip—it\'s an immersive experience into the rich heritage and timeless charm of India. We curate personalized itineraries that connect you with authentic cultures, breathtaking landscapes, and unforgettable moments.',
       showStats: true,
       stats: [
         { label: 'Journeys Offered', value: '10+' },
@@ -38,6 +36,8 @@ export default function WebsiteSettings() {
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   useEffect(() => {
     fetchSettings()
@@ -71,6 +71,59 @@ export default function WebsiteSettings() {
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
       console.error('Error saving:', error)
+    }
+  }
+
+  const handleImageUpload = async (e, field) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploading(true)
+    setUploadProgress(0)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', 'india_reisen')
+      formData.append('cloud_name', 'dl1q4dw72')
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100
+          setUploadProgress(percentComplete)
+        }
+      })
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText)
+          if (field === 'hero') {
+            setSettings({
+              ...settings,
+              homePage: {
+                ...settings.homePage,
+                heroImage: response.secure_url
+              }
+            })
+          }
+          setUploading(false)
+          setUploadProgress(0)
+        }
+      })
+
+      xhr.addEventListener('error', () => {
+        console.error('Upload failed')
+        setUploading(false)
+        setUploadProgress(0)
+      })
+
+      xhr.open('POST', 'https://api.cloudinary.com/v1_1/dl1q4dw72/image/upload')
+      xhr.send(formData)
+    } catch (error) {
+      console.error('Error:', error)
+      setUploading(false)
     }
   }
 
@@ -342,15 +395,54 @@ export default function WebsiteSettings() {
               />
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Image URL</label>
-              <input 
-                type="url" 
-                value={settings.homePage.heroImage} 
-                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroImage: e.target.value}})}
-                style={inputStyle}
-              />
-              <small style={{ color: '#666' }}>Use a high-quality image URL (1200x600px recommended)</small>
+            {/* Hero Image Upload */}
+            <div style={{ marginBottom: '20px', border: '2px dashed #ddd', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>📸 Hero Image</label>
+              
+              {settings.homePage.heroImage && (
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Current Image:</p>
+                  <img src={settings.homePage.heroImage} alt="Hero" style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '6px' }} />
+                </div>
+              )}
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Upload New Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'hero')}
+                  disabled={uploading}
+                  style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                />
+                {uploading && (
+                  <div style={{ marginTop: '10px' }}>
+                    <div style={{ background: '#e0e0e0', borderRadius: '4px', height: '20px', overflow: 'hidden' }}>
+                      <div style={{
+                        background: '#d1356f',
+                        height: '100%',
+                        width: `${uploadProgress}%`,
+                        transition: 'width 0.3s'
+                      }}></div>
+                    </div>
+                    <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#666' }}>
+                      Uploading... {Math.round(uploadProgress)}%
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Or Paste Image URL</label>
+                <input 
+                  type="url" 
+                  value={settings.homePage.heroImage} 
+                  onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroImage: e.target.value}})}
+                  placeholder="https://example.com/image.jpg"
+                  style={inputStyle}
+                />
+                <small style={{ color: '#666' }}>Recommended: 1920x600px or higher</small>
+              </div>
             </div>
 
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>About Section</h3>

@@ -36,23 +36,42 @@ export default function HomePage() {
   const hp = settings?.homePage || {}
   const primaryColor = settings?.primaryColor || '#d1356f'
   const secondaryColor = settings?.secondaryColor || '#D4A574'
+  const heroImage = hp.heroImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop'
 
   return (
     <div>
       {/* Hero Section */}
       <section style={{
-        background: `linear-gradient(135deg, ${primaryColor}ee 0%, ${secondaryColor}ee 100%), url('${hp.heroImage}')`,
+        backgroundImage: `linear-gradient(135deg, rgba(209, 53, 111, 0.7), rgba(212, 165, 116, 0.7)), url('${heroImage}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
         color: 'white',
-        padding: '120px 20px',
+        padding: '140px 20px',
         textAlign: 'center',
-        position: 'relative'
+        position: 'relative',
+        minHeight: '600px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <h1 style={{ fontSize: '56px', margin: '0 0 10px 0', fontWeight: 'bold' }}>{hp.heroTitle}</h1>
-          <p style={{ fontSize: '28px', margin: '0 0 20px 0', opacity: 0.95 }}>{hp.heroSubtitle}</p>
-          <p style={{ fontSize: '18px', margin: '0 0 30px 0', opacity: 0.9, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
+        <div style={{ maxWidth: '800px', position: 'relative', zIndex: 2 }}>
+          <h1 style={{ fontSize: '56px', margin: '0 0 10px 0', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+            {hp.heroTitle}
+          </h1>
+          <p style={{ fontSize: '28px', margin: '0 0 20px 0', opacity: 0.95, textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
+            {hp.heroSubtitle}
+          </p>
+          <p style={{ 
+            fontSize: '18px', 
+            margin: '0 0 30px 0', 
+            opacity: 0.9, 
+            maxWidth: '600px', 
+            marginLeft: 'auto', 
+            marginRight: 'auto', 
+            lineHeight: '1.6',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+          }}>
             {hp.heroDescription}
           </p>
           <a href="/journeys" style={{
@@ -65,10 +84,16 @@ export default function HomePage() {
             fontSize: '18px',
             display: 'inline-block',
             boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-            transition: 'transform 0.3s'
+            transition: 'transform 0.3s, box-shadow 0.3s'
           }}
-          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
-          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          onMouseOver={(e) => {
+            e.target.style.transform = 'translateY(-3px)'
+            e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'
+          }}
+          onMouseOut={(e) => {
+            e.target.style.transform = 'translateY(0)'
+            e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'
+          }}
           >
             {hp.heroCTA || 'Explore Journeys'} →
           </a>
