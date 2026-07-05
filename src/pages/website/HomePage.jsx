@@ -4,6 +4,7 @@ import { db } from '../../services/firebaseService'
 
 export default function HomePage() {
   const [journeys, setJourneys] = useState([])
+  const [reviews, setReviews] = useState([])
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -17,9 +18,14 @@ export default function HomePage() {
       if (settingsDoc.exists()) {
         setSettings(settingsDoc.data())
       }
-      const q = query(collection(db, 'journeys'), orderBy('createdAt', 'desc'), limit(3))
-      const snap = await getDocs(q)
-      setJourneys(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+
+      const journeysQuery = query(collection(db, 'journeys'), orderBy('createdAt', 'desc'), limit(3))
+      const journeysSnap = await getDocs(journeysQuery)
+      setJourneys(journeysSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+
+      const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3))
+      const reviewsSnap = await getDocs(reviewsQuery)
+      setReviews(reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -27,46 +33,112 @@ export default function HomePage() {
     }
   }
 
-  const brandColors = settings ? { primary: settings.primaryColor, secondary: settings.secondaryColor } : { primary: '#d1356f', secondary: '#D4A574' }
+  const hp = settings?.homePage || {}
+  const primaryColor = settings?.primaryColor || '#d1356f'
+  const secondaryColor = settings?.secondaryColor || '#D4A574'
 
   return (
     <div>
-      {/* Hero Banner */}
-      <div style={{
-        background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+      {/* Hero Section */}
+      <section style={{
+        background: `linear-gradient(135deg, ${primaryColor}ee 0%, ${secondaryColor}ee 100%), url('${hp.heroImage}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         color: 'white',
-        padding: '80px 20px',
+        padding: '120px 20px',
         textAlign: 'center',
-        marginBottom: '50px'
+        position: 'relative'
       }}>
-        <h1 style={{ fontSize: '48px', margin: '0 0 10px 0' }}>Welcome to India Reisen</h1>
-        <p style={{ fontSize: '24px', margin: '0 0 20px 0' }}>{settings?.tagline || 'Explore • Experience • Enchant'}</p>
-        <p style={{ fontSize: '16px', maxWidth: '600px', margin: '0 auto' }}>{settings?.description || 'Discover luxury bespoke journeys into authentic India'}</p>
-      </div>
+        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
+          <h1 style={{ fontSize: '56px', margin: '0 0 10px 0', fontWeight: 'bold' }}>{hp.heroTitle}</h1>
+          <p style={{ fontSize: '28px', margin: '0 0 20px 0', opacity: 0.95 }}>{hp.heroSubtitle}</p>
+          <p style={{ fontSize: '18px', margin: '0 0 30px 0', opacity: 0.9, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.6' }}>
+            {hp.heroDescription}
+          </p>
+          <a href="/journeys" style={{
+            background: 'white',
+            color: primaryColor,
+            padding: '15px 40px',
+            borderRadius: '50px',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: '18px',
+            display: 'inline-block',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            transition: 'transform 0.3s'
+          }}
+          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
+          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
+            {hp.heroCTA || 'Explore Journeys'} →
+          </a>
+        </div>
+      </section>
 
       {/* About Section */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', marginBottom: '50px' }}>
-        <h2 style={{ fontSize: '32px', marginBottom: '20px', color: brandColors.primary }}>About India Reisen</h2>
-        <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666', maxWidth: '800px' }}>
-          Every journey is more than just a trip—it's an immersive experience into the rich heritage and timeless charm of India. We curate personalized itineraries that connect you with authentic cultures, breathtaking landscapes, and unforgettable moments.
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 20px' }}>
+        <h2 style={{ fontSize: '36px', marginBottom: '20px', color: primaryColor, textAlign: 'center' }}>
+          {hp.aboutHeading || 'Why Choose India Reisen?'}
+        </h2>
+        <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#666', maxWidth: '800px', margin: '0 auto 40px auto', textAlign: 'center' }}>
+          {hp.aboutContent || settings?.aboutText}
         </p>
-      </div>
+
+        {/* Statistics */}
+        {hp.showStats && hp.stats && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', marginTop: '50px' }}>
+            {hp.stats.map((stat, idx) => (
+              <div key={idx} style={{
+                textAlign: 'center',
+                padding: '30px',
+                background: '#f9f9f9',
+                borderRadius: '8px',
+                border: `3px solid ${primaryColor}`
+              }}>
+                <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
+                  {stat.value}
+                </h3>
+                <p style={{ fontSize: '16px', color: '#666', margin: 0, fontWeight: 'bold' }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Featured Journeys */}
-      <div style={{ background: '#f9f9f9', padding: '50px 20px' }}>
+      <section style={{ background: '#f9f9f9', padding: '80px 20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '32px', marginBottom: '30px', color: brandColors.primary }}>Featured Journeys</h2>
+          <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
+            Featured Journeys
+          </h2>
           {loading ? (
-            <div>Loading journeys...</div>
+            <div>Loading...</div>
           ) : journeys.length === 0 ? (
-            <div>No journeys available yet.</div>
+            <p>No journeys yet.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px' }}>
               {journeys.map(journey => (
-                <div key={journey.id} style={{ background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div key={journey.id} style={{
+                  background: 'white',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.3s, box-shadow 0.3s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+                >
                   <div style={{
-                    background: `linear-gradient(135deg, ${brandColors.primary}, ${brandColors.secondary})`,
-                    height: '200px',
+                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    height: '220px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -75,44 +147,106 @@ export default function HomePage() {
                   }}>
                     Journey Image
                   </div>
-                  <div style={{ padding: '20px' }}>
-                    <h3 style={{ margin: '0 0 10px 0', color: brandColors.primary }}>{journey.title}</h3>
-                    <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>{journey.description}</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '15px', fontSize: '14px' }}>
-                      <div><strong>Duration:</strong> {journey.duration} days</div>
-                      <div><strong>Difficulty:</strong> {journey.difficulty}</div>
-                      <div><strong>Price:</strong> ${journey.price}</div>
-                      <div><strong>Destination:</strong> {journey.destination}</div>
+                  <div style={{ padding: '25px' }}>
+                    <h3 style={{ margin: '0 0 10px 0', color: primaryColor, fontSize: '20px' }}>
+                      {journey.title}
+                    </h3>
+                    <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px', lineHeight: '1.5' }}>
+                      {journey.description}
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '20px' }}>
+                      <div>📍 {journey.destination}</div>
+                      <div>⏱️ {journey.duration} days</div>
+                      <div>📈 {journey.difficulty}</div>
+                      <div>💰 ${journey.price}</div>
                     </div>
+                    <a href="/journeys" style={{
+                      width: '100%',
+                      padding: '10px',
+                      background: primaryColor,
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      textDecoration: 'none',
+                      display: 'block',
+                      textAlign: 'center'
+                    }}>
+                      Learn More
+                    </a>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </section>
+
+      {/* Testimonials */}
+      {reviews.length > 0 && (
+        <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 20px' }}>
+          <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
+            What Our Travelers Say
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+            {reviews.slice(0, 3).map(review => (
+              <div key={review.id} style={{
+                background: '#f9f9f9',
+                padding: '30px',
+                borderRadius: '12px',
+                border: `2px solid ${primaryColor}`
+              }}>
+                <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
+                  {'⭐'.repeat(review.rating)}
+                </div>
+                <p style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 10px 0' }}>
+                  {review.title}
+                </p>
+                <p style={{ color: '#666', margin: '0 0 15px 0', lineHeight: '1.6' }}>
+                  "{review.content}"
+                </p>
+                <p style={{ fontWeight: 'bold', margin: '0 0 5px 0' }}>
+                  {review.name}
+                </p>
+                <p style={{ color: '#999', margin: 0, fontSize: '14px' }}>
+                  {review.country} • {review.journey}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
-      <div style={{
-        background: brandColors.primary,
+      <section style={{
+        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
         color: 'white',
-        padding: '50px 20px',
-        textAlign: 'center',
-        margin: '50px 0 0 0'
+        padding: '80px 20px',
+        textAlign: 'center'
       }}>
-        <h2 style={{ fontSize: '32px', margin: '0 0 20px 0' }}>Ready to Explore India?</h2>
-        <a href="/journeys" style={{
-          background: 'white',
-          color: brandColors.primary,
-          padding: '12px 30px',
-          borderRadius: '4px',
-          textDecoration: 'none',
-          fontWeight: 'bold',
-          display: 'inline-block'
-        }}>
-          Browse All Journeys
-        </a>
-      </div>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '36px', margin: '0 0 20px 0' }}>
+            {hp.ctaHeading || 'Ready to Explore India?'}
+          </h2>
+          <p style={{ fontSize: '16px', margin: '0 0 30px 0', lineHeight: '1.6' }}>
+            {hp.ctaText || 'Start your journey with us today.'}
+          </p>
+          <a href="/journeys" style={{
+            background: 'white',
+            color: primaryColor,
+            padding: '15px 40px',
+            borderRadius: '50px',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: '18px',
+            display: 'inline-block',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+          }}>
+            {hp.ctaButtonText || 'Browse All Journeys'}
+          </a>
+        </div>
+      </section>
     </div>
   )
 }

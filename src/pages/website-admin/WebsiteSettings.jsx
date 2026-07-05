@@ -13,13 +13,26 @@ export default function WebsiteSettings() {
     primaryColor: '#d1356f',
     secondaryColor: '#D4A574',
     aboutText: 'Welcome to India Reisen',
-    socialMedia: {
-      facebook: { handle: 'indiareisenofficial', url: 'https://facebook.com/indiareisenofficial', enabled: true },
-      instagram: { handle: '@indiareisen', url: 'https://instagram.com/indiareisen', enabled: true },
-      twitter: { handle: '@IndiaReisen', url: 'https://twitter.com/IndiaReisen', enabled: true },
-      youtube: { handle: '@indiareisen', url: 'https://youtube.com/@indiareisen', enabled: true },
-      linkedin: { handle: 'india-reisen', url: 'https://linkedin.com/company/india-reisen', enabled: false },
-      whatsapp: { handle: '+919810827785', url: 'https://wa.me/919810827785', enabled: true }
+    socialMedia: {},
+    homePage: {
+      heroTitle: 'Welcome to India Reisen',
+      heroSubtitle: 'Explore Experience Enchant',
+      heroDescription: 'Discover luxury bespoke journeys into the rich heritage and timeless charm of India.',
+      heroCTA: 'Explore Journeys',
+      heroImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop',
+      aboutHeading: 'Why Choose India Reisen?',
+      aboutContent: 'Every journey is more than just a trip—it\'s an immersive experience into the rich heritage and timeless charm of India. We curate personalized itineraries that connect you with authentic cultures, breathtaking landscapes, and unforgettable moments.',
+      showStats: true,
+      stats: [
+        { label: 'Journeys Offered', value: '10+' },
+        { label: 'Travelers Served', value: '200+' },
+        { label: 'Destinations', value: '15+' },
+        { label: 'Local Partners', value: '50+' }
+      ],
+      showTestimonials: true,
+      ctaHeading: 'Ready to Explore India?',
+      ctaText: 'Start your journey with us today. Personalized itineraries tailored to your dreams.',
+      ctaButtonText: 'Browse All Journeys'
     }
   })
   const [loading, setLoading] = useState(true)
@@ -87,6 +100,18 @@ export default function WebsiteSettings() {
     })
   }
 
+  const handleStatChange = (index, field, value) => {
+    const newStats = [...settings.homePage.stats]
+    newStats[index] = { ...newStats[index], [field]: value }
+    setSettings({
+      ...settings,
+      homePage: {
+        ...settings.homePage,
+        stats: newStats
+      }
+    })
+  }
+
   if (loading) return <div>Loading...</div>
 
   const tabStyle = (tab) => ({
@@ -110,7 +135,7 @@ export default function WebsiteSettings() {
   return (
     <div>
       <h1>Website Settings</h1>
-      <p>Configure your website branding, contact information, and social media</p>
+      <p>Configure your website branding, homepage content, and social media</p>
 
       {saved && (
         <div style={{ background: '#d4edda', color: '#155724', padding: '15px', borderRadius: '4px', marginBottom: '20px', fontWeight: 'bold' }}>
@@ -119,10 +144,11 @@ export default function WebsiteSettings() {
       )}
 
       {/* Tab Navigation */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '0', borderBottom: '2px solid #ddd' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '0', borderBottom: '2px solid #ddd', overflowX: 'auto' }}>
         <button style={tabStyle('basic')} onClick={() => setActiveTab('basic')}>📋 Basic Info</button>
         <button style={tabStyle('contact')} onClick={() => setActiveTab('contact')}>📞 Contact</button>
         <button style={tabStyle('colors')} onClick={() => setActiveTab('colors')}>🎨 Colors</button>
+        <button style={tabStyle('homepage')} onClick={() => setActiveTab('homepage')}>🏠 Home Page</button>
         <button style={tabStyle('social')} onClick={() => setActiveTab('social')}>📱 Social Media</button>
       </div>
 
@@ -270,6 +296,158 @@ export default function WebsiteSettings() {
           </div>
         )}
 
+        {/* HomePage Tab */}
+        {activeTab === 'homepage' && (
+          <div>
+            <h2>Home Page Content</h2>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Hero Section</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Title</label>
+              <input 
+                type="text" 
+                value={settings.homePage.heroTitle} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroTitle: e.target.value}})}
+                style={inputStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Subtitle</label>
+              <input 
+                type="text" 
+                value={settings.homePage.heroSubtitle} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroSubtitle: e.target.value}})}
+                style={inputStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Description</label>
+              <textarea 
+                value={settings.homePage.heroDescription} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroDescription: e.target.value}})}
+                style={{ ...inputStyle, minHeight: '80px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Button Text</label>
+              <input 
+                type="text" 
+                value={settings.homePage.heroCTA} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroCTA: e.target.value}})}
+                style={inputStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hero Image URL</label>
+              <input 
+                type="url" 
+                value={settings.homePage.heroImage} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, heroImage: e.target.value}})}
+                style={inputStyle}
+              />
+              <small style={{ color: '#666' }}>Use a high-quality image URL (1200x600px recommended)</small>
+            </div>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>About Section</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>About Heading</label>
+              <input 
+                type="text" 
+                value={settings.homePage.aboutHeading} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, aboutHeading: e.target.value}})}
+                style={inputStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>About Content</label>
+              <textarea 
+                value={settings.homePage.aboutContent} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, aboutContent: e.target.value}})}
+                style={{ ...inputStyle, minHeight: '100px' }}
+              />
+            </div>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Statistics Section</h3>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={settings.homePage.showStats} 
+                  onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, showStats: e.target.checked}})}
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <span style={{ fontWeight: 'bold' }}>Show Statistics</span>
+              </label>
+            </div>
+
+            {settings.homePage.showStats && (
+              <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '20px' }}>
+                {settings.homePage.stats.map((stat, index) => (
+                  <div key={index} style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Label {index + 1}</label>
+                      <input 
+                        type="text" 
+                        value={stat.label} 
+                        onChange={(e) => handleStatChange(index, 'label', e.target.value)}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Value {index + 1}</label>
+                      <input 
+                        type="text" 
+                        value={stat.value} 
+                        onChange={(e) => handleStatChange(index, 'value', e.target.value)}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>CTA Section</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>CTA Heading</label>
+              <input 
+                type="text" 
+                value={settings.homePage.ctaHeading} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaHeading: e.target.value}})}
+                style={inputStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>CTA Description</label>
+              <textarea 
+                value={settings.homePage.ctaText} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaText: e.target.value}})}
+                style={{ ...inputStyle, minHeight: '80px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>CTA Button Text</label>
+              <input 
+                type="text" 
+                value={settings.homePage.ctaButtonText} 
+                onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, ctaButtonText: e.target.value}})}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Social Media Tab */}
         {activeTab === 'social' && (
           <div>
@@ -302,7 +480,6 @@ export default function WebsiteSettings() {
                           type="text" 
                           value={data.handle} 
                           onChange={(e) => handleSocialMediaChange(platform, 'handle', e.target.value)}
-                          placeholder={`e.g., @${platform === 'facebook' ? 'yourpage' : platform === 'whatsapp' ? '+91987654321' : 'yourhandle'}`}
                           style={inputStyle}
                         />
                       </div>
@@ -320,12 +497,6 @@ export default function WebsiteSettings() {
                   )}
                 </div>
               ))}
-            </div>
-
-            <div style={{ marginTop: '20px', padding: '15px', background: '#e7f3ff', borderRadius: '4px' }}>
-              <p style={{ margin: 0, color: '#0066cc' }}>
-                💡 Tip: Toggle platforms on/off to show/hide them on your website footer and contact page.
-              </p>
             </div>
           </div>
         )}
