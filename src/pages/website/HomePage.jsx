@@ -140,12 +140,8 @@ export default function HomePage() {
                 padding: '30px',
                 background: '#f9f9f9',
                 borderRadius: '8px',
-                border: `3px solid ${primaryColor}`,
-                transition: 'transform 0.3s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              >
+                border: `3px solid ${primaryColor}`
+              }}>
                 <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
                   {stat.value}
                 </h3>
@@ -158,17 +154,17 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Media Carousel Section - INCREASED SIZE */}
-      <section style={{ background: 'white', padding: '100px 20px' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      {/* Media Carousel Section - SMALL WITH HOVER ENLARGE */}
+      <section style={{ background: 'white', padding: '60px 20px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <h2 style={{ 
-            fontSize: '36px', 
-            marginBottom: '40px', 
+            fontSize: '28px', 
+            marginBottom: '30px', 
             color: primaryColor, 
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            ✨ Gallery Showcase
+            📸 Gallery
           </h2>
           <MediaCarousel />
         </div>
@@ -255,12 +251,8 @@ export default function HomePage() {
                 background: '#f9f9f9',
                 padding: '30px',
                 borderRadius: '12px',
-                border: `2px solid ${primaryColor}`,
-                transition: 'transform 0.3s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              >
+                border: `2px solid ${primaryColor}`
+              }}>
                 <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
                   {'⭐'.repeat(review.rating)}
                 </div>
