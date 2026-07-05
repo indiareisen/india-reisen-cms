@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, limit, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
+import MediaCarousel from '../../components/MediaCarousel'
 
 export default function HomePage() {
   const [journeys, setJourneys] = useState([])
   const [reviews, setReviews] = useState([])
-  const [galleryMedia, setGalleryMedia] = useState([])
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -27,10 +27,6 @@ export default function HomePage() {
       const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3))
       const reviewsSnap = await getDocs(reviewsQuery)
       setReviews(reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
-
-      const mediaQuery = query(collection(db, 'media'), orderBy('createdAt', 'desc'), limit(6))
-      const mediaSnap = await getDocs(mediaQuery)
-      setGalleryMedia(mediaSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -117,16 +113,10 @@ export default function HomePage() {
             fontSize: '18px',
             display: 'inline-block',
             boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-            transition: 'transform 0.3s, box-shadow 0.3s'
+            transition: 'transform 0.3s'
           }}
-          onMouseOver={(e) => {
-            e.target.style.transform = 'translateY(-3px)'
-            e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'
-          }}
-          onMouseOut={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'
-          }}
+          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
+          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
           >
             {hp.heroCTA || 'Explore Journeys'} →
           </a>
@@ -150,18 +140,8 @@ export default function HomePage() {
                 padding: '30px',
                 background: '#f9f9f9',
                 borderRadius: '8px',
-                border: `3px solid ${primaryColor}`,
-                transition: 'transform 0.3s, box-shadow 0.3s'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-5px)'
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-              >
+                border: `3px solid ${primaryColor}`
+              }}>
                 <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
                   {stat.value}
                 </h3>
@@ -174,67 +154,16 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Media Gallery Section */}
-      {galleryMedia.length > 0 && (
-        <section style={{ background: '#f9f9f9', padding: '80px 20px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
-              Gallery
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-              {galleryMedia.map(item => (
-                <div key={item.id} style={{
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  background: 'white',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.3s, box-shadow 0.3s'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)'
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
-                }}
-                >
-                  <div style={{
-                    width: '100%',
-                    height: '200px',
-                    background: '#f0f0f0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    {item.type === 'video' ? (
-                      <>
-                        <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', fontSize: '40px', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}>▶️</div>
-                      </>
-                    ) : (
-                      <img src={item.url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    )}
-                  </div>
-                  <div style={{ padding: '20px' }}>
-                    <h4 style={{ margin: '0 0 8px 0', color: primaryColor }}>
-                      {item.title}
-                    </h4>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#999' }}>
-                      {item.category}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Media Carousel */}
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 20px' }}>
+        <h2 style={{ fontSize: '36px', marginBottom: '30px', color: primaryColor, textAlign: 'center' }}>
+          Gallery
+        </h2>
+        <MediaCarousel />
+      </section>
 
       {/* Featured Journeys */}
-      <section style={{ background: journeys.length > 0 && galleryMedia.length > 0 ? 'white' : '#f9f9f9', padding: '80px 20px' }}>
+      <section style={{ background: '#f9f9f9', padding: '80px 20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
             Featured Journeys
@@ -250,26 +179,15 @@ export default function HomePage() {
                   background: 'white',
                   borderRadius: '12px',
                   overflow: 'hidden',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.3s, box-shadow 0.3s'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)'
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
-                }}
-                >
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}>
                   <div style={{
                     background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                     height: '220px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '14px'
+                    color: 'white'
                   }}>
                     Journey Image
                   </div>
@@ -321,18 +239,8 @@ export default function HomePage() {
                 background: '#f9f9f9',
                 padding: '30px',
                 borderRadius: '12px',
-                border: `2px solid ${primaryColor}`,
-                transition: 'transform 0.3s, box-shadow 0.3s'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-5px)'
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-              >
+                border: `2px solid ${primaryColor}`
+              }}>
                 <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
                   {'⭐'.repeat(review.rating)}
                 </div>
@@ -377,12 +285,8 @@ export default function HomePage() {
             fontWeight: 'bold',
             fontSize: '18px',
             display: 'inline-block',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-            transition: 'transform 0.3s'
-          }}
-          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
-          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
-          >
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+          }}>
             {hp.ctaButtonText || 'Browse All Journeys'}
           </a>
         </div>
