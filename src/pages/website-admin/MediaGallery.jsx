@@ -26,7 +26,7 @@ export default function MediaGallery() {
 
   const handleImageUpload = async (e) => {
     const files = e.target.files
-    if (!files) return
+    if (!files || files.length === 0) return
 
     for (let file of files) {
       await uploadSingleFile(file)
@@ -34,6 +34,11 @@ export default function MediaGallery() {
   }
 
   const uploadSingleFile = async (file) => {
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File is too large. Max 10MB.')
+      return
+    }
+
     setUploading(true)
     setUploadMessage('Uploading: ' + file.name)
 
@@ -41,30 +46,51 @@ export default function MediaGallery() {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('upload_preset', 'india_reisen')
+      formData.append('cloud_name', 'dl1q4dw72')
 
-      const response = await fetch('https://api.cloudinary.com/v1_1/dl1q4dw72/image/upload', {
+      console.log('Starting upload for:', file.name)
+
+      const response = await fetch('https://api.cloudinary.com/v1_1/dl1q4dw72/auto/upload', {
         method: 'POST',
         body: formData
       })
 
-      if (!response.ok) throw new Error('Upload failed')
+      console.log('Upload response status:', response.status)
+
+      if (!response.ok) {
+        const errorData = await response.text()
+        console.error('Upload error response:', errorData)
+        throw new Error('Upload failed with status ' + response.status)
+      }
 
       const data = await response.json()
+      console.log('Upload successful:', data)
+
+      // Save to Firebase
+      const fileType = file.type.startsWith('video') ? 'video' : 'image'
       
       await addDoc(collection(db, 'media'), {
         title: file.name.split('.')[0],
         url: data.secure_url,
-        type: file.type.startsWith('video') ? 'video' : 'image',
+        type: fileType,
         size: file.size,
         createdAt: Timestamp.now()
       })
+
+      console.log('Media saved to Firebase')
       
       fetchMedia()
       setUploadMessage('✓ ' + file.name + ' uploaded successfully!')
-      setTimeout(() => setUploadMessage(''), 2000)
+      
+      setTimeout(() => {
+        setUploadMessage('')
+      }, 2000)
     } catch (error) {
-      console.error('Error:', error)
-      setUploadMessage('✗ Upload failed')
+      console.error('Upload error:', error)
+      setUploadMessage('✗ Upload failed: ' + error.message)
+      setTimeout(() => {
+        setUploadMessage('')
+      }, 3000)
     } finally {
       setUploading(false)
     }
@@ -77,6 +103,7 @@ export default function MediaGallery() {
         fetchMedia()
       } catch (error) {
         console.error('Error deleting media:', error)
+        alert('Error deleting media')
       }
     }
   }
@@ -87,7 +114,7 @@ export default function MediaGallery() {
     videos: media.filter(m => m.type === 'video').length
   }
 
-  if (loading) return <div>Loading media gallery...</div>
+  if (loading) return <div style={{ padding: '20px' }}>Loading media gallery...</div>
 
   return (
     <div>
@@ -118,10 +145,11 @@ export default function MediaGallery() {
           <div style={{
             background: uploadMessage.includes('✓') ? '#d4edda' : '#f8d7da',
             color: uploadMessage.includes('✓') ? '#155724' : '#721c24',
-            padding: '12px',
+            padding: '15px',
             borderRadius: '4px',
             marginBottom: '15px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            minHeight: '20px'
           }}>
             {uploadMessage}
           </div>
@@ -131,13 +159,14 @@ export default function MediaGallery() {
           <label htmlFor="fileInput" style={{
             display: 'inline-block',
             padding: '15px 30px',
-            background: '#d1356f',
+            background: uploading ? '#ccc' : '#d1356f',
             color: 'white',
             borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
+            cursor: uploading ? 'not-allowed' : 'pointer',
+            fontWeight: 'bold',
+            opacity: uploading ? 0.7 : 1
           }}>
-            📁 Select Files
+            {uploading ? '⏳ Uploading...' : '📁 Select Files'}
           </label>
           <input 
             id="fileInput"
@@ -149,13 +178,17 @@ export default function MediaGallery() {
             style={{ display: 'none' }}
           />
         </div>
-        <small style={{ color: '#666' }}>Supported: JPG, PNG, GIF, MP4, WebM</small>
+        <small style={{ color: '#666' }}>
+          Supported: JPG, PNG, GIF (images) • MP4, WebM (videos) • Max 10MB per file
+        </small>
       </div>
 
       {/* Gallery Grid */}
       {media.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px', background: '#f9f9f9', borderRadius: '8px' }}>
-          <p style={{ fontSize: '16px', color: '#666' }}>No media yet. Upload images and videos to display on homepage!</p>
+          <p style={{ fontSize: '16px', color: '#666', margin: 0 }}>
+            No media yet. Upload images and videos to display on homepage!
+          </p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
@@ -165,8 +198,12 @@ export default function MediaGallery() {
               borderRadius: '8px',
               overflow: 'hidden',
               background: 'white',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              transition: 'transform 0.3s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
               {/* Thumbnail */}
               <div style={{
                 width: '100%',
@@ -181,7 +218,7 @@ export default function MediaGallery() {
                 {item.type === 'video' ? (
                   <>
                     <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', fontSize: '30px' }}>▶️</div>
+                    <div style={{ position: 'absolute', fontSize: '30px', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}>▶️</div>
                   </>
                 ) : (
                   <img src={item.url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -190,7 +227,7 @@ export default function MediaGallery() {
 
               {/* Info */}
               <div style={{ padding: '15px' }}>
-                <h4 style={{ margin: '0 0 8px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <h4 style={{ margin: '0 0 8px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '14px' }}>
                   {item.title}
                 </h4>
                 <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#999' }}>
@@ -209,8 +246,11 @@ export default function MediaGallery() {
                     borderRadius: '4px',
                     cursor: 'pointer',
                     fontWeight: 'bold',
-                    fontSize: '12px'
+                    fontSize: '12px',
+                    transition: 'background 0.3s'
                   }}
+                  onMouseOver={(e) => e.target.style.background = '#c82333'}
+                  onMouseOut={(e) => e.target.style.background = '#dc3545'}
                 >
                   🗑️ Delete
                 </button>
@@ -219,6 +259,12 @@ export default function MediaGallery() {
           ))}
         </div>
       )}
+
+      <div style={{ marginTop: '30px', padding: '15px', background: '#e7f3ff', borderRadius: '6px' }}>
+        <p style={{ margin: 0, fontSize: '12px', color: '#0077BE' }}>
+          💡 <strong>Tip:</strong> Upload at least 2 images and 1 video to see the carousel rotate on the homepage.
+        </p>
+      </div>
     </div>
   )
 }
