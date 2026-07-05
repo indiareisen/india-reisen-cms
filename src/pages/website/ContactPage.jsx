@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { collection, addDoc, Timestamp } from 'firebase/firestore'
+import { useState, useEffect } from 'react'
+import { collection, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 
 export default function ContactPage() {
@@ -10,9 +10,26 @@ export default function ContactPage() {
     journey: '',
     message: ''
   })
+  const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  const fetchSettings = async () => {
+    try {
+      const docRef = doc(db, 'settings', 'general')
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        setSettings(docSnap.data())
+      }
+    } catch (err) {
+      console.error('Error fetching settings:', err)
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -41,15 +58,17 @@ export default function ContactPage() {
     }
   }
 
+  const brandColor = settings?.primaryColor || '#d1356f'
+
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
-      <h1 style={{ fontSize: '36px', marginBottom: '10px', color: '#d1356f' }}>Contact Us</h1>
+      <h1 style={{ fontSize: '36px', marginBottom: '10px', color: brandColor }}>Contact Us</h1>
       <p style={{ color: '#666', marginBottom: '40px' }}>Have questions? We'd love to hear from you. Get in touch with our team.</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
         {/* Contact Form */}
         <div>
-          <h2 style={{ color: '#d1356f', marginBottom: '20px' }}>Send us a Message</h2>
+          <h2 style={{ color: brandColor, marginBottom: '20px' }}>Send us a Message</h2>
           
           {submitted && (
             <div style={{
@@ -173,7 +192,7 @@ export default function ContactPage() {
               style={{
                 width: '100%',
                 padding: '12px',
-                background: '#d1356f',
+                background: brandColor,
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
@@ -187,74 +206,85 @@ export default function ContactPage() {
           </form>
         </div>
 
-        {/* Contact Info */}
+        {/* Contact Info from Settings */}
         <div>
-          <h2 style={{ color: '#d1356f', marginBottom: '20px' }}>Contact Information</h2>
+          <h2 style={{ color: brandColor, marginBottom: '20px' }}>Contact Information</h2>
           
-          <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>Email</h3>
-            <a href="mailto:team@indiareisen.com" style={{ color: '#d1356f', textDecoration: 'none', fontWeight: 'bold' }}>
-              team@indiareisen.com
-            </a>
-          </div>
+          {settings ? (
+            <>
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Email</h3>
+                <a href={`mailto:${settings.email}`} style={{ color: brandColor, textDecoration: 'none', fontWeight: 'bold' }}>
+                  {settings.email}
+                </a>
+              </div>
 
-          <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>Phone</h3>
-            <a href="tel:+919810827785" style={{ color: '#d1356f', textDecoration: 'none', fontWeight: 'bold' }}>
-              +91 98108 27785
-            </a>
-          </div>
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Phone</h3>
+                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} style={{ color: brandColor, textDecoration: 'none', fontWeight: 'bold' }}>
+                  {settings.phone}
+                </a>
+              </div>
 
-          <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>Address</h3>
-            <p style={{ color: '#666', margin: 0 }}>
-              Ghaziabad<br />
-              Uttar Pradesh, India
-            </p>
-          </div>
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Address</h3>
+                <p style={{ color: '#666', margin: 0 }}>
+                  {settings.address}
+                </p>
+              </div>
+            </>
+          ) : (
+            <p>Loading contact information...</p>
+          )}
 
           <div style={{ marginBottom: '30px' }}>
             <h3 style={{ margin: '0 0 15px 0' }}>Follow Us</h3>
             <div style={{ display: 'flex', gap: '15px' }}>
-              <a href="https://instagram.com/indiareisen" target="_blank" rel="noopener noreferrer" style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                background: '#d1356f',
-                color: 'white',
-                borderRadius: '50%',
-                textDecoration: 'none'
-              }}>
-                f
-              </a>
-              <a href="https://instagram.com/indiareisen" target="_blank" rel="noopener noreferrer" style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                background: '#d1356f',
-                color: 'white',
-                borderRadius: '50%',
-                textDecoration: 'none'
-              }}>
-                in
-              </a>
-              <a href="https://youtube.com/indiareisen" target="_blank" rel="noopener noreferrer" style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                background: '#d1356f',
-                color: 'white',
-                borderRadius: '50%',
-                textDecoration: 'none'
-              }}>
-                y
-              </a>
+              {settings?.facebook && (
+                <a href={`https://facebook.com/${settings.facebook}`} target="_blank" rel="noopener noreferrer" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                  background: brandColor,
+                  color: 'white',
+                  borderRadius: '50%',
+                  textDecoration: 'none'
+                }}>
+                  f
+                </a>
+              )}
+              {settings?.instagram && (
+                <a href={`https://instagram.com/${settings.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                  background: brandColor,
+                  color: 'white',
+                  borderRadius: '50%',
+                  textDecoration: 'none'
+                }}>
+                  in
+                </a>
+              )}
+              {settings?.youtube && (
+                <a href={`https://youtube.com/${settings.youtube.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                  background: brandColor,
+                  color: 'white',
+                  borderRadius: '50%',
+                  textDecoration: 'none'
+                }}>
+                  ▶
+                </a>
+              )}
             </div>
           </div>
 
@@ -262,9 +292,9 @@ export default function ContactPage() {
             background: '#f9f9f9',
             padding: '20px',
             borderRadius: '8px',
-            border: '2px solid #d1356f'
+            border: `2px solid ${brandColor}`
           }}>
-            <h3 style={{ margin: '0 0 10px 0', color: '#d1356f' }}>Response Time</h3>
+            <h3 style={{ margin: '0 0 10px 0', color: brandColor }}>Response Time</h3>
             <p style={{ color: '#666', margin: 0 }}>
               We typically respond to inquiries within 24 hours during business days.
             </p>
