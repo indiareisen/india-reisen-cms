@@ -140,8 +140,12 @@ export default function HomePage() {
                 padding: '30px',
                 background: '#f9f9f9',
                 borderRadius: '8px',
-                border: `3px solid ${primaryColor}`
-              }}>
+                border: `3px solid ${primaryColor}`,
+                transition: 'transform 0.3s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
                 <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
                   {stat.value}
                 </h3>
@@ -154,12 +158,20 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Media Carousel */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 20px' }}>
-        <h2 style={{ fontSize: '36px', marginBottom: '30px', color: primaryColor, textAlign: 'center' }}>
-          Gallery
-        </h2>
-        <MediaCarousel />
+      {/* Media Carousel Section - INCREASED SIZE */}
+      <section style={{ background: 'white', padding: '100px 20px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <h2 style={{ 
+            fontSize: '36px', 
+            marginBottom: '40px', 
+            color: primaryColor, 
+            textAlign: 'center',
+            fontWeight: 'bold'
+          }}>
+            ✨ Gallery Showcase
+          </h2>
+          <MediaCarousel />
+        </div>
       </section>
 
       {/* Featured Journeys */}
@@ -179,8 +191,12 @@ export default function HomePage() {
                   background: 'white',
                   borderRadius: '12px',
                   overflow: 'hidden',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.3s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-8px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
                   <div style={{
                     background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                     height: '220px',
@@ -239,8 +255,12 @@ export default function HomePage() {
                 background: '#f9f9f9',
                 padding: '30px',
                 borderRadius: '12px',
-                border: `2px solid ${primaryColor}`
-              }}>
+                border: `2px solid ${primaryColor}`,
+                transition: 'transform 0.3s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
                 <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
                   {'⭐'.repeat(review.rating)}
                 </div>
