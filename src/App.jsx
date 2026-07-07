@@ -1,89 +1,71 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from './services/firebaseService'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
-
-// Layouts
 import PublicLayout from './layouts/PublicLayout'
 import WebsiteAdminLayout from './layouts/WebsiteAdminLayout'
-import OperationsLayout from './layouts/OperationsLayout'
+import AdminLogin from './pages/admin/AdminLogin'
 
 // Public Pages
 import HomePage from './pages/website/HomePage'
 import JourneysPage from './pages/website/JourneysPage'
+import JourneyDetail from './pages/website/JourneyDetail'
 import BlogPage from './pages/website/BlogPage'
 import ContactPage from './pages/website/ContactPage'
 
-// Auth
-import AdminLogin from './pages/admin/AdminLogin'
-
-// Website Admin
-import WebsiteAdminDashboard from './pages/website-admin/Dashboard'
+// Admin Pages
+import AdminDashboard from './pages/website-admin/AdminDashboard'
 import JourneyManager from './pages/website-admin/JourneyManager'
 import BlogManager from './pages/website-admin/BlogManager'
 import MediaGallery from './pages/website-admin/MediaGallery'
 import TeamManager from './pages/website-admin/TeamManager'
 import ReviewsManager from './pages/website-admin/ReviewsManager'
 import ContactMessages from './pages/website-admin/ContactMessages'
+import ClientManager from './pages/website-admin/ClientManager'
+import InvoiceMaker from './pages/website-admin/InvoiceMaker'
+import SocialMediaCreator from './pages/website-admin/SocialMediaCreator'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
-import WebsiteInvoiceMaker from './pages/website-admin/InvoiceMaker'
-import WebsiteSocialMediaCreator from './pages/website-admin/SocialMediaCreator'
-import WebsiteClientManager from "./pages/website-admin/ClientManager"
 
-// Operations
-import OperationsDashboard from './pages/operations/Dashboard'
-import ClientManager from './pages/operations/ClientManager'
-import InvoiceMaker from './pages/operations/InvoiceMaker'
-import FinancialReports from './pages/operations/FinancialReports'
-import SocialMediaCreator from './pages/operations/SocialMediaCreator'
-import AdminPanel from './pages/operations/AdminPanel'
+export default function App() {
+  const [user, setUser] = useState(null)
 
-function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <Routes>
-          {/* PUBLIC */}
+          {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/journeys" element={<JourneysPage />} />
+            <Route path="/journey/:id" element={<JourneyDetail />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/contact" element={<ContactPage />} />
           </Route>
 
-          {/* AUTH */}
+          {/* Admin Login */}
           <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* WEBSITE ADMIN */}
+          {/* Admin Routes */}
           <Route element={<ProtectedRoute><WebsiteAdminLayout /></ProtectedRoute>}>
-            <Route path="/admin/website/dashboard" element={<WebsiteAdminDashboard />} />
+            <Route path="/admin/website" element={<AdminDashboard />} />
             <Route path="/admin/website/journeys" element={<JourneyManager />} />
             <Route path="/admin/website/blog" element={<BlogManager />} />
             <Route path="/admin/website/media" element={<MediaGallery />} />
             <Route path="/admin/website/team" element={<TeamManager />} />
             <Route path="/admin/website/reviews" element={<ReviewsManager />} />
             <Route path="/admin/website/messages" element={<ContactMessages />} />
+            <Route path="/admin/website/clients" element={<ClientManager />} />
+            <Route path="/admin/website/invoices" element={<InvoiceMaker />} />
+            <Route path="/admin/website/social" element={<SocialMediaCreator />} />
             <Route path="/admin/website/settings" element={<WebsiteSettings />} />
-            <Route path="/admin/website/invoices" element={<WebsiteInvoiceMaker />} />
-            <Route path="/admin/website/social" element={<WebsiteSocialMediaCreator />} />
-            <Route path="/admin/website/clients" element={<WebsiteClientManager />} />
           </Route>
 
-          {/* OPERATIONS (FULL ADMIN ONLY) */}
-          <Route element={<ProtectedRoute requiredRole="full"><OperationsLayout /></ProtectedRoute>}>
-            <Route path="/admin/operations/dashboard" element={<OperationsDashboard />} />
-            <Route path="/admin/operations/clients" element={<ClientManager />} />
-            <Route path="/admin/operations/invoices" element={<InvoiceMaker />} />
-            <Route path="/admin/operations/reports" element={<FinancialReports />} />
-            <Route path="/admin/operations/social" element={<SocialMediaCreator />} />
-            <Route path="/admin/operations/settings" element={<AdminPanel />} />
-          </Route>
-
-          {/* FALLBACK - MUST BE LAST */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthProvider>
   )
 }
-
-export default App
