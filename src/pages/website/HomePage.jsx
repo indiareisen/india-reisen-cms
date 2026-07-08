@@ -2,12 +2,20 @@ import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, limit, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 import MediaCarousel from '../../components/MediaCarousel'
+import useScrollAnimation from '../../hooks/useScrollAnimation'
 
 export default function HomePage() {
   const [journeys, setJourneys] = useState([])
   const [reviews, setReviews] = useState([])
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  // Scroll animations
+  const aboutSection = useScrollAnimation()
+  const statsSection = useScrollAnimation()
+  const gallerySection = useScrollAnimation()
+  const journeysSection = useScrollAnimation()
+  const testimonialsSection = useScrollAnimation()
 
   useEffect(() => {
     fetchData()
@@ -76,7 +84,7 @@ export default function HomePage() {
           zIndex: 2
         }}></div>
 
-        <div style={{ maxWidth: '800px', position: 'relative', zIndex: 3 }}>
+        <div style={{ maxWidth: '800px', position: 'relative', zIndex: 3, animation: 'fadeInUp 0.8s ease' }}>
           <h1 style={{ 
             fontSize: '56px', 
             margin: '0 0 10px 0', 
@@ -124,7 +132,17 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 20px' }}>
+      <section 
+        ref={aboutSection.ref}
+        style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto', 
+          padding: '80px 20px',
+          opacity: aboutSection.isVisible ? 1 : 0,
+          transform: aboutSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
         <h2 style={{ fontSize: '36px', marginBottom: '20px', color: primaryColor, textAlign: 'center' }}>
           {hp.aboutHeading || 'Why Choose India Reisen?'}
         </h2>
@@ -133,14 +151,26 @@ export default function HomePage() {
         </p>
 
         {hp.showStats && hp.stats && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', marginTop: '50px' }}>
+          <div 
+            ref={statsSection.ref}
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '30px', 
+              marginTop: '50px',
+              opacity: statsSection.isVisible ? 1 : 0,
+              transform: statsSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+              transition: 'all 0.8s ease'
+            }}
+          >
             {hp.stats.map((stat, idx) => (
               <div key={idx} style={{
                 textAlign: 'center',
                 padding: '30px',
                 background: '#f9f9f9',
                 borderRadius: '8px',
-                border: `3px solid ${primaryColor}`
+                border: `3px solid ${primaryColor}`,
+                animation: statsSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none'
               }}>
                 <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
                   {stat.value}
@@ -154,8 +184,17 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Media Carousel Section - SMALL WITH HOVER ENLARGE */}
-      <section style={{ background: 'white', padding: '60px 20px' }}>
+      {/* Media Carousel Section */}
+      <section 
+        ref={gallerySection.ref}
+        style={{ 
+          background: 'white', 
+          padding: '60px 20px',
+          opacity: gallerySection.isVisible ? 1 : 0,
+          transform: gallerySection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <h2 style={{ 
             fontSize: '28px', 
@@ -171,7 +210,16 @@ export default function HomePage() {
       </section>
 
       {/* Featured Journeys */}
-      <section style={{ background: '#f9f9f9', padding: '80px 20px' }}>
+      <section 
+        ref={journeysSection.ref}
+        style={{ 
+          background: '#f9f9f9', 
+          padding: '80px 20px',
+          opacity: journeysSection.isVisible ? 1 : 0,
+          transform: journeysSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
             Featured Journeys
@@ -182,57 +230,67 @@ export default function HomePage() {
             <p>No journeys yet.</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px' }}>
-              {journeys.map(journey => (
-                <div key={journey.id} style={{
-                  background: 'white',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.3s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-8px)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
+              {journeys.map((journey, idx) => (
+                <a key={journey.id} href={`/journey/${journey.id}`} style={{ textDecoration: 'none' }}>
                   <div style={{
-                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                    height: '220px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white'
-                  }}>
-                    Journey Image
-                  </div>
-                  <div style={{ padding: '25px' }}>
-                    <h3 style={{ margin: '0 0 10px 0', color: primaryColor, fontSize: '20px' }}>
-                      {journey.title}
-                    </h3>
-                    <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px', lineHeight: '1.5' }}>
-                      {journey.description}
-                    </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '20px' }}>
-                      <div>📍 {journey.destination}</div>
-                      <div>⏱️ {journey.duration} days</div>
-                      <div>📈 {journey.difficulty}</div>
-                      <div>💰 ${journey.price}</div>
-                    </div>
-                    <a href="/journeys" style={{
-                      width: '100%',
-                      padding: '10px',
-                      background: primaryColor,
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      textDecoration: 'none',
-                      display: 'block',
-                      textAlign: 'center'
+                    background: 'white',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer',
+                    animation: journeysSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-8px)'
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                  >
+                    <div style={{
+                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                      height: '220px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white'
                     }}>
-                      Learn More
-                    </a>
+                      Journey Image
+                    </div>
+                    <div style={{ padding: '25px' }}>
+                      <h3 style={{ margin: '0 0 10px 0', color: primaryColor, fontSize: '20px' }}>
+                        {journey.title}
+                      </h3>
+                      <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px', lineHeight: '1.5' }}>
+                        {journey.description}
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px', marginBottom: '20px', color: '#666' }}>
+                        <div>📍 {journey.destination}</div>
+                        <div>⏱️ {journey.duration} days</div>
+                        <div>📈 {journey.difficulty}</div>
+                        <div>💰 ${journey.price}</div>
+                      </div>
+                      <button style={{
+                        width: '100%',
+                        padding: '10px',
+                        background: primaryColor,
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        textDecoration: 'none',
+                        display: 'block',
+                        textAlign: 'center'
+                      }}>
+                        Learn More
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           )}
@@ -241,17 +299,28 @@ export default function HomePage() {
 
       {/* Testimonials */}
       {reviews.length > 0 && (
-        <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 20px' }}>
+        <section 
+          ref={testimonialsSection.ref}
+          style={{ 
+            maxWidth: '1200px', 
+            margin: '0 auto', 
+            padding: '80px 20px',
+            opacity: testimonialsSection.isVisible ? 1 : 0,
+            transform: testimonialsSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+            transition: 'all 0.8s ease'
+          }}
+        >
           <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
             What Our Travelers Say
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
-            {reviews.slice(0, 3).map(review => (
+            {reviews.slice(0, 3).map((review, idx) => (
               <div key={review.id} style={{
                 background: '#f9f9f9',
                 padding: '30px',
                 borderRadius: '12px',
-                border: `2px solid ${primaryColor}`
+                border: `2px solid ${primaryColor}`,
+                animation: testimonialsSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none'
               }}>
                 <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
                   {'⭐'.repeat(review.rating)}
@@ -281,7 +350,7 @@ export default function HomePage() {
         padding: '80px 20px',
         textAlign: 'center'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', animation: 'fadeInUp 0.8s ease' }}>
           <h2 style={{ fontSize: '36px', margin: '0 0 20px 0' }}>
             {hp.ctaHeading || 'Ready to Explore India?'}
           </h2>
@@ -297,12 +366,30 @@ export default function HomePage() {
             fontWeight: 'bold',
             fontSize: '18px',
             display: 'inline-block',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-          }}>
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            transition: 'transform 0.3s'
+          }}
+          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
+          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
             {hp.ctaButtonText || 'Browse All Journeys'}
           </a>
         </div>
       </section>
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
