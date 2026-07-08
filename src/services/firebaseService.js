@@ -3,7 +3,7 @@ import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyABn8l0X5VjhY3pK9mZ2qR8tW4vU6xE7fG",
+  apiKey: "AIzaSyC-2-orXSJg3xdq646v2VWpCyDFy5jkeAg",
   authDomain: "india-reisen-cms.firebaseapp.com",
   projectId: "india-reisen-cms",
   storageBucket: "india-reisen-cms.appspot.com",
@@ -11,7 +11,6 @@ const firebaseConfig = {
   appId: "1:862055227943:web:a4b82cf5df5e9f4e526ab4"
 }
 
-// Initialize Firebase only if it hasn't been initialized
 let app
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig)
