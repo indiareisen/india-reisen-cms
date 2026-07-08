@@ -11,6 +11,7 @@ import HomePage from './pages/website/HomePage'
 import JourneysPage from './pages/website/JourneysPage'
 import JourneyDetail from './pages/website/JourneyDetail'
 import BlogPage from './pages/website/BlogPage'
+import BlogDetail from './pages/website/BlogDetail'
 import ContactPage from './pages/website/ContactPage'
 
 // Admin Pages
@@ -37,12 +38,13 @@ export default function App() {
             <Route path="/journeys" element={<JourneysPage />} />
             <Route path="/journey/:id" element={<JourneyDetail />} />
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<ContactPage />} />
           </Route>
 
-          {/* Admin Setup & Login */}
-          <Route path="/admin/setup" element={<AdminSetup />} />
+          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/setup" element={<AdminSetup />} />
 
           {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute><WebsiteAdminLayout /></ProtectedRoute>}>
