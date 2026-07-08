@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PublicLayout from './layouts/PublicLayout'
 import WebsiteAdminLayout from './layouts/WebsiteAdminLayout'
 import AdminLogin from './pages/admin/AdminLogin'
+import AdminSetup from './pages/admin/AdminSetup'
 
 // Public Pages
 import HomePage from './pages/website/HomePage'
@@ -39,10 +40,11 @@ export default function App() {
             <Route path="/contact" element={<ContactPage />} />
           </Route>
 
-          {/* Admin Login */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-
           {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/setup" element={<AdminSetup />} />
+
+          {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute><WebsiteAdminLayout /></ProtectedRoute>}>
             <Route path="/admin/website" element={<AdminDashboard />} />
             <Route path="/admin/website/journeys" element={<JourneyManager />} />

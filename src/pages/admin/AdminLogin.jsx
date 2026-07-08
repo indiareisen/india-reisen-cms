@@ -5,19 +5,22 @@ import { AuthContext } from '../../context/AuthContext'
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login } = useContext(AuthContext)
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    setError('')
+    setLoading(true)
 
     try {
       await login(email, password)
       navigate('/admin/website')
     } catch (err) {
-      setError(err.message || 'Login failed')
+      // Error is displayed via AuthContext error state
+      console.error('Login error:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -42,19 +45,6 @@ export default function AdminLogin() {
           <h1 style={{ margin: 0, color: '#d1356f', fontSize: '28px' }}>Admin Login</h1>
         </div>
 
-        {error && (
-          <div style={{
-            background: '#fee',
-            color: '#c33',
-            padding: '15px',
-            borderRadius: '6px',
-            marginBottom: '20px',
-            fontSize: '14px'
-          }}>
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#333' }}>
@@ -64,7 +54,7 @@ export default function AdminLogin() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="ambuj@indiareisen.com"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -74,6 +64,7 @@ export default function AdminLogin() {
                 boxSizing: 'border-box'
               }}
               required
+              disabled={loading}
             />
           </div>
 
@@ -95,6 +86,7 @@ export default function AdminLogin() {
                 boxSizing: 'border-box'
               }}
               required
+              disabled={loading}
             />
           </div>
 
@@ -108,17 +100,23 @@ export default function AdminLogin() {
               border: 'none',
               borderRadius: '6px',
               fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '16px'
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
+              opacity: loading ? 0.6 : 1
             }}
+            disabled={loading}
           >
-            Login
+            {loading ? '⏳ Logging in...' : '🔓 Login'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', color: '#999', fontSize: '14px' }}>
-          Demo: Use any email with any password
-        </p>
+        <div style={{ marginTop: '20px', padding: '15px', background: '#f0f0f0', borderRadius: '6px' }}>
+          <p style={{ margin: '0 0 10px 0', fontWeight: 'bold', color: '#333', fontSize: '13px' }}>Test Credentials:</p>
+          <p style={{ margin: 0, color: '#666', fontSize: '12px' }}>
+            📧 Email: <code>ambuj@indiareisen.com</code><br/>
+            🔑 Password: Check your email setup
+          </p>
+        </div>
       </div>
     </div>
   )

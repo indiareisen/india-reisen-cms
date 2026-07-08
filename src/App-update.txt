@@ -1,0 +1,5 @@
+Add this import at the top:
+import AdminSetup from './pages/admin/AdminSetup'
+
+Add this route after AdminLogin:
+<Route path="/admin/setup" element={<AdminSetup />} />
