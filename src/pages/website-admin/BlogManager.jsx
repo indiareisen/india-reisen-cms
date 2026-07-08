@@ -13,6 +13,10 @@ export default function BlogManager() {
   })
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
+  const [uploading, setUploading] = useState(false)
+
+  const CLOUDINARY_NAME = 'dl1q4dw72'
+  const CLOUDINARY_PRESET = 'india_reisen'
 
   useEffect(() => {
     fetchPosts()
@@ -35,14 +39,34 @@ export default function BlogManager() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setFormData(prev => ({ ...prev, featuredImage: event.target.result }))
+      setUploading(true)
+      const formDataCloud = new FormData()
+      formDataCloud.append('file', file)
+      formDataCloud.append('upload_preset', CLOUDINARY_PRESET)
+
+      try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/image/upload`, {
+          method: 'POST',
+          body: formDataCloud
+        })
+        const data = await response.json()
+        
+        if (data.secure_url) {
+          setFormData(prev => ({ ...prev, featuredImage: data.secure_url }))
+          console.log('✅ Image uploaded to Cloudinary:', data.secure_url)
+        } else {
+          console.error('❌ Upload failed:', data)
+          alert('Image upload failed')
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error)
+        alert('Error uploading image')
+      } finally {
+        setUploading(false)
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -63,8 +87,10 @@ export default function BlogManager() {
       }
       setFormData({ title: '', category: 'Travel', author: '', content: '', featuredImage: '' })
       fetchPosts()
+      alert('✅ Post saved successfully!')
     } catch (error) {
       console.error('Error:', error)
+      alert('Error saving post')
     }
   }
 
@@ -73,8 +99,10 @@ export default function BlogManager() {
       try {
         await deleteDoc(doc(db, 'posts', id))
         fetchPosts()
+        alert('✅ Post deleted!')
       } catch (error) {
         console.error('Error:', error)
+        alert('Error deleting post')
       }
     }
   }
@@ -135,10 +163,15 @@ export default function BlogManager() {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
+              disabled={uploading}
               style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
             />
+            {uploading && <p style={{ color: '#666', fontSize: '12px' }}>⏳ Uploading image...</p>}
             {formData.featuredImage && (
-              <img src={formData.featuredImage} alt="Preview" style={{ marginTop: '10px', maxWidth: '200px', borderRadius: '4px' }} />
+              <div>
+                <p style={{ color: '#666', fontSize: '12px' }}>✅ Image uploaded</p>
+                <img src={formData.featuredImage} alt="Preview" style={{ marginTop: '10px', maxWidth: '200px', borderRadius: '4px' }} />
+              </div>
             )}
           </div>
 
@@ -157,13 +190,14 @@ export default function BlogManager() {
 
           <button
             type="submit"
+            disabled={uploading}
             style={{
               padding: '10px 20px',
-              background: '#d1356f',
+              background: uploading ? '#ccc' : '#d1356f',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: 'pointer',
+              cursor: uploading ? 'not-allowed' : 'pointer',
               fontWeight: 'bold'
             }}
           >
