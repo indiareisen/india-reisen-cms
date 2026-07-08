@@ -10,6 +10,7 @@ import AdminSetup from './pages/admin/AdminSetup'
 import HomePage from './pages/website/HomePage'
 import JourneysPage from './pages/website/JourneysPage'
 import JourneyDetail from './pages/website/JourneyDetail'
+import WishlistPage from './pages/website/WishlistPage'
 import BlogPage from './pages/website/BlogPage'
 import BlogDetail from './pages/website/BlogDetail'
 import ContactPage from './pages/website/ContactPage'
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/journeys" element={<JourneysPage />} />
             <Route path="/journey/:id" element={<JourneyDetail />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<ContactPage />} />
