@@ -1,7 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from './services/firebaseService'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicLayout from './layouts/PublicLayout'
@@ -29,8 +26,6 @@ import SocialMediaCreator from './pages/website-admin/SocialMediaCreator'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
 
 export default function App() {
-  const [user, setUser] = useState(null)
-
   return (
     <AuthProvider>
       <Router>
