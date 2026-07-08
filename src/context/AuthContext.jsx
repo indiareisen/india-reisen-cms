@@ -1,91 +1,39 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useState, useEffect } from 'react'
 
-const AuthContext = createContext()
+export const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [adminRole, setAdminRole] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // Bypass login - no Firebase needed
-  const handleLogin = async (email, password) => {
-    setLoading(true)
-    try {
-      // Simulate login delay
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      // Define admin users
-      const admins = {
-        'ambuj@indiareisen.com': { email: 'ambuj@indiareisen.com', role: 'full' },
-        'team@indiareisen.com': { email: 'team@indiareisen.com', role: 'limited' },
-        'pulkit@indiareisen.com': { email: 'pulkit@indiareisen.com', role: 'limited' },
-        'gunjan@indiareisen.com': { email: 'gunjan@indiareisen.com', role: 'limited' }
-      }
-
-      // Check if user exists
-      if (admins[email]) {
-        const admin = admins[email]
-        // Store in localStorage
-        localStorage.setItem('user', JSON.stringify(admin))
-        setUser(admin)
-        setAdminRole(admin.role)
-      } else {
-        throw new Error('User not found. Use a demo admin account.')
-      }
-    } catch (error) {
-      throw new Error(error.message || 'Login failed')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleLogout = async () => {
-    localStorage.removeItem('user')
-    setUser(null)
-    setAdminRole(null)
-  }
-
-  const handlePasswordReset = async (email) => {
-    console.log('Password reset requested for:', email)
-    // Mock implementation
-  }
-
-  const hasPermission = (requiredRole) => {
-    if (!user) return false
-    if (requiredRole === 'full') return adminRole === 'full'
-    if (requiredRole === 'limited') return adminRole === 'limited' || adminRole === 'full'
-    return true
-  }
-
-  const isAdmin = () => !!user
-
+  // Check if user is already logged in
   useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = localStorage.getItem('user')
+    const savedUser = localStorage.getItem('adminUser')
     if (savedUser) {
-      const user = JSON.parse(savedUser)
-      setUser(user)
-      setAdminRole(user.role)
+      try {
+        setUser(JSON.parse(savedUser))
+      } catch (e) {
+        console.error('Error parsing saved user:', e)
+      }
     }
     setLoading(false)
   }, [])
 
+  const login = async (email, password) => {
+    // Simple bypass auth - any email/password works
+    const userData = { email, loginTime: new Date().toISOString() }
+    localStorage.setItem('adminUser', JSON.stringify(userData))
+    setUser(userData)
+  }
+
+  const logout = () => {
+    localStorage.removeItem('adminUser')
+    setUser(null)
+  }
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      adminRole,
-      loading,
-      handleLogin,
-      handleLogout,
-      handlePasswordReset,
-      hasPermission,
-      isAdmin
-    }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  return useContext(AuthContext)
 }

@@ -1,111 +1,127 @@
-import React, { useState } from 'react'
-import { Outlet, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import LogoutButton from '../components/LogoutButton'
-
-const brandColors = {
-  primary: '#d1356f',
-  secondary: '#c02560',
-  accent: '#D4A574'
-}
+import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { useState, useContext } from 'react'
+import { AuthContext } from '../context/AuthContext'
 
 export default function WebsiteAdminLayout() {
-  const { user } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [expanded, setExpanded] = useState(false)
+  const navigate = useNavigate()
+  const { logout } = useContext(AuthContext)
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', path: '/admin/website/dashboard' },
-    { id: 'journeys', label: 'Journeys', path: '/admin/website/journeys' },
-    { id: 'blog', label: 'Blog', path: '/admin/website/blog' },
-    { id: 'media', label: 'Media', path: '/admin/website/media' },
-    { id: 'team', label: 'Team', path: '/admin/website/team' },
-    { id: 'reviews', label: 'Reviews', path: '/admin/website/reviews' },
-    { id: 'messages', label: 'Messages', path: '/admin/website/messages' },
-    { id: 'clients', label: 'Clients', path: '/admin/website/clients' },
-    { id: 'invoices', label: 'Invoices', path: '/admin/website/invoices' },
-    { id: 'social', label: 'Social Media', path: '/admin/website/social' },
-    { id: 'settings', label: 'Settings', path: '/admin/website/settings' }
-  ]
+  const handleLogout = () => {
+    logout()
+    navigate('/admin/login')
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <div style={{
-        width: sidebarOpen ? '260px' : '0',
-        background: brandColors.primary,
+      {/* Sidebar */}
+      <aside style={{
+        width: expanded ? '280px' : '70px',
+        background: '#d1356f',
         color: 'white',
-        padding: sidebarOpen ? '20px' : '0',
-        overflow: 'hidden',
-        transition: 'all 0.3s'
+        padding: '20px',
+        transition: 'width 0.3s',
+        position: 'fixed',
+        height: '100vh',
+        overflowY: 'auto'
       }}>
-        {sidebarOpen && (
-          <>
-            <h2 style={{ marginTop: 0 }}>Website Admin</h2>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-              {menuItems.map(item => (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  style={{
-                    color: 'white',
-                    textDecoration: 'none',
-                    padding: '12px',
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '6px',
-                    display: 'block',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </>
-        )}
-      </div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            background: 'rgba(255,255,255,0.1)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginBottom: '20px',
+            fontSize: '18px'
+          }}
+        >
+          ☰
+        </button>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{
-          background: 'white',
-          padding: '20px',
-          borderBottom: '1px solid #ddd',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <Link to="/admin/website" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📊</span>
+            {expanded && <span>Dashboard</span>}
+          </Link>
+          <Link to="/admin/website/journeys" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>✈️</span>
+            {expanded && <span>Journeys</span>}
+          </Link>
+          <Link to="/admin/website/blog" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📝</span>
+            {expanded && <span>Blog</span>}
+          </Link>
+          <Link to="/admin/website/media" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📸</span>
+            {expanded && <span>Media</span>}
+          </Link>
+          <Link to="/admin/website/team" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>👥</span>
+            {expanded && <span>Team</span>}
+          </Link>
+          <Link to="/admin/website/reviews" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>⭐</span>
+            {expanded && <span>Reviews</span>}
+          </Link>
+          <Link to="/admin/website/messages" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>💬</span>
+            {expanded && <span>Messages</span>}
+          </Link>
+          <Link to="/admin/website/clients" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>👤</span>
+            {expanded && <span>Clients</span>}
+          </Link>
+          <Link to="/admin/website/invoices" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📄</span>
+            {expanded && <span>Invoices</span>}
+          </Link>
+          <Link to="/admin/website/social" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📱</span>
+            {expanded && <span>Social</span>}
+          </Link>
+          <Link to="/admin/website/settings" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>⚙️</span>
+            {expanded && <span>Settings</span>}
+          </Link>
+
+          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '20px 0' }} />
+
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={handleLogout}
             style={{
-              background: brandColors.primary,
               color: 'white',
+              background: 'rgba(255,255,255,0.1)',
               border: 'none',
-              padding: '8px 12px',
+              padding: '12px',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
             }}
           >
-            Menu
+            <span>🚪</span>
+            {expanded && <span>Logout</span>}
           </button>
-          <h1>Website Admin Portal</h1>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <a href="/" style={{
-              background: '#28a745',
-              color: 'white',
-              padding: '8px 15px',
-              borderRadius: '4px',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}>
-              View Website
-            </a>
-            <span>{user?.email}</span>
-            <LogoutButton />
-          </div>
-        </div>
+        </nav>
+      </aside>
 
-        <div style={{ flex: 1, padding: '30px', overflow: 'auto' }}>
+      {/* Main Content */}
+      <main style={{
+        marginLeft: expanded ? '280px' : '70px',
+        flex: 1,
+        padding: '30px',
+        background: '#f5f5f5',
+        transition: 'margin-left 0.3s'
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <Outlet />
         </div>
-      </div>
+      </main>
     </div>
   )
 }
