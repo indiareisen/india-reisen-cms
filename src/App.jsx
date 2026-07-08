@@ -40,9 +40,9 @@ export default function App() {
             <Route path="/contact" element={<ContactPage />} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
+          {/* Admin Setup & Login */}
           <Route path="/admin/setup" element={<AdminSetup />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute><WebsiteAdminLayout /></ProtectedRoute>}>
