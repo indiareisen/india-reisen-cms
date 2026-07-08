@@ -8,62 +8,52 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Monitor auth state changes
+  // Monitor Firebase auth state
   useEffect(() => {
-    console.log('🔐 Setting up auth state listener...')
+    console.log('🔐 Setting up Firebase auth listener...')
     
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      console.log('👤 Auth state changed:', currentUser?.email || 'logged out')
-      
       if (currentUser) {
+        console.log('✅ Firebase user found:', currentUser.email)
         setUser({
           uid: currentUser.uid,
           email: currentUser.email,
           loginTime: new Date().toISOString()
         })
       } else {
+        console.log('❌ No Firebase user, logging out')
         setUser(null)
       }
       setLoading(false)
     })
 
-    return () => {
-      console.log('🔐 Cleaning up auth listener')
-      unsubscribe()
-    }
+    return () => unsubscribe()
   }, [])
 
   const login = async (email, password) => {
     try {
-      console.log('🔐 Firebase login attempt:', email)
-      
+      console.log('🔐 Attempting login:', email)
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      
-      console.log('✅ Firebase login successful:', userCredential.user.email)
+      console.log('✅ Login successful:', userCredential.user.email)
       
       setUser({
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         loginTime: new Date().toISOString()
       })
-      
       return userCredential.user
     } catch (err) {
-      console.error('❌ Firebase error code:', err.code)
-      console.error('❌ Firebase error message:', err.message)
+      console.error('❌ Login error:', err.code, err.message)
       
       let errorMessage = 'Login failed'
-      
       if (err.code === 'auth/user-not-found') {
-        errorMessage = 'User not found. Did you create the account on /admin/setup?'
+        errorMessage = 'User not found. Create account on /admin/setup first.'
       } else if (err.code === 'auth/wrong-password') {
         errorMessage = 'Incorrect password.'
       } else if (err.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address.'
-      } else if (err.code === 'auth/user-disabled') {
-        errorMessage = 'This account has been disabled.'
-      } else if (err.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many login attempts. Please try again later.'
+      } else if (err.code === 'auth/invalid-api-key') {
+        errorMessage = 'Firebase API key is invalid. Check your configuration.'
       }
       
       throw new Error(errorMessage)
