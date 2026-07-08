@@ -33,14 +33,29 @@ export default function PublicLayout() {
         padding: '20px',
         color: 'white'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '30px', alignItems: 'center' }}>
-          <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen" style={{ height: '40px' }} />
-          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>🏠 Home</Link>
-          <Link to="/journeys" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>✈️ Journeys</Link>
-          <Link to="/blog" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>📝 Blog</Link>
-          <Link to="/contact" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>📞 Contact</Link>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
+            <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen" style={{ height: '40px' }} />
+          </Link>
+          
+          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+            🏠 Home
+          </Link>
+          
+          <Link to="/journeys" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+            ✈️ Journeys
+          </Link>
+          
+          <Link to="/blog" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+            📝 Blog
+          </Link>
+          
+          <Link to="/contact" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+            📞 Contact
+          </Link>
+          
           <div style={{ marginLeft: 'auto' }}>
-            <Link to="/admin/login" style={{ color: 'white', textDecoration: 'none', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold' }}>
+            <Link to="/admin/login" style={{ color: 'white', textDecoration: 'none', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px' }}>
               Admin Login
             </Link>
           </div>

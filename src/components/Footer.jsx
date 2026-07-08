@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../services/firebaseService'
 
@@ -72,16 +73,24 @@ export default function Footer() {
             <h3 style={{ margin: '0 0 15px 0' }}>Quick Links</h3>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               <li style={{ marginBottom: '10px' }}>
-                <a href="/" style={{ color: 'white', textDecoration: 'none' }}>Home</a>
+                <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                  Home
+                </Link>
               </li>
               <li style={{ marginBottom: '10px' }}>
-                <a href="/journeys" style={{ color: 'white', textDecoration: 'none' }}>Journeys</a>
+                <Link to="/journeys" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                  Journeys
+                </Link>
               </li>
               <li style={{ marginBottom: '10px' }}>
-                <a href="/blog" style={{ color: 'white', textDecoration: 'none' }}>Blog</a>
+                <Link to="/blog" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                  Blog
+                </Link>
               </li>
               <li style={{ marginBottom: '10px' }}>
-                <a href="/contact" style={{ color: 'white', textDecoration: 'none' }}>Contact</a>
+                <Link to="/contact" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
