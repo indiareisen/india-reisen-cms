@@ -32,7 +32,6 @@ export default function BlogPage() {
       const postsList = postsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
       setPosts(postsList)
 
-      // Extract unique categories
       const uniqueCategories = ['All', ...new Set(postsList.map(p => p.category).filter(Boolean))]
       setCategories(uniqueCategories)
       setFilteredPosts(postsList)
@@ -43,7 +42,6 @@ export default function BlogPage() {
     }
   }
 
-  // Filter posts by category
   useEffect(() => {
     let filtered = posts
     if (selectedCategory !== 'All') {
@@ -53,7 +51,6 @@ export default function BlogPage() {
     setCurrentPage(1)
   }, [selectedCategory, posts])
 
-  // Pagination
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage)
   const startIdx = (currentPage - 1) * postsPerPage
   const paginatedPosts = filteredPosts.slice(startIdx, startIdx + postsPerPage)
@@ -135,6 +132,7 @@ export default function BlogPage() {
               {paginatedPosts.map((post, idx) => (
                 <div
                   key={post.id}
+                  onClick={() => navigate(`/blog/${post.id}`)}
                   style={{
                     background: 'white',
                     borderRadius: '12px',
@@ -153,17 +151,19 @@ export default function BlogPage() {
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {/* Feature Image */}
+                  {/* Featured Image */}
                   <div style={{
-                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    background: post.featuredImage ? `url('${post.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
                     height: '200px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
+                    color: post.featuredImage ? 'transparent' : 'white',
                     fontSize: '14px'
                   }}>
-                    Blog Image
+                    {!post.featuredImage && 'Blog Image'}
                   </div>
 
                   {/* Content */}
@@ -201,7 +201,10 @@ export default function BlogPage() {
 
                     {/* Read More Button */}
                     <button
-                      onClick={() => navigate(`/blog/${post.id}`)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/blog/${post.id}`)
+                      }}
                       style={{
                         width: '100%',
                         padding: '10px',

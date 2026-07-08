@@ -17,19 +17,16 @@ export default function BlogDetail() {
 
   const fetchData = async () => {
     try {
-      // Fetch current post
       const postDoc = await getDoc(doc(db, 'posts', id))
       if (postDoc.exists()) {
         setPost({ id: postDoc.id, ...postDoc.data() })
       }
 
-      // Fetch settings
       const settingsDoc = await getDoc(doc(db, 'settings', 'general'))
       if (settingsDoc.exists()) {
         setSettings(settingsDoc.data())
       }
 
-      // Fetch related posts (same category)
       const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(3))
       const postsSnap = await getDocs(postsQuery)
       const postsList = postsSnap.docs
@@ -101,18 +98,19 @@ export default function BlogDetail() {
       {/* Content */}
       <section style={{ maxWidth: '900px', margin: '0 auto', padding: '60px 20px' }}>
         {/* Featured Image */}
-        <div style={{
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-          height: '400px',
-          borderRadius: '12px',
-          marginBottom: '40px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white'
-        }}>
-          Blog Image
-        </div>
+        {post.featuredImage && (
+          <img
+            src={post.featuredImage}
+            alt={post.title}
+            style={{
+              width: '100%',
+              height: '400px',
+              borderRadius: '12px',
+              marginBottom: '40px',
+              objectFit: 'cover'
+            }}
+          />
+        )}
 
         {/* Article Content */}
         <article style={{
@@ -146,7 +144,8 @@ export default function BlogDetail() {
               background: primaryColor,
               color: 'white',
               borderRadius: '50%',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              fontWeight: 'bold'
             }}>
               f
             </a>
@@ -159,7 +158,8 @@ export default function BlogDetail() {
               background: primaryColor,
               color: 'white',
               borderRadius: '50%',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              fontWeight: 'bold'
             }}>
               𝕏
             </a>
@@ -172,7 +172,8 @@ export default function BlogDetail() {
               background: primaryColor,
               color: 'white',
               borderRadius: '50%',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              fontWeight: 'bold'
             }}>
               in
             </a>
@@ -189,7 +190,6 @@ export default function BlogDetail() {
                   key={relPost.id}
                   onClick={() => navigate(`/blog/${relPost.id}`)}
                   style={{
-                    background: '#f9f9f9',
                     borderRadius: '8px',
                     overflow: 'hidden',
                     cursor: 'pointer',
@@ -205,10 +205,13 @@ export default function BlogDetail() {
                   }}
                 >
                   <div style={{
-                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                    height: '150px'
+                    background: relPost.featuredImage ? `url('${relPost.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    height: '150px',
+                    borderRadius: '8px 8px 0 0'
                   }}></div>
-                  <div style={{ padding: '15px' }}>
+                  <div style={{ padding: '15px', background: '#f9f9f9' }}>
                     <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: primaryColor }}>
                       {relPost.title}
                     </h4>
