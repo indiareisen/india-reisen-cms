@@ -29,3 +29,4 @@ functions/.env
 .env.local
 .vercel
 serviceAccountKey.json
+.env*

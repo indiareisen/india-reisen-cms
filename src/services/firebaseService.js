@@ -3,7 +3,7 @@ import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  apiKey: "AIzaSyABn8l0X5VjhY3pK9mZ2qR8tW4vU6xE7fG",
   authDomain: "india-reisen-cms.firebaseapp.com",
   projectId: "india-reisen-cms",
   storageBucket: "india-reisen-cms.appspot.com",
@@ -14,3 +14,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
+
+console.log('🔥 Firebase initialized')
