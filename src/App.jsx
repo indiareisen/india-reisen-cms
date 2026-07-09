@@ -4,7 +4,6 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PublicLayout from './layouts/PublicLayout'
 import WebsiteAdminLayout from './layouts/WebsiteAdminLayout'
 import AdminLogin from './pages/admin/AdminLogin'
-import AdminSetup from './pages/admin/AdminSetup'
 
 // Public Pages
 import HomePage from './pages/website/HomePage'
@@ -32,6 +31,9 @@ import FinancialReports from './pages/website-admin/FinancialReports'
 import ActivityLog from './pages/website-admin/ActivityLog'
 import EmailTemplates from './pages/website-admin/EmailTemplates'
 
+// 🔒 Change this constant if you ever want to rotate the secret admin path
+const ADMIN_PATH = 'ir-team-8x2k'
+
 export default function App() {
   return (
     <AuthProvider>
@@ -48,30 +50,29 @@ export default function App() {
             <Route path="/contact" element={<ContactPage />} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/setup" element={<AdminSetup />} />
+          {/* Secret Admin Login (not linked anywhere on the public site) */}
+          <Route path={`/${ADMIN_PATH}/login`} element={<AdminLogin />} />
 
           {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute><WebsiteAdminLayout /></ProtectedRoute>}>
-            <Route path="/admin/website" element={<AdminDashboard />} />
-            <Route path="/admin/website/journeys" element={<JourneyManager />} />
-            <Route path="/admin/website/blog" element={<BlogManager />} />
-            <Route path="/admin/website/media" element={<MediaGallery />} />
-            <Route path="/admin/website/team" element={<TeamManager />} />
-            <Route path="/admin/website/reviews" element={<ReviewsManager />} />
-            <Route path="/admin/website/messages" element={<ContactMessages />} />
-            <Route path="/admin/website/newsletter" element={<NewsletterManager />} />
-            <Route path="/admin/website/clients" element={<ClientManager />} />
-            <Route path="/admin/website/invoices" element={<InvoiceMaker />} />
-            <Route path="/admin/website/financial" element={<FinancialReports />} />
-            <Route path="/admin/website/activity" element={<ActivityLog />} />
-            <Route path="/admin/website/email-templates" element={<EmailTemplates />} />
-            <Route path="/admin/website/social" element={<SocialMediaCreator />} />
-            <Route path="/admin/website/settings" element={<WebsiteSettings />} />
+            <Route path={`/${ADMIN_PATH}`} element={<AdminDashboard />} />
+            <Route path={`/${ADMIN_PATH}/journeys`} element={<JourneyManager />} />
+            <Route path={`/${ADMIN_PATH}/blog`} element={<BlogManager />} />
+            <Route path={`/${ADMIN_PATH}/media`} element={<MediaGallery />} />
+            <Route path={`/${ADMIN_PATH}/team`} element={<TeamManager />} />
+            <Route path={`/${ADMIN_PATH}/reviews`} element={<ReviewsManager />} />
+            <Route path={`/${ADMIN_PATH}/messages`} element={<ContactMessages />} />
+            <Route path={`/${ADMIN_PATH}/newsletter`} element={<NewsletterManager />} />
+            <Route path={`/${ADMIN_PATH}/clients`} element={<ClientManager />} />
+            <Route path={`/${ADMIN_PATH}/invoices`} element={<InvoiceMaker />} />
+            <Route path={`/${ADMIN_PATH}/financial`} element={<FinancialReports />} />
+            <Route path={`/${ADMIN_PATH}/activity`} element={<ActivityLog />} />
+            <Route path={`/${ADMIN_PATH}/email-templates`} element={<EmailTemplates />} />
+            <Route path={`/${ADMIN_PATH}/social`} element={<SocialMediaCreator />} />
+            <Route path={`/${ADMIN_PATH}/settings`} element={<WebsiteSettings />} />
           </Route>
 
-          {/* Catch all */}
+          {/* Anything else (including old /admin/* links) quietly goes home */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

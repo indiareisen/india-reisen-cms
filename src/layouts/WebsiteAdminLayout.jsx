@@ -1,15 +1,17 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
+import useNoIndex from '../hooks/useNoIndex'
 import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 
 export default function WebsiteAdminLayout() {
+  useNoIndex()
   const [expanded, setExpanded] = useState(false)
   const navigate = useNavigate()
   const { logout } = useContext(AuthContext)
 
   const handleLogout = () => {
     logout()
-    navigate('/admin/login')
+    navigate('/ir-team-8x2k/login')
   }
 
   return (
@@ -44,19 +46,19 @@ export default function WebsiteAdminLayout() {
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {/* Main Features */}
-          <Link to="/admin/website" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📊</span>
             {expanded && <span>Dashboard</span>}
           </Link>
-          <Link to="/admin/website/journeys" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/journeys" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>✈️</span>
             {expanded && <span>Journeys</span>}
           </Link>
-          <Link to="/admin/website/blog" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/blog" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📝</span>
             {expanded && <span>Blog</span>}
           </Link>
-          <Link to="/admin/website/media" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/media" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📸</span>
             {expanded && <span>Media</span>}
           </Link>
@@ -64,11 +66,11 @@ export default function WebsiteAdminLayout() {
           <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
 
           {/* Content Management */}
-          <Link to="/admin/website/team" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/team" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>👥</span>
             {expanded && <span>Team</span>}
           </Link>
-          <Link to="/admin/website/reviews" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/reviews" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>⭐</span>
             {expanded && <span>Reviews</span>}
           </Link>
@@ -76,15 +78,15 @@ export default function WebsiteAdminLayout() {
           <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
 
           {/* Communication */}
-          <Link to="/admin/website/messages" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/messages" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>💬</span>
             {expanded && <span>Messages</span>}
           </Link>
-          <Link to="/admin/website/newsletter" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/newsletter" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📧</span>
             {expanded && <span>Newsletter</span>}
           </Link>
-          <Link to="/admin/website/email-templates" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/email-templates" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>✉️</span>
             {expanded && <span>Email Templates</span>}
           </Link>
@@ -92,15 +94,15 @@ export default function WebsiteAdminLayout() {
           <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
 
           {/* Business */}
-          <Link to="/admin/website/clients" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/clients" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>👤</span>
             {expanded && <span>Clients</span>}
           </Link>
-          <Link to="/admin/website/invoices" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/invoices" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📄</span>
             {expanded && <span>Invoices</span>}
           </Link>
-          <Link to="/admin/website/financial" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/financial" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>💰</span>
             {expanded && <span>Financials</span>}
           </Link>
@@ -108,15 +110,15 @@ export default function WebsiteAdminLayout() {
           <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
 
           {/* Maintenance */}
-          <Link to="/admin/website/activity" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/activity" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📋</span>
             {expanded && <span>Activity Log</span>}
           </Link>
-          <Link to="/admin/website/social" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/social" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📱</span>
             {expanded && <span>Social</span>}
           </Link>
-          <Link to="/admin/website/settings" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link to="/ir-team-8x2k/settings" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>⚙️</span>
             {expanded && <span>Settings</span>}
           </Link>

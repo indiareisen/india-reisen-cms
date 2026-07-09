@@ -151,7 +151,7 @@ export default function AdminSetup() {
           1. Click "Create Admin Users" button<br/>
           2. Wait for all users to be created<br/>
           3. Copy the passwords and save securely<br/>
-          4. Go to <a href="/admin/login" style={{ color: '#d1356f' }}>/admin/login</a> to test
+          4. Go to <a href="/ir-team-8x2k/login" style={{ color: '#d1356f' }}>/ir-team-8x2k/login</a> to test
         </div>
       </div>
     </div>

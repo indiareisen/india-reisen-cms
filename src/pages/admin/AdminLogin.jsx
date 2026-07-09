@@ -1,8 +1,10 @@
 import { useState, useContext, useEffect } from 'react'
+import useNoIndex from '../../hooks/useNoIndex'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
 
 export default function AdminLogin() {
+  useNoIndex()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -13,7 +15,7 @@ export default function AdminLogin() {
   // If already logged in, redirect
   useEffect(() => {
     if (user) {
-      navigate('/admin/website')
+      navigate('/ir-team-8x2k')
     }
   }, [user, navigate])
 
@@ -27,7 +29,7 @@ export default function AdminLogin() {
     try {
       await login(email, password)
       console.log('✅ Login successful!')
-      navigate('/admin/website')
+      navigate('/ir-team-8x2k')
     } catch (err) {
       console.error('❌ Login error:', err)
       setErrorMsg(err.message || 'Login failed. Please try again.')

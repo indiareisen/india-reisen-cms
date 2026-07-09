@@ -55,7 +55,7 @@ export default function PublicLayout() {
           </Link>
           
           <div style={{ marginLeft: 'auto' }}>
-            <Link to="/admin/login" style={{ color: 'white', textDecoration: 'none', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px' }}>
+            <Link to="/ir-team-8x2k/login" style={{ color: 'white', textDecoration: 'none', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px' }}>
               Admin Login
             </Link>
           </div>

@@ -8,7 +8,7 @@ export const LogoutButton = () => {
   const handleClick = async () => {
     try {
       await handleLogout();
-      navigate('/admin/login');
+      navigate('/ir-team-8x2k/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }

@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children }) {
   // If no user, redirect to login
   if (!user) {
     console.log('❌ No user found, redirecting to login')
-    return <Navigate to="/admin/login" replace />
+    return <Navigate to="/ir-team-8x2k/login" replace />
   }
 
   // User is authenticated, show the page
