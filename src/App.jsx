@@ -27,6 +27,7 @@ import ClientManager from './pages/website-admin/ClientManager'
 import InvoiceMaker from './pages/website-admin/InvoiceMaker'
 import SocialMediaCreator from './pages/website-admin/SocialMediaCreator'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
+import NewsletterManager from './pages/website-admin/NewsletterManager'
 
 export default function App() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/admin/website/invoices" element={<InvoiceMaker />} />
             <Route path="/admin/website/social" element={<SocialMediaCreator />} />
             <Route path="/admin/website/settings" element={<WebsiteSettings />} />
+            <Route path="/admin/website/newsletter" element={<NewsletterManager />} />
           </Route>
 
           {/* Catch all */}

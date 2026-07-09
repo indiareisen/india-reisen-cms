@@ -71,6 +71,10 @@ export default function WebsiteAdminLayout() {
             <span>💬</span>
             {expanded && <span>Messages</span>}
           </Link>
+          <Link to="/admin/website/newsletter" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📧</span>
+            {expanded && <span>Newsletter</span>}
+          </Link>
           <Link to="/admin/website/clients" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>👤</span>
             {expanded && <span>Clients</span>}

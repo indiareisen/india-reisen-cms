@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, limit, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 import MediaCarousel from '../../components/MediaCarousel'
+import NewsletterSignup from '../../components/NewsletterSignup'
 import useScrollAnimation from '../../hooks/useScrollAnimation'
 
 export default function HomePage() {
@@ -16,6 +17,7 @@ export default function HomePage() {
   const gallerySection = useScrollAnimation()
   const journeysSection = useScrollAnimation()
   const testimonialsSection = useScrollAnimation()
+  const newsletterSection = useScrollAnimation()
 
   useEffect(() => {
     fetchData()
@@ -342,6 +344,13 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Newsletter Signup */}
+      <NewsletterSignup 
+        ref={newsletterSection.ref}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+      />
 
       {/* CTA Section */}
       <section style={{
