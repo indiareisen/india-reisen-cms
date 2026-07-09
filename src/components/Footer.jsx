@@ -198,7 +198,7 @@ export default function Footer() {
               {settings.socialMedia && Object.entries(settings.socialMedia).map(([platform, data]) => (
                 data.enabled && (
                   
-                    key={platform}
+                    <a key={platform}
                     href={getSocialLink(platform, data)}
                     target="_blank"
                     rel="noopener noreferrer"

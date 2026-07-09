@@ -246,7 +246,6 @@ export default function HomePage() {
                     <div style={{
                       background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                       height: '220px',
-                      display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: 'white'
@@ -276,7 +275,6 @@ export default function HomePage() {
                         cursor: 'pointer',
                         fontWeight: 'bold',
                         textDecoration: 'none',
-                        display: 'block',
                         textAlign: 'center'
                       }}>
                         Learn More
@@ -365,7 +363,6 @@ export default function HomePage() {
                   borderRadius: '50%',
                   background: `linear-gradient(135deg, ${primaryColor}22, ${secondaryColor}33)`,
                   border: `2px solid ${secondaryColor}`,
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '34px'
@@ -419,7 +416,6 @@ export default function HomePage() {
                   borderRadius: '14px',
                   overflow: 'hidden',
                   background: `linear-gradient(160deg, ${dest.gradient[0]}, ${dest.gradient[1]})`,
-                  display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-end',
                   padding: '25px',
@@ -532,19 +528,17 @@ export default function HomePage() {
           }}>
             {[...Array(6)].map((_, idx) => (
               
-                key={idx}
+                <a key={idx}
                 href="https://www.instagram.com/indiareisen"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  display: 'block',
                   aspectRatio: '1 / 1',
                   borderRadius: '10px',
                   overflow: 'hidden',
                   background: idx % 2 === 0
                     ? `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
                     : `linear-gradient(135deg, ${secondaryColor}, ${primaryColor})`,
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
