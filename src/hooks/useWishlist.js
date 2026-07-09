@@ -2,20 +2,36 @@ import { useState, useEffect } from 'react'
 
 export default function useWishlist() {
   const [wishlisted, setWishlisted] = useState({})
+  const [loading, setLoading] = useState(true)
 
-  // Load wishlist from localStorage
+  // Load wishlist from localStorage on mount and whenever storage changes
   useEffect(() => {
-    const stored = localStorage.getItem('journeyWishlist')
-    if (stored) {
-      try {
-        setWishlisted(JSON.parse(stored))
-      } catch (e) {
-        console.error('Error loading wishlist:', e)
-      }
-    }
+    loadWishlist()
+    
+    // Listen for storage changes (from other tabs)
+    window.addEventListener('storage', loadWishlist)
+    return () => window.removeEventListener('storage', loadWishlist)
   }, [])
 
-  // Save wishlist to localStorage
+  const loadWishlist = () => {
+    try {
+      const stored = localStorage.getItem('journeyWishlist')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        console.log('📋 Loaded wishlist:', Object.keys(parsed).length, 'items')
+        setWishlisted(parsed)
+      } else {
+        console.log('📋 No wishlist found')
+        setWishlisted({})
+      }
+    } catch (e) {
+      console.error('❌ Error loading wishlist:', e)
+      setWishlisted({})
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const toggleWishlist = (id, journey) => {
     setWishlisted(prev => {
       const updated = { ...prev }
@@ -24,24 +40,32 @@ export default function useWishlist() {
         console.log('❤️ Removed from wishlist:', id)
       } else {
         updated[id] = journey
-        console.log('❤️ Added to wishlist:', id)
+        console.log('❤️ Added to wishlist:', id, journey.title)
       }
       localStorage.setItem('journeyWishlist', JSON.stringify(updated))
+      console.log('💾 Wishlist saved to localStorage')
       return updated
     })
   }
 
-  const isWishlisted = (id) => !!wishlisted[id]
+  const isWishlisted = (id) => {
+    return !!wishlisted[id]
+  }
 
-  const getWishlistCount = () => Object.keys(wishlisted).length
+  const getWishlistCount = () => {
+    return Object.keys(wishlisted).length
+  }
 
-  const getWishlistJourneys = () => Object.values(wishlisted)
+  const getWishlistJourneys = () => {
+    return Object.values(wishlisted)
+  }
 
   return {
     wishlisted,
     toggleWishlist,
     isWishlisted,
     getWishlistCount,
-    getWishlistJourneys
+    getWishlistJourneys,
+    loading
   }
 }

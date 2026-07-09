@@ -7,15 +7,31 @@ import useScrollAnimation from '../../hooks/useScrollAnimation'
 
 export default function WishlistPage() {
   const navigate = useNavigate()
-  const { getWishlistJourneys, toggleWishlist, isWishlisted } = useWishlist()
+  const { getWishlistJourneys, toggleWishlist, loading: wishlistLoading } = useWishlist()
   const [settings, setSettings] = useState(null)
   const [wishlistJourneys, setWishlistJourneys] = useState([])
+  const [loading, setLoading] = useState(true)
   const headerSection = useScrollAnimation()
 
   useEffect(() => {
+    console.log('🔄 WishlistPage mounted/updated')
     fetchSettings()
-    setWishlistJourneys(getWishlistJourneys())
   }, [])
+
+  // Refresh wishlist data whenever the page is visited or focused
+  useEffect(() => {
+    const refreshWishlist = () => {
+      console.log('🔄 Refreshing wishlist data...')
+      const journeys = getWishlistJourneys()
+      console.log('📋 Got wishlist journeys:', journeys.length)
+      setWishlistJourneys(journeys)
+      setLoading(false)
+    }
+
+    if (!wishlistLoading) {
+      refreshWishlist()
+    }
+  }, [wishlistLoading, getWishlistJourneys])
 
   const fetchSettings = async () => {
     try {
@@ -68,9 +84,13 @@ export default function WishlistPage() {
           ← Back to All Journeys
         </button>
 
-        {wishlistJourneys.length === 0 ? (
+        {loading || wishlistLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p>Loading wishlist...</p>
+          </div>
+        ) : wishlistJourneys.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f9f9f9', borderRadius: '8px' }}>
-            <h2 style={{ color: '#999' }}>Your wishlist is empty</h2>
+            <h2 style={{ color: '#999' }}>❤️ Your wishlist is empty</h2>
             <p style={{ color: '#999', marginBottom: '20px' }}>
               Start adding your favorite journeys to your wishlist!
             </p>
@@ -128,7 +148,13 @@ export default function WishlistPage() {
                     Journey Image
 
                     <button
-                      onClick={() => toggleWishlist(journey.id, journey)}
+                      onClick={() => {
+                        toggleWishlist(journey.id, journey)
+                        // Refresh the list after toggling
+                        setTimeout(() => {
+                          setWishlistJourneys(getWishlistJourneys())
+                        }, 100)
+                      }}
                       style={{
                         position: 'absolute',
                         top: '10px',
