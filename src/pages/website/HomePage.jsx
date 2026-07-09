@@ -2,8 +2,22 @@ import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, limit, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 import MediaCarousel from '../../components/MediaCarousel'
-import NewsletterSignup from '../../components/NewsletterSignup'
 import useScrollAnimation from '../../hooks/useScrollAnimation'
+
+const DESTINATIONS = [
+  { name: 'India', icon: '🕌', tagline: 'Palaces, deserts & timeless heritage', gradient: ['#d1356f', '#f2789f'] },
+  { name: 'Nepal', icon: '🏔️', tagline: 'Himalayan peaks & spiritual valleys', gradient: ['#5b7fbd', '#8fb3e8'] },
+  { name: 'Bhutan', icon: '🙏', tagline: 'The last Himalayan kingdom', gradient: ['#4c8c6b', '#7fc79b'] },
+  { name: 'Tibet', icon: '⛩️', tagline: 'Sacred monasteries & high plateaus', gradient: ['#a3703c', '#D4A574'] },
+  { name: 'Sri Lanka', icon: '🌴', tagline: 'Beaches, tea hills & ancient ruins', gradient: ['#2a9d8f', '#6fc9bc'] }
+]
+
+const WHY_CHOOSE = [
+  { icon: '✨', title: 'Bespoke Itineraries', text: 'Every journey is designed around you — no cookie-cutter packages, ever.' },
+  { icon: '🧭', title: 'Local Expertise', text: '50+ trusted local partners across 15+ destinations who know the terrain.' },
+  { icon: '🌿', title: 'Responsible Tourism', text: 'Immersive travel that respects communities, culture, and the environment.' },
+  { icon: '🤝', title: 'White-Glove Support', text: 'Dedicated support before, during, and after your journey — always.' }
+]
 
 export default function HomePage() {
   const [journeys, setJourneys] = useState([])
@@ -16,8 +30,11 @@ export default function HomePage() {
   const statsSection = useScrollAnimation()
   const gallerySection = useScrollAnimation()
   const journeysSection = useScrollAnimation()
+  const trustBarSection = useScrollAnimation()
+  const whyChooseSection = useScrollAnimation()
+  const destinationsSection = useScrollAnimation()
   const testimonialsSection = useScrollAnimation()
-  const newsletterSection = useScrollAnimation()
+  const instagramSection = useScrollAnimation()
 
   useEffect(() => {
     fetchData()
@@ -48,6 +65,13 @@ export default function HomePage() {
   const primaryColor = settings?.primaryColor || '#d1356f'
   const secondaryColor = settings?.secondaryColor || '#D4A574'
   const heroImage = hp.heroImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop'
+
+  const trustStats = (hp.showStats && hp.stats && hp.stats.length > 0) ? hp.stats : [
+    { value: '200+', label: 'Happy Travelers' },
+    { value: '15+', label: 'Destinations' },
+    { value: '50+', label: 'Local Partners' },
+    { value: '7', label: 'Curated Journeys' }
+  ]
 
   return (
     <div>
@@ -87,27 +111,27 @@ export default function HomePage() {
         }}></div>
 
         <div style={{ maxWidth: '800px', position: 'relative', zIndex: 3, animation: 'fadeInUp 0.8s ease' }}>
-          <h1 style={{ 
-            fontSize: '56px', 
-            margin: '0 0 10px 0', 
-            fontWeight: 'bold', 
-            textShadow: '2px 2px 8px rgba(0,0,0,0.5)' 
+          <h1 style={{
+            fontSize: '56px',
+            margin: '0 0 10px 0',
+            fontWeight: 'bold',
+            textShadow: '2px 2px 8px rgba(0,0,0,0.5)'
           }}>
             {hp.heroTitle}
           </h1>
-          <p style={{ 
-            fontSize: '28px', 
-            margin: '0 0 20px 0', 
-            textShadow: '2px 2px 6px rgba(0,0,0,0.5)' 
+          <p style={{
+            fontSize: '28px',
+            margin: '0 0 20px 0',
+            textShadow: '2px 2px 6px rgba(0,0,0,0.5)'
           }}>
             {hp.heroSubtitle}
           </p>
-          <p style={{ 
-            fontSize: '18px', 
-            margin: '0 0 30px 0', 
-            maxWidth: '600px', 
-            marginLeft: 'auto', 
-            marginRight: 'auto', 
+          <p style={{
+            fontSize: '18px',
+            margin: '0 0 30px 0',
+            maxWidth: '600px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
             lineHeight: '1.6',
             textShadow: '1px 1px 4px rgba(0,0,0,0.5)'
           }}>
@@ -134,11 +158,11 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section 
+      <section
         ref={aboutSection.ref}
-        style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
           padding: '80px 20px',
           opacity: aboutSection.isVisible ? 1 : 0,
           transform: aboutSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
@@ -151,46 +175,13 @@ export default function HomePage() {
         <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#666', maxWidth: '800px', margin: '0 auto 40px auto', textAlign: 'center' }}>
           {hp.aboutContent || settings?.aboutText}
         </p>
-
-        {hp.showStats && hp.stats && (
-          <div 
-            ref={statsSection.ref}
-            style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-              gap: '30px', 
-              marginTop: '50px',
-              opacity: statsSection.isVisible ? 1 : 0,
-              transform: statsSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
-              transition: 'all 0.8s ease'
-            }}
-          >
-            {hp.stats.map((stat, idx) => (
-              <div key={idx} style={{
-                textAlign: 'center',
-                padding: '30px',
-                background: '#f9f9f9',
-                borderRadius: '8px',
-                border: `3px solid ${primaryColor}`,
-                animation: statsSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none'
-              }}>
-                <h3 style={{ fontSize: '32px', color: primaryColor, margin: '0 0 10px 0', fontWeight: 'bold' }}>
-                  {stat.value}
-                </h3>
-                <p style={{ fontSize: '16px', color: '#666', margin: 0, fontWeight: 'bold' }}>
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
 
       {/* Media Carousel Section */}
-      <section 
+      <section
         ref={gallerySection.ref}
-        style={{ 
-          background: 'white', 
+        style={{
+          background: 'white',
           padding: '60px 20px',
           opacity: gallerySection.isVisible ? 1 : 0,
           transform: gallerySection.isVisible ? 'translateY(0)' : 'translateY(40px)',
@@ -198,10 +189,10 @@ export default function HomePage() {
         }}
       >
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <h2 style={{ 
-            fontSize: '28px', 
-            marginBottom: '30px', 
-            color: primaryColor, 
+          <h2 style={{
+            fontSize: '28px',
+            marginBottom: '30px',
+            color: primaryColor,
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
@@ -212,10 +203,10 @@ export default function HomePage() {
       </section>
 
       {/* Featured Journeys */}
-      <section 
+      <section
         ref={journeysSection.ref}
-        style={{ 
-          background: '#f9f9f9', 
+        style={{
+          background: '#f9f9f9',
           padding: '80px 20px',
           opacity: journeysSection.isVisible ? 1 : 0,
           transform: journeysSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
@@ -299,13 +290,182 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ===== NEW: Trust Stats Bar ===== */}
+      <section
+        ref={trustBarSection.ref}
+        style={{
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+          padding: '50px 20px',
+          opacity: trustBarSection.isVisible ? 1 : 0,
+          transform: trustBarSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
+        <div style={{
+          maxWidth: '1100px',
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '20px',
+          textAlign: 'center'
+        }}>
+          {trustStats.map((stat, idx) => (
+            <div key={idx} style={{
+              color: 'white',
+              animation: trustBarSection.isVisible ? `fadeInUp 0.7s ease ${idx * 0.12}s backwards` : 'none'
+            }}>
+              <h3 style={{ fontSize: '40px', margin: '0 0 5px 0', fontWeight: 'bold', textShadow: '1px 1px 6px rgba(0,0,0,0.2)' }}>
+                {stat.value}
+              </h3>
+              <p style={{ margin: 0, fontSize: '14px', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.95 }}>
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== NEW: Why Choose Us ===== */}
+      <section
+        ref={whyChooseSection.ref}
+        style={{
+          background: 'white',
+          padding: '90px 20px',
+          opacity: whyChooseSection.isVisible ? 1 : 0,
+          transform: whyChooseSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <p style={{
+            textAlign: 'center',
+            color: secondaryColor,
+            fontWeight: 'bold',
+            letterSpacing: '3px',
+            fontSize: '13px',
+            marginBottom: '10px',
+            textTransform: 'uppercase'
+          }}>
+            🪷 Our Promise
+          </p>
+          <h2 style={{ fontSize: '36px', marginBottom: '60px', color: primaryColor, textAlign: 'center' }}>
+            The India Reisen Difference
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '35px' }}>
+            {WHY_CHOOSE.map((item, idx) => (
+              <div key={idx} style={{
+                textAlign: 'center',
+                padding: '10px',
+                animation: whyChooseSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.12}s backwards` : 'none'
+              }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  margin: '0 auto 20px auto',
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${primaryColor}22, ${secondaryColor}33)`,
+                  border: `2px solid ${secondaryColor}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '34px'
+                }}>
+                  {item.icon}
+                </div>
+                <h3 style={{ margin: '0 0 10px 0', color: primaryColor, fontSize: '18px' }}>
+                  {item.title}
+                </h3>
+                <p style={{ margin: 0, color: '#666', fontSize: '14px', lineHeight: '1.6' }}>
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== NEW: Destinations Showcase ===== */}
+      <section
+        ref={destinationsSection.ref}
+        style={{
+          background: '#f9f9f9',
+          padding: '90px 20px',
+          opacity: destinationsSection.isVisible ? 1 : 0,
+          transform: destinationsSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <p style={{
+            textAlign: 'center',
+            color: secondaryColor,
+            fontWeight: 'bold',
+            letterSpacing: '3px',
+            fontSize: '13px',
+            marginBottom: '10px',
+            textTransform: 'uppercase'
+          }}>
+            🗺️ Where We Go
+          </p>
+          <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
+            Five Countries, Endless Stories
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '25px' }}>
+            {DESTINATIONS.map((dest, idx) => (
+              <a key={dest.name} href="/journeys" style={{ textDecoration: 'none' }}>
+                <div style={{
+                  position: 'relative',
+                  height: '260px',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  background: `linear-gradient(160deg, ${dest.gradient[0]}, ${dest.gradient[1]})`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                  padding: '25px',
+                  boxShadow: '0 6px 18px rgba(0,0,0,0.12)',
+                  cursor: 'pointer',
+                  transition: 'all 0.35s',
+                  animation: destinationsSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-10px) scale(1.02)'
+                  e.currentTarget.style.boxShadow = '0 14px 30px rgba(0,0,0,0.2)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)'
+                }}
+                >
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    fontSize: '40px',
+                    opacity: 0.4
+                  }}>
+                    {dest.icon}
+                  </div>
+                  <h3 style={{ color: 'white', fontSize: '24px', margin: '0 0 8px 0', textShadow: '1px 1px 4px rgba(0,0,0,0.3)' }}>
+                    {dest.name}
+                  </h3>
+                  <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '13px', margin: 0, lineHeight: '1.4' }}>
+                    {dest.tagline}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       {reviews.length > 0 && (
-        <section 
+        <section
           ref={testimonialsSection.ref}
-          style={{ 
-            maxWidth: '1200px', 
-            margin: '0 auto', 
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
             padding: '80px 20px',
             opacity: testimonialsSection.isVisible ? 1 : 0,
             transform: testimonialsSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
@@ -345,12 +505,63 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Newsletter Signup */}
-      <NewsletterSignup 
-        ref={newsletterSection.ref}
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-      />
+      {/* ===== NEW: Instagram / Social Strip ===== */}
+      <section
+        ref={instagramSection.ref}
+        style={{
+          background: 'white',
+          padding: '70px 20px',
+          opacity: instagramSection.isVisible ? 1 : 0,
+          transform: instagramSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'all 0.8s ease'
+        }}
+      >
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '28px', marginBottom: '8px', color: primaryColor }}>
+            📷 Follow the Journey
+          </h2>
+          <p style={{ color: '#666', marginBottom: '35px' }}>
+            <a href="https://www.instagram.com/indiareisen" target="_blank" rel="noopener noreferrer" style={{ color: secondaryColor, fontWeight: 'bold', textDecoration: 'none' }}>
+              @indiareisen
+            </a> on Instagram
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+            gap: '12px'
+          }}>
+            {[...Array(6)].map((_, idx) => (
+              
+                key={idx}
+                href="https://www.instagram.com/indiareisen"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  aspectRatio: '1 / 1',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  background: idx % 2 === 0
+                    ? `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
+                    : `linear-gradient(135deg, ${secondaryColor}, ${primaryColor})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '22px',
+                  textDecoration: 'none',
+                  transition: 'transform 0.3s, opacity 0.3s',
+                  animation: instagramSection.isVisible ? `fadeInUp 0.6s ease ${idx * 0.08}s backwards` : 'none'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.opacity = '0.85' }}
+                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = '1' }}
+              >
+                🪷
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section style={{

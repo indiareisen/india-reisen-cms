@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../services/firebaseService'
+import useNewsletter from '../hooks/useNewsletter'
 
 export default function Footer() {
   const [settings, setSettings] = useState({
@@ -12,6 +13,11 @@ export default function Footer() {
     primaryColor: '#d1356f',
     socialMedia: {}
   })
+
+  const [email, setEmail] = useState('')
+  const [subLoading, setSubLoading] = useState(false)
+  const [subMessage, setSubMessage] = useState({ type: '', text: '' })
+  const { subscribeToNewsletter } = useNewsletter()
 
   useEffect(() => {
     loadSettings()
@@ -29,6 +35,21 @@ export default function Footer() {
       }
     } catch (err) {
       console.error('Error fetching settings:', err)
+    }
+  }
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault()
+    setSubLoading(true)
+    setSubMessage({ type: '', text: '' })
+    try {
+      await subscribeToNewsletter(email, '')
+      setSubMessage({ type: 'success', text: '✅ Subscribed! Welcome aboard.' })
+      setEmail('')
+    } catch (error) {
+      setSubMessage({ type: 'error', text: `❌ ${error.message}` })
+    } finally {
+      setSubLoading(false)
     }
   }
 
@@ -57,9 +78,70 @@ export default function Footer() {
       color: 'white',
       marginTop: '50px'
     }}>
+      {/* Newsletter Bar */}
+      <div style={{
+        background: 'rgba(0,0,0,0.15)',
+        padding: '35px 20px'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '20px'
+        }}>
+          <div>
+            <h3 style={{ margin: '0 0 5px 0', fontSize: '18px' }}>📧 Stay Updated</h3>
+            <p style={{ margin: 0, fontSize: '13px', opacity: 0.85 }}>
+              Travel tips, offers & stories — no spam, unsubscribe anytime.
+            </p>
+          </div>
+          <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <input
+              type="email"
+              placeholder="Your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                padding: '10px 15px',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                minWidth: '220px'
+              }}
+            />
+            <button
+              type="submit"
+              disabled={subLoading}
+              style={{
+                padding: '10px 22px',
+                background: 'white',
+                color: settings.primaryColor,
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                cursor: subLoading ? 'not-allowed' : 'pointer',
+                opacity: subLoading ? 0.6 : 1
+              }}
+            >
+              {subLoading ? '⏳' : 'Subscribe'}
+            </button>
+          </form>
+        </div>
+        {subMessage.text && (
+          <p style={{ maxWidth: '1200px', margin: '10px auto 0 auto', fontSize: '13px', textAlign: 'right' }}>
+            {subMessage.text}
+          </p>
+        )}
+      </div>
+
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', marginBottom: '30px' }}>
-          
+
           {/* About */}
           <div>
             <h3 style={{ margin: '0 0 15px 0' }}>{settings.siteName}</h3>
@@ -115,11 +197,11 @@ export default function Footer() {
             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
               {settings.socialMedia && Object.entries(settings.socialMedia).map(([platform, data]) => (
                 data.enabled && (
-                  <a 
+                  
                     key={platform}
-                    href={getSocialLink(platform, data)} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                    href={getSocialLink(platform, data)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     title={platform.charAt(0).toUpperCase() + platform.slice(1)}
                     style={{
                       display: 'inline-flex',
