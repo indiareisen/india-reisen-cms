@@ -43,6 +43,7 @@ export default function WebsiteAdminLayout() {
         </button>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Main Features */}
           <Link to="/admin/website" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📊</span>
             {expanded && <span>Dashboard</span>}
@@ -59,6 +60,10 @@ export default function WebsiteAdminLayout() {
             <span>📸</span>
             {expanded && <span>Media</span>}
           </Link>
+          
+          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
+
+          {/* Content Management */}
           <Link to="/admin/website/team" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>👥</span>
             {expanded && <span>Team</span>}
@@ -67,6 +72,10 @@ export default function WebsiteAdminLayout() {
             <span>⭐</span>
             {expanded && <span>Reviews</span>}
           </Link>
+
+          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
+
+          {/* Communication */}
           <Link to="/admin/website/messages" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>💬</span>
             {expanded && <span>Messages</span>}
@@ -75,6 +84,14 @@ export default function WebsiteAdminLayout() {
             <span>📧</span>
             {expanded && <span>Newsletter</span>}
           </Link>
+          <Link to="/admin/website/email-templates" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>✉️</span>
+            {expanded && <span>Email Templates</span>}
+          </Link>
+
+          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
+
+          {/* Business */}
           <Link to="/admin/website/clients" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>👤</span>
             {expanded && <span>Clients</span>}
@@ -82,6 +99,18 @@ export default function WebsiteAdminLayout() {
           <Link to="/admin/website/invoices" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📄</span>
             {expanded && <span>Invoices</span>}
+          </Link>
+          <Link to="/admin/website/financial" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>💰</span>
+            {expanded && <span>Financials</span>}
+          </Link>
+
+          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
+
+          {/* Maintenance */}
+          <Link to="/admin/website/activity" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>📋</span>
+            {expanded && <span>Activity Log</span>}
           </Link>
           <Link to="/admin/website/social" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📱</span>
@@ -92,7 +121,18 @@ export default function WebsiteAdminLayout() {
             {expanded && <span>Settings</span>}
           </Link>
 
-          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '20px 0' }} />
+          <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
+
+          {/* External Links */}
+          <a 
+            href="/" 
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.1)' }}
+          >
+            <span>🌐</span>
+            {expanded && <span>View Website</span>}
+          </a>
 
           <button
             onClick={handleLogout}
@@ -105,7 +145,8 @@ export default function WebsiteAdminLayout() {
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '10px',
+              width: '100%'
             }}
           >
             <span>🚪</span>

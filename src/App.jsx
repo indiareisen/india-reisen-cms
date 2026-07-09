@@ -28,6 +28,9 @@ import InvoiceMaker from './pages/website-admin/InvoiceMaker'
 import SocialMediaCreator from './pages/website-admin/SocialMediaCreator'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
 import NewsletterManager from './pages/website-admin/NewsletterManager'
+import FinancialReports from './pages/website-admin/FinancialReports'
+import ActivityLog from './pages/website-admin/ActivityLog'
+import EmailTemplates from './pages/website-admin/EmailTemplates'
 
 export default function App() {
   return (
@@ -58,11 +61,14 @@ export default function App() {
             <Route path="/admin/website/team" element={<TeamManager />} />
             <Route path="/admin/website/reviews" element={<ReviewsManager />} />
             <Route path="/admin/website/messages" element={<ContactMessages />} />
+            <Route path="/admin/website/newsletter" element={<NewsletterManager />} />
             <Route path="/admin/website/clients" element={<ClientManager />} />
             <Route path="/admin/website/invoices" element={<InvoiceMaker />} />
+            <Route path="/admin/website/financial" element={<FinancialReports />} />
+            <Route path="/admin/website/activity" element={<ActivityLog />} />
+            <Route path="/admin/website/email-templates" element={<EmailTemplates />} />
             <Route path="/admin/website/social" element={<SocialMediaCreator />} />
             <Route path="/admin/website/settings" element={<WebsiteSettings />} />
-            <Route path="/admin/website/newsletter" element={<NewsletterManager />} />
           </Route>
 
           {/* Catch all */}
