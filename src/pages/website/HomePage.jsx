@@ -3,6 +3,7 @@ import { collection, getDocs, query, orderBy, limit, doc, getDoc } from 'firebas
 import { db } from '../../services/firebaseService'
 import MediaCarousel from '../../components/MediaCarousel'
 import useScrollAnimation from '../../hooks/useScrollAnimation'
+import { collection as fbCollection, getDocs as fbGetDocs, query as fbQuery, orderBy as fbOrderBy } from 'firebase/firestore'
 
 const DEFAULT_GRADIENTS = [
   ['#d1356f', '#f2789f'],
@@ -32,6 +33,8 @@ export default function HomePage() {
   const [reviews, setReviews] = useState([])
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [faqs, setFaqs] = useState([])
+  const [openFaqIndex, setOpenFaqIndex] = useState(null)
 
   // Scroll animations
   const aboutSection = useScrollAnimation()
@@ -43,6 +46,7 @@ export default function HomePage() {
   const destinationsSection = useScrollAnimation()
   const testimonialsSection = useScrollAnimation()
   const instagramSection = useScrollAnimation()
+  const faqSection = useScrollAnimation()
 
   useEffect(() => {
     fetchData()
@@ -59,9 +63,13 @@ export default function HomePage() {
       const journeysSnap = await getDocs(journeysQuery)
       setJourneys(journeysSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
 
-      const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3))
-      const reviewsSnap = await getDocs(reviewsQuery)
-      setReviews(reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+      const reviewsSnap = await getDocs(collection(db, 'reviews'))
+      const allReviews = reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      setReviews(allReviews.slice(0, 3))
+
+      const faqsQuery = fbQuery(fbCollection(db, 'faqs'), fbOrderBy('order', 'asc'))
+      const faqsSnap = await fbGetDocs(faqsQuery)
+      setFaqs(faqsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -571,6 +579,90 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      {faqs.length > 0 && (
+        <section
+          ref={faqSection.ref}
+          style={{
+            background: '#f9f9f9',
+            padding: '90px 20px',
+            opacity: faqSection.isVisible ? 1 : 0,
+            transform: faqSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
+            transition: 'all 0.8s ease'
+          }}
+        >
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <p style={{
+              textAlign: 'center',
+              color: secondaryColor,
+              fontWeight: 'bold',
+              letterSpacing: '3px',
+              fontSize: '13px',
+              marginBottom: '10px',
+              textTransform: 'uppercase'
+            }}>
+              💬 Got Questions?
+            </p>
+            <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
+              Frequently Asked Questions
+            </h2>
+            <div style={{ display: 'grid', gap: '14px' }}>
+              {faqs.map((faq, idx) => {
+                const isOpen = openFaqIndex === idx
+                return (
+                  <div key={faq.id} style={{
+                    background: 'white',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    border: `2px solid ${isOpen ? primaryColor : '#eee'}`,
+                    transition: 'border-color 0.3s',
+                    animation: faqSection.isVisible ? `fadeInUp 0.6s ease ${idx * 0.06}s backwards` : 'none'
+                  }}>
+                    <button
+                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '20px 25px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '15px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        color: '#333'
+                      }}
+                    >
+                      <span>{faq.question}</span>
+                      <span style={{
+                        color: primaryColor,
+                        fontSize: '20px',
+                        flexShrink: 0,
+                        transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.3s'
+                      }}>+</span>
+                    </button>
+                    {isOpen && (
+                      <div style={{
+                        padding: '0 25px 22px 25px',
+                        color: '#666',
+                        fontSize: '14px',
+                        lineHeight: '1.7'
+                      }}>
+                        {faq.answer}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section style={{
