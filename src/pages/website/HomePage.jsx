@@ -4,15 +4,23 @@ import { db } from '../../services/firebaseService'
 import MediaCarousel from '../../components/MediaCarousel'
 import useScrollAnimation from '../../hooks/useScrollAnimation'
 
-const DESTINATIONS = [
-  { name: 'India', icon: '🕌', tagline: 'Palaces, deserts & timeless heritage', gradient: ['#d1356f', '#f2789f'] },
-  { name: 'Nepal', icon: '🏔️', tagline: 'Himalayan peaks & spiritual valleys', gradient: ['#5b7fbd', '#8fb3e8'] },
-  { name: 'Bhutan', icon: '🙏', tagline: 'The last Himalayan kingdom', gradient: ['#4c8c6b', '#7fc79b'] },
-  { name: 'Tibet', icon: '⛩️', tagline: 'Sacred monasteries & high plateaus', gradient: ['#a3703c', '#D4A574'] },
-  { name: 'Sri Lanka', icon: '🌴', tagline: 'Beaches, tea hills & ancient ruins', gradient: ['#2a9d8f', '#6fc9bc'] }
+const DEFAULT_GRADIENTS = [
+  ['#d1356f', '#f2789f'],
+  ['#5b7fbd', '#8fb3e8'],
+  ['#4c8c6b', '#7fc79b'],
+  ['#a3703c', '#D4A574'],
+  ['#2a9d8f', '#6fc9bc']
 ]
 
-const WHY_CHOOSE = [
+const FALLBACK_DESTINATIONS = [
+  { name: 'India', icon: '🕌', tagline: 'Palaces, deserts & timeless heritage' },
+  { name: 'Nepal', icon: '🏔️', tagline: 'Himalayan peaks & spiritual valleys' },
+  { name: 'Bhutan', icon: '🙏', tagline: 'The last Himalayan kingdom' },
+  { name: 'Tibet', icon: '⛩️', tagline: 'Sacred monasteries & high plateaus' },
+  { name: 'Sri Lanka', icon: '🌴', tagline: 'Beaches, tea hills & ancient ruins' }
+]
+
+const FALLBACK_WHY_CHOOSE = [
   { icon: '✨', title: 'Bespoke Itineraries', text: 'Every journey is designed around you — no cookie-cutter packages, ever.' },
   { icon: '🧭', title: 'Local Expertise', text: '50+ trusted local partners across 15+ destinations who know the terrain.' },
   { icon: '🌿', title: 'Responsible Tourism', text: 'Immersive travel that respects communities, culture, and the environment.' },
@@ -72,6 +80,13 @@ export default function HomePage() {
     { value: '50+', label: 'Local Partners' },
     { value: '7', label: 'Curated Journeys' }
   ]
+
+  const destinations = (hp.destinations && hp.destinations.length > 0)
+    ? hp.destinations.map((d, i) => ({ ...d, gradient: DEFAULT_GRADIENTS[i % DEFAULT_GRADIENTS.length] }))
+    : FALLBACK_DESTINATIONS.map((d, i) => ({ ...d, gradient: DEFAULT_GRADIENTS[i % DEFAULT_GRADIENTS.length] }))
+
+  const whyChoose = (hp.whyChoose && hp.whyChoose.length > 0) ? hp.whyChoose : FALLBACK_WHY_CHOOSE
+  const instagramHandle = hp.instagramHandle || 'indiareisen'
 
   return (
     <div>
@@ -350,7 +365,7 @@ export default function HomePage() {
             The India Reisen Difference
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '35px' }}>
-            {WHY_CHOOSE.map((item, idx) => (
+            {whyChoose.map((item, idx) => (
               <div key={idx} style={{
                 textAlign: 'center',
                 padding: '10px',
@@ -408,7 +423,7 @@ export default function HomePage() {
             Five Countries, Endless Stories
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '25px' }}>
-            {DESTINATIONS.map((dest, idx) => (
+            {destinations.map((dest, idx) => (
               <a key={dest.name} href="/journeys" style={{ textDecoration: 'none' }}>
                 <div style={{
                   position: 'relative',
@@ -517,7 +532,7 @@ export default function HomePage() {
             📷 Follow the Journey
           </h2>
           <p style={{ color: '#666', marginBottom: '35px' }}>
-            <a href="https://www.instagram.com/indiareisen" target="_blank" rel="noopener noreferrer" style={{ color: secondaryColor, fontWeight: 'bold', textDecoration: 'none' }}>
+            <a href={`https://www.instagram.com/${instagramHandle}`} target="_blank" rel="noopener noreferrer" style={{ color: secondaryColor, fontWeight: 'bold', textDecoration: 'none' }}>
               @indiareisen
             </a> on Instagram
           </p>
@@ -529,7 +544,7 @@ export default function HomePage() {
             {[...Array(6)].map((_, idx) => (
               
                 <a key={idx}
-                href="https://www.instagram.com/indiareisen"
+                href={`https://www.instagram.com/${instagramHandle}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
