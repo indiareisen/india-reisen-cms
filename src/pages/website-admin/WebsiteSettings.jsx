@@ -105,7 +105,21 @@ export default function WebsiteSettings() {
       ],
       ctaHeading: 'Ready to Explore India?',
       ctaText: 'Start your journey with us today.',
-      ctaButtonText: 'Browse All Journeys'
+      ctaButtonText: 'Browse All Journeys',
+      whyChoose: [
+        { icon: '✨', title: 'Bespoke Itineraries', text: 'Every journey is designed around you — no cookie-cutter packages, ever.' },
+        { icon: '🧭', title: 'Local Expertise', text: '50+ trusted local partners across 15+ destinations who know the terrain.' },
+        { icon: '🌿', title: 'Responsible Tourism', text: 'Immersive travel that respects communities, culture, and the environment.' },
+        { icon: '🤝', title: 'White-Glove Support', text: 'Dedicated support before, during, and after your journey — always.' }
+      ],
+      destinations: [
+        { name: 'India', icon: '🕌', tagline: 'Palaces, deserts & timeless heritage' },
+        { name: 'Nepal', icon: '🏔️', tagline: 'Himalayan peaks & spiritual valleys' },
+        { name: 'Bhutan', icon: '🙏', tagline: 'The last Himalayan kingdom' },
+        { name: 'Tibet', icon: '⛩️', tagline: 'Sacred monasteries & high plateaus' },
+        { name: 'Sri Lanka', icon: '🌴', tagline: 'Beaches, tea hills & ancient ruins' }
+      ],
+      instagramHandle: 'indiareisen'
     }
   })
   const [loading, setLoading] = useState(true)
@@ -233,6 +247,24 @@ export default function WebsiteSettings() {
         ...settings.homePage,
         stats: newStats
       }
+    })
+  }
+
+  const handleWhyChooseChange = (index, field, value) => {
+    const updated = [...settings.homePage.whyChoose]
+    updated[index] = { ...updated[index], [field]: value }
+    setSettings({
+      ...settings,
+      homePage: { ...settings.homePage, whyChoose: updated }
+    })
+  }
+
+  const handleDestinationChange = (index, field, value) => {
+    const updated = [...settings.homePage.destinations]
+    updated[index] = { ...updated[index], [field]: value }
+    setSettings({
+      ...settings,
+      homePage: { ...settings.homePage, destinations: updated }
     })
   }
 
@@ -539,6 +571,52 @@ export default function WebsiteSettings() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Why Choose Us (4 Cards)</h3>
+            <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '20px' }}>
+              {settings.homePage.whyChoose && settings.homePage.whyChoose.map((item, index) => (
+                <div key={index} style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '80px 1fr 2fr', gap: '10px', alignItems: 'end' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '12px' }}>Icon</label>
+                    <input type="text" value={item.icon} onChange={(e) => handleWhyChooseChange(index, 'icon', e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '12px' }}>Title</label>
+                    <input type="text" value={item.title} onChange={(e) => handleWhyChooseChange(index, 'title', e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '12px' }}>Description</label>
+                    <input type="text" value={item.text} onChange={(e) => handleWhyChooseChange(index, 'text', e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Destinations Showcase (5 Cards)</h3>
+            <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '20px' }}>
+              {settings.homePage.destinations && settings.homePage.destinations.map((dest, index) => (
+                <div key={index} style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '80px 1fr 2fr', gap: '10px', alignItems: 'end' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '12px' }}>Icon</label>
+                    <input type="text" value={dest.icon} onChange={(e) => handleDestinationChange(index, 'icon', e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '12px' }}>Country Name</label>
+                    <input type="text" value={dest.name} onChange={(e) => handleDestinationChange(index, 'name', e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '12px' }}>Tagline</label>
+                    <input type="text" value={dest.tagline} onChange={(e) => handleDestinationChange(index, 'tagline', e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>Instagram Strip</h3>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Instagram Handle (no @)</label>
+              <input type="text" value={settings.homePage.instagramHandle || ''} onChange={(e) => setSettings({...settings, homePage: {...settings.homePage, instagramHandle: e.target.value}})} style={inputStyle} />
             </div>
 
             <h3 style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '2px solid #d1356f', paddingBottom: '10px' }}>CTA Section</h3>
