@@ -485,10 +485,7 @@ export default function HomePage() {
           style={{
             maxWidth: '1200px',
             margin: '0 auto',
-            padding: '80px 20px',
-            opacity: testimonialsSection.isVisible ? 1 : 0,
-            transform: testimonialsSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
-            transition: 'all 0.8s ease'
+            padding: '80px 20px'
           }}
         >
           <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
@@ -529,10 +526,7 @@ export default function HomePage() {
         ref={instagramSection.ref}
         style={{
           background: 'white',
-          padding: '70px 20px',
-          opacity: instagramSection.isVisible ? 1 : 0,
-          transform: instagramSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
-          transition: 'all 0.8s ease'
+          padding: '70px 20px'
         }}
       >
         <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
@@ -586,10 +580,7 @@ export default function HomePage() {
           ref={faqSection.ref}
           style={{
             background: '#f9f9f9',
-            padding: '90px 20px',
-            opacity: faqSection.isVisible ? 1 : 0,
-            transform: faqSection.isVisible ? 'translateY(0)' : 'translateY(40px)',
-            transition: 'all 0.8s ease'
+            padding: '90px 20px'
           }}
         >
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
