@@ -606,15 +606,15 @@ export default function HomePage() {
           {/* Punchline footer bar - overlaps the widget's bottom attribution area */}
           <div style={{
             position: 'relative',
-            marginTop: '-42px',
+            marginTop: '-70px',
             zIndex: 5,
             background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
             borderRadius: '10px',
-            padding: '16px 20px',
+            padding: '28px 20px',
             textAlign: 'center',
             boxShadow: '0 -2px 10px rgba(0,0,0,0.06)'
           }}>
-            <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '14px', letterSpacing: '0.5px' }}>
+            <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.5px' }}>
               ✨ Every journey has a story — tag <a href={`https://www.instagram.com/${instagramHandle}`} target="_blank" rel="noopener noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>@{instagramHandle}</a> to be featured
             </p>
           </div>
