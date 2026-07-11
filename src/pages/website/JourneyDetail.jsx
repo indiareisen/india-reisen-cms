@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
+import useWishlist from '../../hooks/useWishlist'
 
 export default function JourneyDetail() {
   const { id } = useParams()
@@ -9,7 +10,7 @@ export default function JourneyDetail() {
   const [journey, setJourney] = useState(null)
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
 
   useEffect(() => {
     fetchData()
@@ -27,23 +28,11 @@ export default function JourneyDetail() {
         setSettings(settingsDoc.data())
       }
 
-      // Check if wishlisted
-      const wishlisted = localStorage.getItem(`wishlist-${id}`)
-      setIsWishlisted(!!wishlisted)
     } catch (error) {
       console.error('Error:', error)
     } finally {
       setLoading(false)
     }
-  }
-
-  const toggleWishlist = () => {
-    if (isWishlisted) {
-      localStorage.removeItem(`wishlist-${id}`)
-    } else {
-      localStorage.setItem(`wishlist-${id}`, JSON.stringify(journey))
-    }
-    setIsWishlisted(!isWishlisted)
   }
 
   if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
@@ -209,12 +198,12 @@ export default function JourneyDetail() {
               </button>
 
               <button
-                onClick={toggleWishlist}
+                onClick={() => toggleWishlist(journey.id, journey)}
                 style={{
                   width: '100%',
                   padding: '15px',
-                  background: isWishlisted ? primaryColor : 'white',
-                  color: isWishlisted ? 'white' : primaryColor,
+                  background: checkWishlisted(journey.id) ? primaryColor : 'white',
+                  color: checkWishlisted(journey.id) ? 'white' : primaryColor,
                   border: `2px solid ${primaryColor}`,
                   borderRadius: '6px',
                   fontSize: '16px',
@@ -222,7 +211,7 @@ export default function JourneyDetail() {
                   cursor: 'pointer'
                 }}
               >
-                {isWishlisted ? '❤️ Remove from Wishlist' : '🤍 Add to Wishlist'}
+                {checkWishlisted(journey.id) ? '❤️ Remove from Wishlist' : '🤍 Add to Wishlist'}
               </button>
 
               <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
