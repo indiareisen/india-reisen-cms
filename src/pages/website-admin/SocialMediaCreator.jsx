@@ -43,13 +43,25 @@ function wrapText(ctx, text, maxWidth) {
   return lines
 }
 
+function generateHashtags(location, platform) {
+  const brand = ['#IndiaReisen', '#ExploreExperienceEnchant']
+  const generic = ['#LuxuryTravel', '#BespokeTravel', '#Wanderlust', '#TravelGram']
+  const platformTag = platform && platform.toLowerCase().includes('instagram') ? '#InstaTravel' : ''
+  const locTag = location ? '#' + location.replace(/[^a-zA-Z0-9]/g, '') : ''
+  const tags = [locTag, ...brand, ...generic, platformTag].filter(Boolean)
+  return [...new Set(tags)].slice(0, 8).join(' ')
+}
+
 export default function SocialMediaCreator() {
   const [activeTab, setActiveTab] = useState('generator')
 
   // ===== Generator state =====
   const canvasRef = useRef(null)
   const [platform, setPlatform] = useState('Instagram (Square)')
+  const [locationText, setLocationText] = useState('')
+  const [punchlineText, setPunchlineText] = useState('')
   const [caption, setCaption] = useState('')
+  const [hashtags, setHashtags] = useState('')
   const [bgImageUrl, setBgImageUrl] = useState('')
   const [uploading, setUploading] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -139,16 +151,24 @@ export default function SocialMediaCreator() {
       ctx.fillStyle = overlayGrad
       ctx.fillRect(0, height - overlayHeight, width, overlayHeight)
 
-      // Caption text
-      if (caption) {
+      // On-image text: location tag + punchline only (full caption stays off-image)
+      ctx.textBaseline = 'bottom'
+      let cursorY = height - (width * 0.06)
+
+      if (locationText) {
+        ctx.fillStyle = 'rgba(255,255,255,0.92)'
+        ctx.font = `bold ${Math.round(width * 0.024)}px Arial`
+        ctx.fillText(`📍 ${locationText}`, width * 0.06, cursorY)
+        cursorY -= width * 0.05
+      }
+
+      if (punchlineText) {
         ctx.fillStyle = 'white'
-        ctx.font = `bold ${Math.round(width * 0.032)}px Arial`
-        ctx.textBaseline = 'bottom'
-        const maxTextWidth = width * 0.88
-        const lines = wrapText(ctx, caption, maxTextWidth)
-        const lineHeight = width * 0.042
-        let y = height - (width * 0.09)
-        const startY = y - (lines.length - 1) * lineHeight
+        ctx.font = `bold ${Math.round(width * 0.036)}px Arial`
+        const maxTextWidth = width * 0.85
+        const lines = wrapText(ctx, punchlineText, maxTextWidth)
+        const lineHeight = width * 0.046
+        const startY = cursorY - (lines.length - 1) * lineHeight
         lines.forEach((line, i) => {
           ctx.fillText(line, width * 0.06, startY + i * lineHeight)
         })
@@ -182,6 +202,10 @@ export default function SocialMediaCreator() {
     }
   }
 
+  const handleGenerateHashtags = () => {
+    setHashtags(generateHashtags(locationText, platform))
+  }
+
   const handleDownload = () => {
     if (!generatedDataUrl) return
     const a = document.createElement('a')
@@ -209,7 +233,9 @@ export default function SocialMediaCreator() {
 
       await addDoc(collection(db, 'socialPosts'), {
         platform,
-        caption,
+        location: locationText,
+        punchline: punchlineText,
+        caption: [caption, hashtags].filter(Boolean).join('\n\n'),
         imageUrl: data.secure_url || '',
         scheduledDate: '',
         status: 'draft',
@@ -302,8 +328,28 @@ export default function SocialMediaCreator() {
               </div>
 
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Caption / Overlay Text</label>
-                <textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="e.g. Discover the magic of Rajasthan ✨" rows={3} style={inputStyle} />
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Location / Name <span style={{ fontWeight: 'normal', color: '#999' }}>(shown on image)</span></label>
+                <input type="text" value={locationText} onChange={(e) => setLocationText(e.target.value)} placeholder="e.g. Rajasthan, India" style={inputStyle} />
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Punchline <span style={{ fontWeight: 'normal', color: '#999' }}>(shown on image)</span></label>
+                <input type="text" value={punchlineText} onChange={(e) => setPunchlineText(e.target.value)} placeholder="e.g. Palaces, deserts & timeless heritage" style={inputStyle} />
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Supporting Caption <span style={{ fontWeight: 'normal', color: '#999' }}>(post text, not on image)</span></label>
+                <textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="The fuller story for your post caption..." rows={3} style={inputStyle} />
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Hashtags</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="#IndiaReisen #LuxuryTravel ..." style={{ ...inputStyle, flex: 1 }} />
+                  <button type="button" onClick={handleGenerateHashtags} style={{ padding: '10px 14px', background: '#D4A574', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                    ✨ Suggest
+                  </button>
+                </div>
               </div>
 
               <div style={{ marginBottom: '15px' }}>
