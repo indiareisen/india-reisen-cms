@@ -30,27 +30,27 @@ export default function PublicLayout() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav style={{
         background: settings.primaryColor,
-        padding: '20px',
+        padding: '28px 20px',
         color: 'white'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '45px', alignItems: 'center', flexWrap: 'wrap' }}>
           <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
-            <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen" style={{ height: '40px' }} />
+            <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen" style={{ height: '58px' }} />
           </Link>
           
-          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px' }}>
             🏠 Home
           </Link>
           
-          <Link to="/journeys" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+          <Link to="/journeys" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px' }}>
             ✈️ Journeys
           </Link>
           
-          <Link to="/blog" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+          <Link to="/blog" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px' }}>
             📝 Blog
           </Link>
           
-          <Link to="/contact" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+          <Link to="/contact" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px' }}>
             📞 Contact
           </Link>
           

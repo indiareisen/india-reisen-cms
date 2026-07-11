@@ -427,11 +427,20 @@ export default function HomePage() {
           }}>
             🗺️ Where We Go
           </p>
-          <h2 style={{ fontSize: '36px', marginBottom: '50px', color: primaryColor, textAlign: 'center' }}>
+          <h2 style={{ fontSize: '36px', marginBottom: '16px', color: primaryColor, textAlign: 'center' }}>
             Five Countries, Endless Stories
           </h2>
+          <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#666', maxWidth: '650px', margin: '0 auto 20px auto', textAlign: 'center' }}>
+            From the palaces of Rajasthan to the monasteries of the high Himalaya, our routes stretch across five countries and thousands of years of living heritage — each stop chosen for what it lets you feel, not just see.
+          </p>
+          <div style={{ textAlign: 'center', fontSize: '40px', marginBottom: '40px', letterSpacing: '10px' }}>
+            🗺️
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '25px' }}>
-            {destinations.map((dest, idx) => (
+            {destinations.map((dest, idx) => {
+              const FLAGS = { 'India': '🇮🇳', 'Nepal': '🇳🇵', 'Bhutan': '🇧🇹', 'Tibet': '🏔️', 'Sri Lanka': '🇱🇰' }
+              const flag = FLAGS[dest.name] || ''
+              return (
               <a key={dest.name} href="/journeys" style={{ textDecoration: 'none' }}>
                 <div style={{
                   position: 'relative',
@@ -465,6 +474,21 @@ export default function HomePage() {
                   }}>
                     {dest.icon}
                   </div>
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    fontSize: '26px',
+                    background: 'rgba(255,255,255,0.25)',
+                    borderRadius: '6px',
+                    width: '40px',
+                    height: '30px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {flag}
+                  </div>
                   <h3 style={{ color: 'white', fontSize: '24px', margin: '0 0 8px 0', textShadow: '1px 1px 4px rgba(0,0,0,0.3)' }}>
                     {dest.name}
                   </h3>
@@ -473,7 +497,8 @@ export default function HomePage() {
                   </p>
                 </div>
               </a>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>
