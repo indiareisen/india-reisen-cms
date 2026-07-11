@@ -27,8 +27,6 @@ const ClientManager = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
-  const [migrationStatus, setMigrationStatus] = useState(null);
-  const [migrating, setMigrating] = useState(false);
 
   useEffect(() => {
     loadClients();
@@ -43,71 +41,6 @@ const ClientManager = () => {
       console.error('Error loading clients:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleImportLegacyClients = async () => {
-    const saved = localStorage.getItem('invoiceClients');
-    if (!saved) {
-      setMigrationStatus({ type: 'info', text: 'No legacy client data found in this browser.' });
-      return;
-    }
-
-    let legacyClients;
-    try {
-      legacyClients = JSON.parse(saved);
-    } catch (e) {
-      setMigrationStatus({ type: 'error', text: 'Legacy data found but could not be parsed.' });
-      return;
-    }
-
-    if (!Array.isArray(legacyClients) || legacyClients.length === 0) {
-      setMigrationStatus({ type: 'info', text: 'Legacy data found but it is empty.' });
-      return;
-    }
-
-    if (!window.confirm(`Found ${legacyClients.length} legacy client(s) in this browser's storage. Import them into Firestore now? Existing emails already in Firestore will be skipped.`)) {
-      return;
-    }
-
-    setMigrating(true);
-    let imported = 0;
-    let skipped = 0;
-
-    try {
-      const existingEmails = new Set(clients.map(c => (c.email || '').toLowerCase()));
-
-      for (const legacy of legacyClients) {
-        if (!legacy.email || existingEmails.has(legacy.email.toLowerCase())) {
-          skipped++;
-          continue;
-        }
-        await addDoc(collection(db, 'clients'), {
-          ...emptyForm,
-          name: legacy.name || '',
-          company: legacy.company || '',
-          address: legacy.address || '',
-          gstNumber: legacy.gstNumber || '',
-          phoneNumber: legacy.phoneNumber || '',
-          email: legacy.email || '',
-          createdAt: legacy.createdAt ? Timestamp.fromDate(new Date(legacy.createdAt)) : Timestamp.now(),
-          updatedAt: Timestamp.now(),
-          migratedFromLocalStorage: true
-        });
-        existingEmails.add(legacy.email.toLowerCase());
-        imported++;
-      }
-
-      await loadClients();
-      setMigrationStatus({
-        type: 'success',
-        text: `Imported ${imported} client(s). Skipped ${skipped} (already existed or missing email).`
-      });
-    } catch (error) {
-      console.error('Migration error:', error);
-      setMigrationStatus({ type: 'error', text: 'Something went wrong during import. Check console for details.' });
-    } finally {
-      setMigrating(false);
     }
   };
 
@@ -192,31 +125,6 @@ const ClientManager = () => {
         🔒 This section stores sensitive personal data (passport, visa, billing details). Only share client records with authorized team members.
       </div>
 
-      <div style={{ background: '#eef4ff', border: '1px solid #b8d0ff', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
-        <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#334', fontWeight: 'bold' }}>
-          One-time migration tool
-        </p>
-        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#556' }}>
-          If this browser has old client data saved locally from before the Firestore switch, click below to import it. This only works from the specific browser/device where that data was originally created.
-        </p>
-        <button
-          onClick={handleImportLegacyClients}
-          disabled={migrating}
-          style={{ padding: '8px 16px', backgroundColor: migrating ? '#99a' : '#4a6fdc', color: 'white', border: 'none', borderRadius: '4px', cursor: migrating ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '13px' }}
-        >
-          {migrating ? 'Importing...' : 'Import Legacy Clients from This Browser'}
-        </button>
-        {migrationStatus && (
-          <p style={{
-            margin: '10px 0 0 0',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            color: migrationStatus.type === 'success' ? '#2D6A4F' : migrationStatus.type === 'error' ? '#c62828' : '#666'
-          }}>
-            {migrationStatus.text}
-          </p>
-        )}
-      </div>
 
       {showForm && (
         <div style={{ backgroundColor: '#fff5f9', padding: '24px', borderRadius: '8px', marginBottom: '32px', border: '1px solid #ffccdd' }}>
