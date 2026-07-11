@@ -599,7 +599,20 @@ export default function HomePage() {
               @indiareisen
             </a> on Instagram
           </p>
-          <div className="sk-instagram-feed" data-embed-id="25696494"></div>
+          <div style={{ position: 'relative' }}>
+            <div className="sk-instagram-feed" data-embed-id="25696494"></div>
+            {/* Mask covering SociableKIT's "Powered by" attribution badge (typically bottom of widget) */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '36px',
+              background: 'white',
+              zIndex: 5,
+              pointerEvents: 'none'
+            }}></div>
+          </div>
         </div>
       </section>
 
