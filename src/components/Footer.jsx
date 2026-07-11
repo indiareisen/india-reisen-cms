@@ -174,6 +174,11 @@ export default function Footer() {
                   Contact
                 </Link>
               </li>
+              <li style={{ marginBottom: '10px' }}>
+                <Link to="/privacy-policy" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
 
