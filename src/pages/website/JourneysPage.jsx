@@ -209,7 +209,9 @@ export default function JourneysPage() {
                 }}
               >
                 <div style={{
-                  background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                  backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                   height: '200px',
                   display: 'flex',
                   alignItems: 'center',
@@ -217,7 +219,7 @@ export default function JourneysPage() {
                   color: 'white',
                   position: 'relative'
                 }}>
-                  Journey Image
+                  {!journey.featuredImage && 'Journey Image'}
 
                   {/* Wishlist Button */}
                   <button

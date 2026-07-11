@@ -72,9 +72,9 @@ export default function JourneyDetail() {
         </button>
       </div>
 
-      {/* Hero Section with Image Placeholder */}
+      {/* Hero Section */}
       <section style={{
-        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+        position: 'relative',
         color: 'white',
         padding: '80px 20px',
         textAlign: 'center',
@@ -82,13 +82,33 @@ export default function JourneyDetail() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
-        <h1 style={{ fontSize: '48px', margin: '0 0 20px 0' }}>{journey.title}</h1>
-        <p style={{ fontSize: '18px', maxWidth: '600px', margin: '0 0 30px 0' }}>
-          {journey.description}
-        </p>
-        <div style={{ fontSize: '24px' }}>🌍 {journey.destination}</div>
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : 'none',
+          background: journey.featuredImage ? undefined : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          zIndex: 1
+        }}></div>
+        {journey.featuredImage && (
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: `linear-gradient(135deg, rgba(209,53,111,0.55), rgba(212,165,116,0.55))`,
+            zIndex: 2
+          }}></div>
+        )}
+        <div style={{ position: 'relative', zIndex: 3 }}>
+          <h1 style={{ fontSize: '48px', margin: '0 0 20px 0', textShadow: '2px 2px 8px rgba(0,0,0,0.4)' }}>{journey.title}</h1>
+          <p style={{ fontSize: '18px', maxWidth: '600px', margin: '0 auto 30px auto', textShadow: '1px 1px 4px rgba(0,0,0,0.4)' }}>
+            {journey.description}
+          </p>
+          <div style={{ fontSize: '24px', textShadow: '1px 1px 4px rgba(0,0,0,0.4)' }}>🌍 {journey.destination}</div>
+        </div>
       </section>
 
       {/* Quick Facts */}
