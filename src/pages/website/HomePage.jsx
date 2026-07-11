@@ -730,6 +730,11 @@ export default function HomePage() {
             transform: translateY(0);
           }
         }
+
+        /* Hide SociableKIT free-plan attribution badge */
+        .sk-instagram-feed a[href*="sociablekit.com"] {
+          display: none !important;
+        }
       `}</style>
     </div>
   )
