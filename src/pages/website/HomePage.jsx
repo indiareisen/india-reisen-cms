@@ -492,31 +492,55 @@ export default function HomePage() {
             What Our Travelers Say
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
-            {reviews.slice(0, 3).map((review, idx) => (
-              <div key={review.id} style={{
-                background: '#f9f9f9',
-                padding: '30px',
-                borderRadius: '12px',
-                border: `2px solid ${primaryColor}`,
-                animation: testimonialsSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none'
-              }}>
-                <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
-                  {'⭐'.repeat(review.rating)}
+            {reviews.slice(0, 3).map((review, idx) => {
+              const TESTIMONIAL_BACKGROUNDS = [
+                'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80',
+                'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800&q=80',
+                'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&q=80'
+              ]
+              return (
+                <div key={review.id} style={{
+                  position: 'relative',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  border: `2px solid ${primaryColor}`,
+                  animation: testimonialsSection.isVisible ? `fadeInUp 0.8s ease ${idx * 0.1}s backwards` : 'none',
+                  minHeight: '280px'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundImage: `url('${TESTIMONIAL_BACKGROUNDS[idx % TESTIMONIAL_BACKGROUNDS.length]}')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    zIndex: 1
+                  }}></div>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: `linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.88))`,
+                    zIndex: 2
+                  }}></div>
+                  <div style={{ position: 'relative', zIndex: 3, padding: '30px' }}>
+                    <div style={{ color: primaryColor, fontSize: '20px', marginBottom: '10px' }}>
+                      {'⭐'.repeat(review.rating)}
+                    </div>
+                    <p style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 10px 0' }}>
+                      {review.title}
+                    </p>
+                    <p style={{ color: '#555', margin: '0 0 15px 0', lineHeight: '1.6' }}>
+                      "{review.content}"
+                    </p>
+                    <p style={{ fontWeight: 'bold', margin: '0 0 5px 0' }}>
+                      {review.name}
+                    </p>
+                    <p style={{ color: '#777', margin: 0, fontSize: '14px' }}>
+                      {review.country} • {review.journey}
+                    </p>
+                  </div>
                 </div>
-                <p style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 10px 0' }}>
-                  {review.title}
-                </p>
-                <p style={{ color: '#666', margin: '0 0 15px 0', lineHeight: '1.6' }}>
-                  "{review.content}"
-                </p>
-                <p style={{ fontWeight: 'bold', margin: '0 0 5px 0' }}>
-                  {review.name}
-                </p>
-                <p style={{ color: '#999', margin: 0, fontSize: '14px' }}>
-                  {review.country} • {review.journey}
-                </p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}
