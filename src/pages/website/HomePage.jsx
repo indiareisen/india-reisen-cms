@@ -52,6 +52,18 @@ export default function HomePage() {
     fetchData()
   }, [])
 
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://widgets.sociablekit.com/instagram-feed/widget.js'
+    script.defer = true
+    document.body.appendChild(script)
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
+    }
+  }, [])
+
   const fetchData = async () => {
     try {
       const settingsDoc = await getDoc(doc(db, 'settings', 'general'))
@@ -587,39 +599,7 @@ export default function HomePage() {
               @indiareisen
             </a> on Instagram
           </p>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-            gap: '12px'
-          }}>
-            {[...Array(6)].map((_, idx) => (
-              
-                <a key={idx}
-                href={`https://www.instagram.com/${instagramHandle}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  aspectRatio: '1 / 1',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  background: idx % 2 === 0
-                    ? `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`
-                    : `linear-gradient(135deg, ${secondaryColor}, ${primaryColor})`,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '22px',
-                  textDecoration: 'none',
-                  transition: 'transform 0.3s, opacity 0.3s',
-                  animation: instagramSection.isVisible ? `fadeInUp 0.6s ease ${idx * 0.08}s backwards` : 'none'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.opacity = '0.85' }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = '1' }}
-              >
-                🪷
-              </a>
-            ))}
-          </div>
+          <div className="sk-instagram-feed" data-embed-id="25696494"></div>
         </div>
       </section>
 
