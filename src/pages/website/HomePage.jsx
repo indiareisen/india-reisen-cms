@@ -122,7 +122,7 @@ export default function HomePage() {
         justifyContent: 'center',
         overflow: 'hidden'
       }}>
-        <div style={{
+        <div className="hero-bg-image" style={{
           position: 'absolute',
           top: 0,
           left: 0,
@@ -746,6 +746,15 @@ export default function HomePage() {
           to {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+
+        /* Fix hero background on mobile - background-attachment:fixed renders incorrectly on most mobile browsers */
+        @media (max-width: 768px) {
+          .hero-bg-image {
+            background-attachment: scroll !important;
+            background-size: cover !important;
+            background-position: center !important;
           }
         }
 
