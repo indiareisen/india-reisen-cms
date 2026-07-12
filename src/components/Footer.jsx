@@ -105,10 +105,10 @@ export default function Footer() {
             {/* Branded strip masking the widget's bottom attribution badge */}
             <div style={{
               position: 'relative',
-              marginTop: '-46px',
+              marginTop: '-92px',
               zIndex: 5,
               background: `linear-gradient(135deg, ${settings.primaryColor}, #D4A574)`,
-              padding: '14px 20px',
+              padding: '28px 20px',
               textAlign: 'center'
             }}>
               <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '13px' }}>
