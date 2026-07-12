@@ -23,6 +23,15 @@ export default function Footer() {
     loadSettings()
   }, [])
 
+  useEffect(() => {
+    if (document.getElementById('shapo-embed-js')) return
+    const script = document.createElement('script')
+    script.id = 'shapo-embed-js'
+    script.src = 'https://cdn.shapo.io/js/embed.js'
+    script.defer = true
+    document.body.appendChild(script)
+  }, [])
+
   const loadSettings = async () => {
     try {
       const docRef = doc(db, 'settings', 'general')
@@ -78,6 +87,16 @@ export default function Footer() {
       color: 'white',
       marginTop: '50px'
     }}>
+      {/* Google Reviews Widget */}
+      <div style={{ background: 'white', padding: '35px 20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h3 style={{ textAlign: 'center', color: settings.primaryColor, marginBottom: '20px', fontSize: '18px' }}>
+            ⭐ What Our Travelers Say on Google
+          </h3>
+          <div id="shapo-widget-250772ab48798a9fd1ab"></div>
+        </div>
+      </div>
+
       {/* Newsletter Bar */}
       <div style={{
         background: 'rgba(0,0,0,0.15)',
