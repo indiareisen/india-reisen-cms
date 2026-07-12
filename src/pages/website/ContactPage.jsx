@@ -61,6 +61,18 @@ export default function ContactPage() {
         createdAt: Timestamp.now(),
         status: 'pending'
       })
+
+      // Send email notification - non-blocking, form still succeeds even if this fails
+      try {
+        await fetch('https://project-5alhy.vercel.app/api/send-contact-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        })
+      } catch (emailErr) {
+        console.error('Email notification failed (message still saved):', emailErr)
+      }
+
       setFormData({ name: '', email: '', phone: '', journey: '', message: '' })
       setSubmitted(true)
       setTimeout(() => setSubmitted(false), 3000)
