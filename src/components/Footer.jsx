@@ -93,7 +93,29 @@ export default function Footer() {
           <h3 style={{ textAlign: 'center', color: settings.primaryColor, marginBottom: '20px', fontSize: '18px' }}>
             ⭐ What Our Travelers Say on Google
           </h3>
-          <div id="shapo-widget-250772ab48798a9fd1ab"></div>
+          <div style={{
+            position: 'relative',
+            border: `6px solid ${settings.primaryColor}`,
+            borderRadius: '14px',
+            padding: '20px 20px 0 20px',
+            overflow: 'hidden'
+          }}>
+            <div id="shapo-widget-250772ab48798a9fd1ab"></div>
+
+            {/* Branded strip masking the widget's bottom attribution badge */}
+            <div style={{
+              position: 'relative',
+              marginTop: '-46px',
+              zIndex: 5,
+              background: `linear-gradient(135deg, ${settings.primaryColor}, #D4A574)`,
+              padding: '14px 20px',
+              textAlign: 'center'
+            }}>
+              <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '13px' }}>
+                ⭐ Verified reviews from real India Reisen travelers
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
