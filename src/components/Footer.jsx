@@ -220,6 +220,11 @@ export default function Footer() {
                   Privacy Policy
                 </Link>
               </li>
+              <li style={{ marginBottom: '10px' }}>
+                <Link to="/terms-and-conditions" style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}>
+                  Terms & Conditions
+                </Link>
+              </li>
             </ul>
           </div>
 

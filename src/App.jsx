@@ -14,6 +14,7 @@ import BlogPage from './pages/website/BlogPage'
 import BlogDetail from './pages/website/BlogDetail'
 import ContactPage from './pages/website/ContactPage'
 import PrivacyPolicy from './pages/website/PrivacyPolicy'
+import TermsAndConditions from './pages/website/TermsAndConditions'
 
 // Admin Pages
 import AdminDashboard from './pages/website-admin/AdminDashboard'
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           </Route>
 
           {/* Secret Admin Login (not linked anywhere on the public site) */}
