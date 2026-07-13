@@ -279,13 +279,17 @@ export default function HomePage() {
                   }}
                   >
                     <div style={{
-                      background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                      backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : 'none',
+                      background: journey.featuredImage ? undefined : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
                       height: '220px',
+                      display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: 'white'
                     }}>
-                      Journey Image
+                      {!journey.featuredImage && 'Journey Image'}
                     </div>
                     <div style={{ padding: '25px' }}>
                       <h3 style={{ margin: '0 0 10px 0', color: primaryColor, fontSize: '20px' }}>
