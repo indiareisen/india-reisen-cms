@@ -74,7 +74,7 @@ export default function JourneyDetail() {
         flexDirection: 'column',
         overflow: 'hidden'
       }}>
-        <div style={{
+        <div className="journey-hero-bg" style={{
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : 'none',
@@ -256,6 +256,16 @@ export default function JourneyDetail() {
           Book This Journey Now →
         </button>
       </section>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .journey-hero-bg {
+            background-attachment: scroll !important;
+            background-size: cover !important;
+            background-position: center !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
