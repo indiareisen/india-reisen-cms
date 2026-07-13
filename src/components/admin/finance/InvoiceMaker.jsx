@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { collection, getDocs, addDoc, query, orderBy, Timestamp } from 'firebase/firestore';
+import { db } from '../../../services/firebaseService';
 
 const logoUrl = 'https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png';
 
@@ -25,28 +27,46 @@ const InvoiceMaker = () => {
   const previewRef = useRef(null);
 
   useEffect(() => {
-    const savedClients = localStorage.getItem('invoiceClients');
-    if (savedClients) {
-      const parsed = JSON.parse(savedClients);
-      setClients(parsed);
-    }
+    fetchClients();
   }, []);
 
-  const saveClients = (updatedClients) => {
-    localStorage.setItem('invoiceClients', JSON.stringify(updatedClients));
-    setClients(updatedClients);
+  const fetchClients = async () => {
+    try {
+      const q = query(collection(db, 'clients'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      setClients(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
   };
 
-  const handleAddClient = (e) => {
+  const handleAddClient = async (e) => {
     e.preventDefault();
     if (!newClient.name || !newClient.email) return alert('Name and Email required');
-    const client = { id: Date.now().toString(), ...newClient, createdAt: new Date().toISOString() };
-    const updated = [...clients, client];
-    saveClients(updated);
-    setSelectedClientId(client.id);
-    setSelectedClient(client);
-    setNewClient({ name: '', company: '', address: '', gstNumber: '', phoneNumber: '', email: '' });
-    setShowClientForm(false);
+    try {
+      const docRef = await addDoc(collection(db, 'clients'), {
+        ...newClient,
+        nationality: '',
+        passportNumber: '',
+        passportExpiry: '',
+        visaStatus: 'Not Required',
+        visaNumber: '',
+        visaExpiry: '',
+        billingAddress: '',
+        billingNotes: '',
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+      const client = { id: docRef.id, ...newClient };
+      await fetchClients();
+      setSelectedClientId(docRef.id);
+      setSelectedClient(client);
+      setNewClient({ name: '', company: '', address: '', gstNumber: '', phoneNumber: '', email: '' });
+      setShowClientForm(false);
+    } catch (error) {
+      console.error('Error adding client:', error);
+      alert('Error saving client.');
+    }
   };
 
   const handleSelectClient = (clientId) => {
@@ -56,14 +76,7 @@ const InvoiceMaker = () => {
   };
 
   const handleDeleteClient = (clientId) => {
-    if (window.confirm('Delete this client?')) {
-      const updated = clients.filter(c => c.id !== clientId);
-      saveClients(updated);
-      if (selectedClientId === clientId) {
-        setSelectedClientId('');
-        setSelectedClient(null);
-      }
-    }
+    alert('To remove a client entirely, please use the Client Manager page (this keeps their booking/passport history intact if referenced elsewhere).');
   };
 
   const handleAddItem = () => {
@@ -351,7 +364,7 @@ const InvoiceMaker = () => {
           <div style={{ paddingTop: '10px', borderTop: '2px solid #D4A574', textAlign: 'center', fontSize: '9px', color: '#666' }}>
             <p style={{ margin: '2px 0' }}>Thank you!</p>
             <p style={{ margin: '2px 0' }}><strong style={{ color: '#d1356f' }}>India Reisen</strong> | Explore. Experience. Enchant.</p>
-            <p style={{ margin: '2px 0' }}>www.indiareisen.com | team@indiareisen.com</p>
+            <p style={{ margin: '2px 0' }}>www.reisenindia.com | team@indiareisen.com</p>
           </div>
         </div>
       </div>

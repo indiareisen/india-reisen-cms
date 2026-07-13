@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.indiareisen.com/sitemap.xml
+Sitemap: https://www.reisenindia.com/sitemap.xml
