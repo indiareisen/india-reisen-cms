@@ -77,8 +77,7 @@ export default function JourneyDetail() {
         <div className="journey-hero-bg" style={{
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
-          backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : 'none',
-          background: journey.featuredImage ? undefined : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+          backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           zIndex: 1

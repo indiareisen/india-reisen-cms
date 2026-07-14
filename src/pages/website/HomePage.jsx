@@ -279,8 +279,7 @@ export default function HomePage() {
                   }}
                   >
                     <div style={{
-                      backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : 'none',
-                      background: journey.featuredImage ? undefined : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                      backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       height: '220px',
