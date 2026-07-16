@@ -137,9 +137,16 @@ export default function WebsiteSettings() {
       const docRef = doc(db, 'settings', 'general')
       const docSnap = await getDoc(docRef)
       if (docSnap.exists()) {
+        const data = docSnap.data()
         setSettings(prev => ({
           ...prev,
-          ...docSnap.data()
+          ...data,
+          // Deep-merge homePage so newer default sub-fields (whyChoose, destinations,
+          // instagramHandle) aren't silently lost when older saved documents don't have them yet
+          homePage: {
+            ...prev.homePage,
+            ...(data.homePage || {})
+          }
         }))
       }
     } catch (error) {
