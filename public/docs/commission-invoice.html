@@ -1,2036 +1,1355 @@
-ls -la public/docs/<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>India Reisen - Commission Invoice System</title>
-
+<title>India Reisen – Commission Invoice Admin</title>
 <style>
 :root{
-  --hero:#0b5f59;
-  --hero2:#083f3c;
-  --primary:#0f766e;
-  --soft:#eefdfa;
-  --bg:#f4f7fb;
-  --card:#ffffff;
-  --border:#d9e2ec;
-  --text:#1f2937;
-  --muted:#5f6b7a;
-  --accent-pink:#d1356f;
-  --accent-gold:#D4A574;
-  --shadow:0 8px 24px rgba(15, 23, 42, 0.06);
-  --shadow-light:0 2px 8px rgba(15, 23, 42, 0.04);
+  --hero:#0b5f59; --hero2:#083f3c; --primary:#0f766e;
+  --soft:#edfaf8; --bg:#f4f7fb; --card:#ffffff;
+  --border:#d9e2ec; --text:#1f2937; --muted:#5f6b7a;
+  --red:#b91c1c; --amber:#b45309;
+  --shadow:0 6px 20px rgba(15,23,42,.07);
 }
-
-@page { 
-  size: A4; 
-  margin: 4mm; 
-}
-
+@page{ size:A4 portrait; margin:7mm; }
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{
-  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  font-weight:400;
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
-  line-height:1;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg); color:var(--text);
+  font-size:13px; -webkit-font-smoothing:antialiased;
 }
 
-.app-wrapper{
-  display:none;
-}
-.app-wrapper.active{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-}
+/* ═══════════════ APP SHELL ═══════════════ */
+.app{ display:flex; min-height:100vh; }
 
-.invoice-toolbar{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  width:120px;
-  flex-shrink:0;
+/* Sidebar */
+.sidebar{
+  width:200px; flex:0 0 200px;
+  background:linear-gradient(180deg,var(--hero2),var(--hero));
+  color:#fff; padding:16px 12px; display:flex; flex-direction:column; gap:4px;
 }
+.sb-logo{ display:flex; align-items:center; gap:8px; margin-bottom:18px; padding:0 6px; }
+.sb-logo img{ width:30px; height:30px; border-radius:6px; background:#fff; padding:2px; }
+.sb-logo span{ font-weight:700; font-size:13px; line-height:1.2; }
+.nav-btn{
+  display:flex; align-items:center; gap:8px;
+  padding:9px 10px; border-radius:8px; cursor:pointer;
+  font-size:12.5px; font-weight:600; color:#d6f7f4;
+  border:1px solid transparent; background:none;
+  text-align:left; width:100%;
+}
+.nav-btn:hover{ background:rgba(255,255,255,.08); }
+.nav-btn.active{ background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.2); }
+.nav-icon{ font-size:14px; width:16px; text-align:center; }
+.sb-foot{ margin-top:auto; font-size:9.5px; color:#a7e8e1; padding:0 6px; line-height:1.4; }
 
-.invoice-toolbar button{
-  width:100%;
-  padding:10px 6px;
-  font-size:11px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:600;
-  transition:all 0.2s;
-}
+/* Main content */
+.content{ flex:1; min-width:0; padding:18px 22px; }
+.view{ display:none; }
+.view.active{ display:block; }
 
-.invoice-toolbar button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 4px 8px rgba(0,0,0,0.15);
+.topbar{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:16px; gap:10px; flex-wrap:wrap;
 }
-
-.invoice-toolbar button:active{
-  transform:translateY(0);
-}
-
-@media print{
-  .invoice-toolbar{
-    display:none !important;
-  }
-}
-
-/* NAVIGATION TABS */
-.nav-tabs{
-  display:flex;
-  gap:0;
-  background:#fff;
-  border-bottom:2px solid var(--border);
-  position:sticky;
-  top:0;
-  z-index:100;
-  box-shadow:0 2px 4px rgba(0,0,0,0.02);
-}
-.nav-tabs button{
-  flex:1;
-  padding:12px 16px;
-  border:none;
-  background:transparent;
-  color:var(--muted);
-  font-weight:600;
-  font-size:13px;
-  cursor:pointer;
-  border-bottom:3px solid transparent;
-  transition:all 0.2s;
-}
-.nav-tabs button:hover{
-  color:var(--primary);
-  background:#f9fafb;
-}
-.nav-tabs button.active{
-  color:var(--primary);
-  border-bottom-color:var(--primary);
-}
-
-/* ADMIN PAGE */
-.admin-container{
-  max-width:1000px;
-  margin:20px auto;
-  padding:0 16px;
-}
-
-.admin-section{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:20px;
-  margin-bottom:20px;
-  box-shadow:var(--shadow-light);
-}
-
-.admin-section h2{
-  margin:0 0 16px;
-  font-size:16px;
-  font-weight:700;
-  color:var(--primary);
-}
-
-.admin-form-group{
-  margin-bottom:16px;
-}
-
-.admin-form-group label{
-  display:block;
-  font-size:12px;
-  font-weight:600;
-  color:#253041;
-  margin-bottom:6px;
-}
-
-.admin-form-group input,
-.admin-form-group textarea,
-.admin-form-group select{
-  width:100%;
-  padding:10px 12px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  font-size:12px;
-  font-family:inherit;
-}
-
-.admin-form-group input:focus,
-.admin-form-group textarea:focus,
-.admin-form-group select:focus{
-  outline:none;
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(15, 118, 110, 0.1);
-}
-
-.admin-form-group textarea{
-  resize:vertical;
-  min-height:80px;
-}
-
-.file-input-wrapper{
-  position:relative;
-}
-
-.file-input-wrapper input[type="file"]{
-  display:none;
-}
-
-.file-input-label{
-  display:inline-block;
-  padding:10px 16px;
-  background:var(--primary);
-  color:#fff;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:600;
-  font-size:12px;
-  transition:background 0.2s;
-}
-
-.file-input-label:hover{
-  background:var(--hero2);
-}
-
-.logo-preview{
-  width:120px;
-  height:120px;
-  border:2px dashed var(--border);
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#f9fafb;
-  margin-top:10px;
-  overflow:hidden;
-}
-
-.logo-preview img{
-  max-width:100%;
-  max-height:100%;
-  object-fit:contain;
-}
-
-.hotel-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
-  gap:16px;
-  margin-top:16px;
-}
-
-.hotel-card{
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:12px;
-  background:#f9fafb;
-  position:relative;
-}
-
-.hotel-card h3{
-  margin:0 0 8px;
-  font-size:13px;
-  font-weight:700;
-  color:var(--text);
-}
-
-.hotel-card p{
-  margin:4px 0;
-  font-size:11px;
-  color:var(--muted);
-}
-
-.hotel-card .delete-btn{
-  position:absolute;
-  top:8px;
-  right:8px;
-  width:24px;
-  height:24px;
-  border:none;
-  background:#fee2e2;
-  color:#ef4444;
-  border-radius:4px;
-  cursor:pointer;
-  font-size:14px;
-  transition:all 0.2s;
-}
-
-.hotel-card .delete-btn:hover{
-  background:#fca5a5;
-  color:#fff;
-}
-
-.admin-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  margin-bottom:20px;
-}
-
-@media(max-width:768px){
-  .admin-grid{
-    grid-template-columns:1fr;
-  }
-}
+.topbar h1{ margin:0; font-size:18px; font-weight:700; color:#173f3c; }
+.topbar p{ margin:2px 0 0; font-size:11.5px; color:var(--muted); }
 
 .btn{
-  display:inline-block;
-  padding:10px 16px;
-  border-radius:6px;
-  text-decoration:none;
-  font-weight:600;
-  font-size:12px;
-  border:none;
-  cursor:pointer;
-  transition:all 0.2s;
+  display:inline-flex; align-items:center; gap:5px;
+  padding:7px 13px; border-radius:7px; font-weight:700; font-size:11.5px;
+  border:1px solid transparent; cursor:pointer; text-decoration:none;
+  background:var(--primary); color:#fff;
+}
+.btn:hover{ filter:brightness(1.06); }
+.btn-outline{ background:#fff; color:var(--primary); border-color:var(--primary); }
+.btn-ghost{ background:transparent; color:var(--muted); border-color:var(--border); }
+.btn-danger{ background:#fff; color:var(--red); border-color:#f2c6c6; }
+.btn-sm{ padding:4px 9px; font-size:10.5px; }
+
+/* Cards / stat tiles */
+.stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.stat-card{
+  background:#fff; border:1px solid var(--border); border-radius:10px;
+  padding:13px 14px; box-shadow:var(--shadow);
+}
+.stat-card .label{ font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+.stat-card .value{ font-size:21px; font-weight:700; color:#173f3c; margin-top:4px; }
+.stat-card .sub{ font-size:10px; color:var(--muted); margin-top:2px; }
+
+.panel{
+  background:#fff; border:1px solid var(--border); border-radius:11px;
+  padding:16px; box-shadow:var(--shadow); margin-bottom:16px;
+}
+.panel h2{ margin:0 0 12px; font-size:13px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:.3px; }
+
+/* Tables (admin lists) */
+.data-table{ width:100%; border-collapse:collapse; }
+.data-table th,.data-table td{
+  padding:8px 10px; font-size:11.5px; border-bottom:1px solid var(--border); text-align:left;
+}
+.data-table th{ color:var(--muted); font-weight:700; text-transform:uppercase; font-size:9.5px; letter-spacing:.3px; }
+.data-table tr:hover td{ background:#fafcfe; }
+.data-table .num{ text-align:right; font-variant-numeric:tabular-nums; }
+.empty-row td{ text-align:center; color:var(--muted); padding:22px 10px; font-size:12px; }
+
+.tag{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:9.5px; font-weight:700; }
+.tag-draft{ background:#fef3c7; color:var(--amber); }
+.tag-final{ background:#dcfce7; color:#15803d; }
+.tag-paid{ background:#dbeafe; color:#1d4ed8; }
+
+/* Forms */
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.field{ display:flex; flex-direction:column; gap:4px; }
+.field.full{ grid-column:1 / -1; }
+.field label{ font-size:10.5px; font-weight:700; color:#253041; }
+.field input,.field select,.field textarea{
+  padding:7px 9px; border:1px solid #ccd7e3; border-radius:6px;
+  font-size:12px; font-family:inherit; color:var(--text); background:#fff;
+}
+.field textarea{ resize:vertical; min-height:50px; }
+.form-actions{ display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
+
+/* Search bar */
+.search-row{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center; }
+.search-row input[type=search]{
+  flex:1; min-width:180px; padding:8px 11px; border:1px solid var(--border);
+  border-radius:7px; font-size:12px;
 }
 
-.btn-primary{
-  background:var(--primary);
-  color:#fff;
+/* Modal */
+.modal-backdrop{
+  display:none; position:fixed; inset:0; background:rgba(8,30,28,.45);
+  align-items:center; justify-content:center; z-index:50; padding:20px;
 }
-
-.btn-primary:hover{
-  background:var(--hero2);
+.modal-backdrop.open{ display:flex; }
+.modal{
+  background:#fff; border-radius:12px; padding:20px; width:100%; max-width:520px;
+  max-height:88vh; overflow:auto; box-shadow:0 20px 50px rgba(0,0,0,.25);
 }
+.modal h3{ margin:0 0 14px; font-size:14px; color:#173f3c; }
+.modal-close{ float:right; background:none; border:none; font-size:16px; cursor:pointer; color:var(--muted); }
 
-.btn-secondary{
-  background:#f0f0f0;
-  color:var(--text);
+/* Toast */
+.toast{
+  position:fixed; bottom:18px; right:18px; background:#173f3c; color:#fff;
+  padding:10px 16px; border-radius:8px; font-size:12px; font-weight:600;
+  box-shadow:0 8px 20px rgba(0,0,0,.2); z-index:80; opacity:0; transform:translateY(8px);
+  transition:opacity .2s, transform .2s; pointer-events:none;
 }
+.toast.show{ opacity:1; transform:translateY(0); }
 
-.btn-secondary:hover{
-  background:#e0e0e0;
+/* ═══════════════ INVOICE VIEW (print sheet) ═══════════════ */
+#invoiceSheetWrap{ background:var(--bg); }
+.inv-toolbar{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:12px; flex-wrap:wrap; gap:8px;
 }
-
-.success-message{
-  background:#d1fae5;
-  color:#065f46;
-  padding:10px 12px;
-  border-radius:6px;
-  font-size:12px;
-  margin-bottom:12px;
-  border-left:3px solid #10b981;
+.page{
+  width:100%; max-width:210mm; margin:0 auto;
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden; box-shadow:var(--shadow); font-size:10.5px;
 }
-
-/* INVOICE PAGE */
-.container{
-  width:100%;
-  max-width:190mm;
-  margin:2px auto;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-}
-
-.hero{
-  background:linear-gradient(135deg,var(--hero2),var(--hero));
-  color:#fff;
-  padding:6px;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:6px;
-}
-
-.hero-brand{
-  display:flex;
-  gap:4px;
-  align-items:flex-start;
-  flex:1;
-}
-
-.logo-wrap{
-  width:45px;
-  flex:0 0 45px;
-  border-radius:6px;
-  overflow:hidden;
-}
-
-.logo-wrap img{
-  width:45px;
-  height:45px;
-  display:block;
-  object-fit:contain;
-  background:#fff;
-  padding:1px;
-}
-
-.brand-text h1{
-  margin:0;
-  font-size:17px;
-  line-height:1.05;
-  font-weight:700;
-  letter-spacing:-0.1px;
-}
-
-.brand-text p{
-  margin:1px 0 0;
-  font-size:9px;
-  color:#d6f7f4;
-  line-height:1.2;
-}
-
-.badge{
-  display:inline-block;
-  margin-top:3px;
-  padding:2px 5px;
-  border-radius:999px;
-  background:rgba(255,255,255,.15);
-  color:#e7fffd;
-  font-size:8px;
-  font-weight:700;
-}
-
-.footer{
-  background:linear-gradient(135deg,var(--hero2),var(--hero));
-  color:#fff;
-  padding:10px;
-  margin-top:8px;
-  border-radius:8px;
-  break-inside:avoid;
-  page-break-inside:avoid;
-}
-
-.footer div div:first-child{
-  color:#d6f7f4;
-}
-
-.hero-invoice{
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:6px;
-  padding:7px;
-  min-width:170px;
-}
-
-.hero-invoice h2{
-  margin:0 0 5px;
-  font-size:9px;
-  font-weight:700;
-  color:#fff;
-  text-transform:uppercase;
-  letter-spacing:0.3px;
-}
-
-.hero-invoice-row{
-  display:grid;
-  grid-template-columns:auto 1fr;
-  gap:2px 5px;
-  margin-bottom:3px;
-  align-items:center;
-}
-
-.hero-invoice-row label{
-  font-size:8px;
-  color:#d6f7f4;
-  font-weight:700;
-}
-
-.hero-invoice-row input{
-  background:rgba(255,255,255,.15);
-  border:1px solid rgba(255,255,255,.2);
-  color:#fff;
-  font-size:9px;
-  padding:3px 4px;
-  border-radius:4px;
-  height:20px;
-}
-
-.hero-invoice-row input::placeholder{
-  color:rgba(255,255,255,.6);
-}
-
-.hero-actions{
-  margin-top:12px;
-  display:flex;
-  gap:8px;
-}
-
-.btn-icon{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:28px;
-  height:28px;
-  padding:0;
-  border-radius:6px;
-  border:1px solid var(--border);
-  background:#fff;
-  color:var(--text);
-  font-size:16px;
-  cursor:pointer;
-  transition:all 0.2s;
-}
-
-.btn-icon:hover{
-  background:var(--soft);
-  border-color:var(--primary);
-  color:var(--primary);
-}
-
-.btn-icon.danger:hover{
-  background:#fee2e2;
-  border-color:#ef4444;
-  color:#ef4444;
-}
-
-.main{ padding:4px; }
-
-.grid2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:4px;
-  margin:2px 0;
-  break-inside:auto;
-  page-break-inside:auto;
-}
-
-.grid-full{
-  margin:2px 0;
-  break-inside:auto;
-  page-break-inside:auto;
-}
-
-.box{
-  border:1px solid var(--border);
-  border-radius:8px;
-  background:#fff;
-  padding:4px;
-  break-inside:auto;
-  page-break-inside:auto;
-}
-
-.box.highlight{
-  border:2px solid var(--primary);
-  background:rgba(15, 118, 110, 0.02);
-  break-inside:auto;
-  page-break-inside:auto;
-}
-
-.section-title{
-  margin:0 0 4px;
-  font-size:10px;
-  font-weight:700;
-  color:var(--primary);
-  letter-spacing:.1px;
-  text-transform:uppercase;
-}
-
-.kv{
-  display:grid;
-  grid-template-columns:85px 1fr;
-  gap:4px 6px;
-}
-
-.kv strong{
-  font-size:9px;
-  font-weight:700;
-  color:#253041;
-}
-
-.kv span{
-  font-size:9px;
-  color:var(--muted);
-  font-weight:400;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="date"],
-input[type="email"],
-select{
-  width:100%;
-  padding:4px 5px;
-  border:1px solid #ccd7e3;
-  border-radius:4px;
-  font-size:9px;
-  background:#fff;
-  height:22px;
-  font-family:inherit;
-  font-weight:400;
-  color:var(--text);
-}
-
-input[readonly]{ 
-  background:#f8fbfd; 
-  cursor:not-allowed;
-}
-
-input:focus,select:focus{
-  outline:none;
-  border-color:var(--primary);
-  box-shadow:0 0 0 2px rgba(15, 118, 110, 0.1);
-}
-
-.booking-row{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr;
-  gap:8px;
-}
-
-.booking-row .input-label{
-  font-size:9px;
-  font-weight:700;
-  color:#5f6b7a;
-  text-transform:uppercase;
-  margin-bottom:2px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-bottom:1px;
-}
-
-th,td{
-  border:1px solid var(--border);
-  padding:2px 3px;
-  font-size:9px;
-  line-height:1;
-  font-family:inherit;
-  font-weight:400;
-}
-
-th{
-  background:var(--soft);
-  color:#173f3c;
-  text-align:left;
-  font-weight:700;
-}
-
-.rooms-table td input{
-  width:100%;
-}
-
-.total-row{
-  background:#f0fdfa;
-  font-weight:700;
-}
-
-.total-row td{
-  border-top:2px solid var(--primary);
-}
-
-.add-btn-row{
-  margin-top:3px;
-  text-align:center;
-}
-
-.note{
-  font-size:8px;
-  color:#5b6573;
-  line-height:1.3;
-  margin:2px 0;
-}
-
-.sig{
-  min-height:45px;
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:6px;
-}
-
-.line{
-  border-top:1px solid #111;
-  width:120px;
-  text-align:center;
-  padding-top:2px;
-  font-size:9px;
-}
-
-.summary-row{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:6px;
-  align-items:center;
-  padding:3px 0;
-  border-bottom:1px solid var(--border);
-  font-size:9px;
-}
-
-.summary-row:last-child{
-  border-bottom:none;
-}
-
-.summary-row strong{
-  font-weight:700;
-}
-
-.summary-row.total{
-  background:var(--soft);
-  padding:4px;
-  border-radius:6px;
-  border:none;
-  margin-top:2px;
-}
-
-.hidden-print{ display:block; }
-
-.hidden-in-print{ display:none !important; }
+.hero{ background:linear-gradient(135deg,var(--hero2),var(--hero)); color:#fff; padding:10px 13px 9px; }
+.hero-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.brand{ display:flex; gap:10px; align-items:flex-start; }
+.logo-wrap img{ width:60px; height:auto; display:block; background:#fff; border-radius:8px; padding:3px; }
+.brand-text h1{ margin:0; font-size:18px; font-weight:700; letter-spacing:.2px; line-height:1.1; }
+.brand-text p{ margin:4px 0 0; font-size:9.5px; color:#d6f7f4; line-height:1.3; }
+.badge{ display:inline-block; margin-top:5px; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.12); color:#e7fffd; font-size:9px; font-weight:700; }
+.hero-card{ min-width:220px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:8px 10px; }
+.hero-card h2{ margin:0 0 6px; font-size:11px; font-weight:700; color:#fff; }
+.hkv{ display:grid; grid-template-columns:78px 1fr; gap:4px 6px; }
+.hkv strong{ font-size:9px; color:#d6f7f4; font-weight:700; }
+.hkv span{ font-size:9px; color:#fff; }
+.hkv input{ width:100%; padding:2px 5px; border:1px solid rgba(255,255,255,.3); border-radius:4px; font-size:9px; background:rgba(255,255,255,.12); color:#fff; height:20px; }
+.hkv input::placeholder{ color:rgba(255,255,255,.5); }
+.main{ padding:8px 10px; }
+.g2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.box{ border:1px solid var(--border); border-radius:9px; background:#fff; padding:8px 10px; }
+.section-title{ margin:0 0 7px; font-size:10px; font-weight:700; color:var(--primary); letter-spacing:.3px; text-transform:uppercase; }
+.kv{ display:grid; grid-template-columns:82px 1fr; gap:4px 6px; align-items:center; }
+.kv strong{ font-size:9.5px; font-weight:700; color:#253041; }
+.kv span{ font-size:9.5px; color:var(--muted); }
+.kv input,.kv select{ width:100%; padding:3px 6px; border:1px solid #ccd7e3; border-radius:5px; font-size:9.5px; background:#fff; height:22px; color:var(--text); }
+.kv input[readonly]{ background:#f8fbfd; color:var(--muted); }
+.room-table-wrap{ overflow:hidden; margin-bottom:8px; }
+table.inv-table{ width:100%; border-collapse:collapse; }
+table.inv-table th,table.inv-table td{ border:1px solid var(--border); padding:4px 6px; font-size:9.5px; line-height:1.3; }
+table.inv-table th{ background:var(--soft); color:#173f3c; font-weight:700; text-align:left; white-space:nowrap; }
+table.inv-table td input{ width:100%; padding:2px 4px; border:1px solid #ccd7e3; border-radius:4px; font-size:9.5px; background:#fff; height:20px; color:var(--text); }
+table.inv-table td input[readonly]{ background:#f8fbfd; color:var(--muted); }
+.del-col{ width:22px; text-align:center; }
+.del-btn{ background:none; border:none; cursor:pointer; color:var(--red); font-size:13px; line-height:1; padding:0; }
+.tfoot-row td{ background:var(--soft); font-weight:700; font-size:9.5px; }
+.tfoot-row td:last-child{ text-align:right; }
+.calc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.calc-table td:last-child{ text-align:right; font-variant-numeric:tabular-nums; }
+.calc-table .total-row td{ background:#f0fdfa; font-weight:700; font-size:10px; border-top:2px solid var(--primary); }
+.calc-table .deduct-row td{ color:var(--red); }
+.bottom-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px; }
+.note{ font-size:8.5px; color:#5b6573; line-height:1.45; margin:0 0 3px; }
+.sig{ min-height:44px; display:flex; align-items:flex-end; justify-content:space-between; }
+.line{ border-top:1px solid #111; width:110px; text-align:center; padding-top:3px; font-size:8.5px; }
+.add-row-btn{ display:inline-block; margin-top:5px; padding:4px 10px; background:var(--soft); border:1px dashed var(--primary); border-radius:5px; font-size:9.5px; font-weight:700; color:var(--primary); cursor:pointer; }
 
 @media print{
-  *{
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-
-  body{
-    background:var(--bg) !important;
-    margin:0 !important;
-    padding:0 !important;
-    counter-reset: page-counter;
-  }
-
-  .container {
-    counter-increment: page-counter;
-  }
-
-  .page-footer {
-    text-align:center;
-    font-size:8px;
-    color:#999;
-    padding:4px 0;
-    border-top:1px solid var(--border);
-    margin:2px 0 0 0;
-    break-inside:avoid;
-    page-break-inside:avoid;
-    display:block !important;
-  }
-
-  .page-footer.hidden-in-edit {
-    display:block !important;
-  }
-
-  .footer{
-    background:linear-gradient(135deg,var(--hero2),var(--hero)) !important;
-    color:#fff !important;
-    padding:10px !important;
-    margin-top:8px !important;
-    border-radius:8px !important;
-    break-inside:avoid !important;
-    page-break-inside:avoid !important;
-  }
-
-  .footer div div:first-child{
-    color:#d6f7f4 !important;
-  }
-
-  .nav-tabs,
-  .hidden-print,
-  .hidden-in-print{
-    display:none !important;
-  }
-
-  .container{
-    margin:0 !important;
-    width:100% !important;
-    max-width:none !important;
-    border:1px solid var(--border) !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    page-break-after:avoid !important;
-  }
-
-  .hero{
-    background:linear-gradient(135deg,var(--hero2),var(--hero)) !important;
-    color:#fff !important;
-    padding:20px !important;
-    page-break-inside:avoid !important;
-    display:flex !important;
-    justify-content:space-between !important;
-    align-items:flex-start !important;
-    gap:20px !important;
-  }
-
-  .hero-brand{
-    display:flex !important;
-    gap:6px !important;
-    align-items:flex-start !important;
-    flex:1 !important;
-  }
-
-  .logo-wrap{
-    width:45px !important;
-    flex:0 0 45px !important;
-    border-radius:6px !important;
-    overflow:hidden !important;
-  }
-
-  .logo-wrap img{
-    width:45px !important;
-    height:45px !important;
-    display:block !important;
-    object-fit:contain !important;
-    background:#fff !important;
-    padding:1px !important;
-  }
-
-  .brand-text h1{
-    color:#fff !important;
-    margin:0 !important;
-    font-size:17px !important;
-    font-weight:700 !important;
-    line-height:1.05 !important;
-    letter-spacing:-0.1px !important;
-  }
-
-  .brand-text p{
-    color:#d6f7f4 !important;
-    margin:1px 0 0 !important;
-    font-size:9px !important;
-    line-height:1.2 !important;
-  }
-
-  .badge{
-    display:inline-block !important;
-    margin-top:3px !important;
-    padding:2px 5px !important;
-    border-radius:999px !important;
-    background:rgba(255,255,255,.15) !important;
-    color:#e7fffd !important;
-    font-size:8px !important;
-    font-weight:700 !important;
-  }
-
-  .hero-invoice{
-    background:rgba(255,255,255,.1) !important;
-    border:1px solid rgba(255,255,255,.2) !important;
-    border-radius:6px !important;
-    padding:7px !important;
-    min-width:170px !important;
-  }
-
-  .hero-invoice h2{
-    margin:0 0 5px !important;
-    font-size:9px !important;
-    font-weight:700 !important;
-    color:#fff !important;
-    text-transform:uppercase !important;
-    letter-spacing:0.3px !important;
-  }
-
-  .hero-invoice-row{
-    display:grid !important;
-    grid-template-columns:auto 1fr !important;
-    gap:2px 5px !important;
-    margin-bottom:3px !important;
-    align-items:center !important;
-  }
-
-  .hero-invoice-row label{
-    font-size:8px !important;
-    color:#d6f7f4 !important;
-    font-weight:700 !important;
-  }
-
-  .hero-invoice-row input{
-    background:rgba(255,255,255,.15) !important;
-    border:1px solid rgba(255,255,255,.2) !important;
-    color:#fff !important;
-    font-size:9px !important;
-    padding:3px 4px !important;
-    border-radius:4px !important;
-    height:20px !important;
-  }
-
-  .main{
-    padding:12px !important;
-  }
-
-  .box {
-    border:1px solid var(--border) !important;
-    border-radius:12px !important;
-    background:#fff !important;
-    padding:12px !important;
-    page-break-inside:avoid !important;
-    break-inside:avoid !important;
-    margin:12px 0 !important;
-  }
-
-  .box[style*="border-left:4px solid var(--primary)"] {
-    border-left:4px solid var(--primary) !important;
-  }
-
-  .box[style*="border-left:4px solid var(--accent-pink)"] {
-    border-left:4px solid var(--accent-pink) !important;
-  }
-
-  .box.highlight{
-    border:2px solid var(--primary) !important;
-    background:rgba(15, 118, 110, 0.02) !important;
-  }
-
-  .grid2{
-    display:grid !important;
-    grid-template-columns:1fr 1fr !important;
-    gap:12px !important;
-    margin:12px 0 !important;
-    page-break-inside:avoid !important;
-    break-inside:avoid !important;
-  }
-
-  .grid-full{
-    margin:12px 0 !important;
-    page-break-inside:avoid !important;
-    break-inside:avoid !important;
-  }
-
-  .section-title{
-    color:var(--primary) !important;
-    margin:0 0 12px !important;
-    font-size:13px !important;
-    font-weight:700 !important;
-    letter-spacing:.2px !important;
-    text-transform:uppercase !important;
-  }
-
-  input[type="text"],
-  input[type="number"],
-  input[type="date"],
-  input[type="email"],
-  select{
-    border:none !important;
-    background:transparent !important;
-    padding:0 !important;
-    height:auto !important;
-    color:var(--text) !important;
-    font-size:11px !important;
-    font-weight:400 !important;
-  }
-
-  input[readonly]{
-    background:transparent !important;
-    color:var(--text) !important;
-  }
-
-  .hero-invoice-row input{
-    color:#fff !important;
-  }
-
-  table{
-    width:100% !important;
-    border-collapse:collapse !important;
-    margin-bottom:8px !important;
-  }
-
-  th, td{
-    border:1px solid var(--border) !important;
-    padding:7px 8px !important;
-    font-size:11px !important;
-    line-height:1.3 !important;
-    font-weight:400 !important;
-  }
-
-  th{
-    background:var(--soft) !important;
-    color:#173f3c !important;
-    text-align:left !important;
-    font-weight:700 !important;
-  }
-
-  tfoot tr {
-    background:var(--soft) !important;
-    font-weight:700 !important;
-    border-top:2px solid var(--primary) !important;
-  }
-
-  .total-row{
-    background:#f0fdfa !important;
-    font-weight:700 !important;
-    border-top:2px solid var(--primary) !important;
-  }
-
-  .summary-row{
-    display:grid !important;
-    grid-template-columns:1fr auto !important;
-    gap:12px !important;
-    align-items:center !important;
-    padding:8px 0 !important;
-    border-bottom:1px solid var(--border) !important;
-    font-size:11px !important;
-  }
-
-  .summary-row.total{
-    background:var(--soft) !important;
-    padding:8px !important;
-    border-radius:6px !important;
-    border:none !important;
-    margin-top:4px !important;
-  }
-
-  .note{
-    font-size:10px !important;
-    color:#5b6573 !important;
-    line-height:1.5 !important;
-    margin:6px 0 !important;
-  }
-
-  .sig{
-    min-height:54px !important;
-    display:flex !important;
-    align-items:end !important;
-    justify-content:space-between !important;
-    gap:8px !important;
-  }
-
-  .line{
-    border-top:1px solid #111 !important;
-    width:130px !important;
-    text-align:center !important;
-    padding-top:4px !important;
-    font-size:10px !important;
-  }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ background:#fff !important; }
+  .sidebar,.topbar,.no-print,.inv-toolbar{ display:none !important; }
+  .content{ padding:0; }
+  .page{ margin:0; max-width:none; width:100%; border:none; border-radius:0; box-shadow:none; }
+  .del-col{ display:none !important; }
+  table.inv-table td input,.kv input,.hkv input{ border:none; background:transparent; padding:0; height:auto; color:#1f2937; }
+  .add-row-btn{ display:none !important; }
 }
 
-@media(max-width:1024px){
-  .grid2{
-    grid-template-columns:1fr;
-  }
-  .hero{
-    flex-direction:column;
-    gap:16px;
-  }
-  .hero-invoice{
-    min-width:0;
-    width:100%;
-  }
-}
-
-@media(max-width:768px){
-  .container{
-    margin:8px;
-  }
-  .hero{
-    padding:8px;
-    flex-direction:row;
-  }
-  .main{
-    padding:6px;
-  }
-  .grid2{
-    grid-template-columns:1fr;
-    gap:6px;
-  }
-  .hero-brand{
-    flex-direction:row;
-    align-items:flex-start;
-  }
-  .brand-text h1{
-    font-size:16px;
-  }
+@media(max-width:860px){
+  .app{ flex-direction:column; }
+  .sidebar{ width:100%; flex-direction:row; overflow-x:auto; padding:10px; }
+  .sb-logo{ display:none; }
+  .sb-foot{ display:none; }
+  .stat-grid{ grid-template-columns:1fr 1fr; }
+  .form-grid{ grid-template-columns:1fr; }
+  .hero-top,.g2,.bottom-row,.calc-grid{ grid-template-columns:1fr; display:grid; }
+  .hkv,.kv{ grid-template-columns:1fr; }
 }
 </style>
 </head>
 <body>
 
-<div class="nav-tabs hidden-print">
-  <button class="nav-btn active" data-page="invoice">📄 Commission Invoice</button>
-  <button class="nav-btn" data-page="admin">⚙️ Admin Settings</button>
-</div>
+<div class="app">
 
-<!-- ADMIN PAGE -->
-<div class="app-wrapper active" id="admin">
-  <div class="admin-container">
-    <!-- Records Dashboard -->
-    <div class="admin-section">
-      <h2>📊 Records Dashboard</h2>
-      <div class="admin-grid" style="margin-bottom:0;">
-        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
-          <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Saved Company</div>
-          <div style="font-size:14px; font-weight:700; color:var(--text);" id="dashCompanyName">—</div>
-          <div style="font-size:11px; color:var(--muted); margin-top:2px;" id="dashCompanyGST">GST: —</div>
-        </div>
-        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
-          <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Saved Suppliers</div>
-          <div style="font-size:20px; font-weight:700; color:var(--primary);" id="dashHotelCount">0</div>
-          <div style="font-size:11px; color:var(--muted); margin-top:2px;">hotels in database</div>
-        </div>
-        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
-          <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Invoices Generated</div>
-          <div style="font-size:20px; font-weight:700; color:var(--accent-pink);" id="dashInvoiceCount">0</div>
-          <div style="font-size:11px; color:var(--muted); margin-top:2px;">unique invoice numbers</div>
-        </div>
+  <!-- ═════════════ SIDEBAR ═════════════ -->
+  <div class="sidebar no-print">
+    <div class="sb-logo">
+      <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="logo">
+      <span>India Reisen<br><span style="font-weight:400;font-size:9.5px;opacity:.8">Invoice Admin</span></span>
+    </div>
+    <button class="nav-btn active" data-view="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+    <button class="nav-btn" data-view="invoices"><span class="nav-icon">🧾</span> Invoices</button>
+    <button class="nav-btn" data-view="agents"><span class="nav-icon">🏢</span> Travel Agents</button>
+    <button class="nav-btn" data-view="hotels"><span class="nav-icon">🏨</span> Hotels</button>
+    <button class="nav-btn" data-view="banks"><span class="nav-icon">🏦</span> Bank Details</button>
+    <button class="nav-btn" data-view="invoiceEditor"><span class="nav-icon">➕</span> New Invoice</button>
+    <div class="sb-foot">Data is stored in this browser session only. Refreshing the page will reset all records.</div>
+  </div>
+
+  <!-- ═════════════ MAIN CONTENT ═════════════ -->
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="view active" id="view-dashboard">
+      <div class="topbar">
+        <div><h1>Dashboard</h1><p>Overview of commission invoices and settlements</p></div>
+        <button class="btn" id="btnNewFromDash">+ New Invoice</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">Total Invoices</div><div class="value" id="stat_count">0</div><div class="sub">all time</div></div>
+        <div class="stat-card"><div class="label">Total Commission</div><div class="value" id="stat_comm">₹0</div><div class="sub">summed as ₹ (mixed-currency invoices not converted)</div></div>
+        <div class="stat-card"><div class="label">Net Payable</div><div class="value" id="stat_net">₹0</div><div class="sub">after GST &amp; TDS</div></div>
+        <div class="stat-card"><div class="label">Draft Invoices</div><div class="value" id="stat_draft">0</div><div class="sub">awaiting finalisation</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Recent Invoices</h2>
+        <table class="data-table">
+          <thead><tr><th>Invoice No.</th><th>Hotel</th><th>Date</th><th>Status</th><th class="num">Net Payable</th><th></th></tr></thead>
+          <tbody id="dashRecentBody"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Invoice History & Access Log -->
-    <div class="admin-section">
-      <h2>🧾 Invoice History & Access Log</h2>
-      <p class="note" style="margin-bottom:16px;">Every time an invoice is printed, saved as PDF, or downloaded as PNG, it's logged here with a timestamp. This is stored locally in this browser only.</p>
-      <div id="invoiceLogContainer" style="max-height:500px; overflow-y:auto;">
-        <p class="note">No invoices generated yet.</p>
+    <!-- ── INVOICES LIST ── -->
+    <div class="view" id="view-invoices">
+      <div class="topbar">
+        <div><h1>Invoices</h1><p>All saved commission invoices</p></div>
+        <button class="btn" id="btnNewFromList">+ New Invoice</button>
       </div>
-      <button class="btn btn-secondary" onclick="clearInvoiceLog()" style="margin-top:12px;">🗑️ Clear Log</button>
+      <div class="search-row">
+        <input type="search" id="invSearch" placeholder="Search by invoice no., hotel, or guest…" />
+        <select id="invFilterStatus" style="padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-size:12px;">
+          <option value="">All statuses</option>
+          <option value="draft">Draft</option>
+          <option value="final">Final</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+      <div class="panel" style="padding:0;">
+        <table class="data-table" style="margin:0;">
+          <thead><tr>
+            <th style="padding-left:16px;">Invoice No.</th><th>Hotel</th><th>Guest</th><th>Date</th>
+            <th>Status</th><th class="num">Base Amt</th><th class="num">Commission</th><th class="num">Net Payable</th><th style="padding-right:16px;"></th>
+          </tr></thead>
+          <tbody id="invoicesBody"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Logo Management -->
-    <div class="admin-section">
-      <h2>📸 Logo Management</h2>
-      <div class="admin-form-group">
-        <label>Company Logo (will appear on all invoices)</label>
-        <div class="file-input-wrapper">
-          <label class="file-input-label">
-            Upload Logo
-            <input type="file" id="logoUpload" accept="image/*">
-          </label>
-        </div>
-        <div class="logo-preview" id="logoPreview">
-          <span style="color:var(--muted); font-size:12px;">No logo uploaded</span>
-        </div>
+    <!-- ── AGENTS (master data: India Reisen branches/profiles) ── -->
+    <div class="view" id="view-agents">
+      <div class="topbar">
+        <div><h1>Travel Agents</h1><p>Reusable "billed-by" profiles (your own entities/branches)</p></div>
+        <button class="btn" id="btnAddAgent">+ Add Agent Profile</button>
+      </div>
+      <div class="panel" style="padding:0;">
+        <table class="data-table" style="margin:0;">
+          <thead><tr><th style="padding-left:16px;">Name</th><th>GSTIN</th><th>PAN</th><th>State</th><th style="padding-right:16px;"></th></tr></thead>
+          <tbody id="agentsBody"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- India Reisen Settings -->
-    <div class="admin-section">
-      <h2>🏢 India Reisen Details</h2>
-      <div class="admin-grid">
-        <div class="admin-form-group">
-          <label>Company Name</label>
-          <input type="text" id="agentName" value="India Reisen">
-        </div>
-        <div class="admin-form-group">
-          <label>Address</label>
-          <input type="text" id="agentAddr" value="Ghaziabad, Uttar Pradesh">
-        </div>
-        <div class="admin-form-group">
-          <label>GSTIN</label>
-          <input type="text" id="agentGST" placeholder="07XXXXX0000X1Z0">
-        </div>
-        <div class="admin-form-group">
-          <label>PAN</label>
-          <input type="text" id="agentPAN" placeholder="XXXXXXXXXX">
-        </div>
-        <div class="admin-form-group">
-          <label>SAC Code</label>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <input type="text" id="agentSAC1" placeholder="4 digits" maxlength="4" inputmode="numeric" style="flex:1;">
-            <span style="color:var(--border); font-weight:bold;">-</span>
-            <input type="text" id="agentSAC2" placeholder="2 digits" maxlength="2" inputmode="numeric" style="flex:0.5;">
+    <!-- ── HOTELS ── -->
+    <div class="view" id="view-hotels">
+      <div class="topbar">
+        <div><h1>Hotels</h1><p>Reusable "billed-to" hotel master records</p></div>
+        <button class="btn" id="btnAddHotel">+ Add Hotel</button>
+      </div>
+      <div class="search-row">
+        <input type="search" id="hotelSearch" placeholder="Search hotels by name or city…" />
+      </div>
+      <div class="panel" style="padding:0;">
+        <table class="data-table" style="margin:0;">
+          <thead><tr><th style="padding-left:16px;">Hotel Name</th><th>City/State</th><th>GSTIN</th><th>PAN</th><th>Default Comm %</th><th style="padding-right:16px;"></th></tr></thead>
+          <tbody id="hotelsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── BANK DETAILS ── -->
+    <div class="view" id="view-banks">
+      <div class="topbar">
+        <div><h1>Bank Details</h1><p>Reusable bank accounts to display on invoices</p></div>
+        <button class="btn" id="btnAddBank">+ Add Bank Account</button>
+      </div>
+      <div class="panel" style="padding:0;">
+        <table class="data-table" style="margin:0;">
+          <thead><tr><th style="padding-left:16px;">Label</th><th>Bank</th><th>Account Name</th><th>Account No.</th><th>IFSC</th><th>Branch</th><th style="padding-right:16px;"></th></tr></thead>
+          <tbody id="banksBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── INVOICE EDITOR (the print sheet) ── -->
+    <div class="view" id="view-invoiceEditor">
+      <div id="invoiceSheetWrap">
+        <div class="inv-toolbar no-print">
+          <div>
+            <h1 style="margin:0;font-size:18px;">Invoice Editor</h1>
+            <p style="margin:2px 0 0;font-size:11.5px;color:var(--muted);">Auto invoice no. <strong id="editorInvNoPreview">—</strong> · Status:
+              <select id="invStatus" style="padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:11px;">
+                <option value="draft">Draft</option>
+                <option value="final">Final</option>
+                <option value="paid">Paid</option>
+              </select>
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-outline" id="loadAgentBtn">Load Agent ▾</button>
+            <button class="btn btn-outline" id="loadHotelBtn">Load Hotel ▾</button>
+            <button class="btn btn-outline" id="loadBankBtn">Load Bank ▾</button>
+            <button class="btn btn-outline" id="printBtn">🖨 Print / PDF</button>
+            <button class="btn" id="saveInvBtn">💾 Save Invoice</button>
           </div>
         </div>
-        <div class="admin-form-group">
-          <label>Email</label>
-          <input type="email" id="agentEmail" value="team@indiareisen.com">
-        </div>
-        <div class="admin-form-group">
-          <label>Phone</label>
-          <input type="text" id="agentPhone" value="+91 98108 27785">
-        </div>
-        <div class="admin-form-group">
-          <label>Authorized Person Name</label>
-          <input type="text" id="agentAuthName" placeholder="e.g., Rajesh Kumar">
-        </div>
-        <div class="admin-form-group">
-          <label>Designation</label>
-          <input type="text" id="agentDesignation" placeholder="e.g., Travel Consultant, Manager">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="saveCompanySettings()">💾 Save Company Settings</button>
-      <div id="saveMessage"></div>
-    </div>
 
-    <!-- Invoice Settings -->
-    <div class="admin-section">
-      <h2>⚙️ Invoice Settings</h2>
-      <p class="note" style="margin-bottom:16px;">Control which fields appear on commission invoices</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
-          <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
-            <input type="checkbox" id="showTDS" checked style="width:18px; height:18px; cursor:pointer;">
-            <span style="font-weight:600; color:var(--text);">Show TDS on Commission</span>
-          </label>
-          <p class="note" style="margin-top:8px; margin-bottom:0;">When enabled: Payable = Commission + GST - TDS<br>When disabled: Payable = Commission + GST</p>
-        </div>
-        
-        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
-          <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
-            <input type="checkbox" id="showSAC" checked style="width:18px; height:18px; cursor:pointer;">
-            <span style="font-weight:600; color:var(--text);">Show SAC Code</span>
-          </label>
-          <p class="note" style="margin-top:8px; margin-bottom:0;">SAC (Service Accounting Code) will appear in "Our Details" section</p>
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="saveInvoiceSettings()" style="margin-top:16px;">💾 Save Invoice Settings</button>
-      <div id="settingsSaveMessage"></div>
-    </div>
-    <div class="admin-section">
-      <h2>🏦 Bank Details</h2>
-      <p class="note" style="margin-bottom:16px;">These bank details will appear on all commission invoices</p>
-      <div class="admin-grid">
-        <div class="admin-form-group">
-          <label>Bank Name</label>
-          <input type="text" id="bankName" placeholder="e.g., HDFC Bank">
-        </div>
-        <div class="admin-form-group">
-          <label>Account Holder Name</label>
-          <input type="text" id="accountName" placeholder="Account name">
-        </div>
-        <div class="admin-form-group">
-          <label>Account Number</label>
-          <input type="text" id="accountNo" placeholder="Account number">
-        </div>
-        <div class="admin-form-group">
-          <label>IFSC Code</label>
-          <input type="text" id="ifsc" placeholder="IFSC code">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="saveBankDetails()">💾 Save Bank Details</button>
-      <div id="bankSaveMessage"></div>
-    </div>
-    <div class="admin-section">
-      <h2>🏨 Hotel Database</h2>
-      <div class="admin-form-group">
-        <label>Hotel Name</label>
-        <input type="text" id="hotelNameInput" placeholder="e.g., The Taj Hotel Delhi">
-      </div>
-      <div class="admin-grid">
-        <div class="admin-form-group">
-          <label>City</label>
-          <input type="text" id="hotelCityInput" placeholder="e.g., New Delhi">
-        </div>
-        <div class="admin-form-group">
-          <label>Address</label>
-          <input type="text" id="hotelAddrInput" placeholder="Full address">
-        </div>
-        <div class="admin-form-group">
-          <label>GSTIN</label>
-          <input type="text" id="hotelGSTInput" placeholder="Hotel GSTIN">
-        </div>
-        <div class="admin-form-group">
-          <label>PAN</label>
-          <input type="text" id="hotelPANInput" placeholder="Hotel PAN">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="addHotel()">➕ Add Hotel</button>
-
-      <div class="hotel-grid" id="hotelsList">
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- INVOICE PAGE -->
-<div class="app-wrapper" id="invoice">
-  <div class="invoice-toolbar">
-    <button class="btn btn-primary" id="printPdfBtn" style="background:#0b5f59; color:#fff;">🖨️ Print</button>
-    <button class="btn btn-primary" id="savePdfBtn" style="background:#d1356f; color:#fff;">💾 Save PDF</button>
-    <button class="btn btn-primary" id="savePngBtn" style="background:#0f766e; color:#fff;">🖼️ Download PNG</button>
-  </div>
-  <div class="container">
-    <div class="hero">
-      <div class="hero-brand">
-        <div class="logo-wrap">
-          <img id="invoiceLogo" src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen Logo">
-        </div>
-        <div class="brand-text">
-          <h1>Commission Tax Invoice</h1>
-          <p style="margin:2px 0 0;">GST & TDS Settlement for Hotel Commissions</p>
-        </div>
-      </div>
-
-      <div class="hero-invoice">
-        <h2>Invoice Details</h2>
-        <div class="hero-invoice-row">
-          <label>Invoice No.</label>
-          <input id="invoiceNo" value="IR-2024-" />
-        </div>
-        <div class="hero-invoice-row">
-          <label>Date</label>
-          <input id="invoiceDate" type="date" />
-        </div>
-      </div>
-    </div>
-
-    <div class="main">
-      <!-- Our Details (Left) | Hotel Details (Right) -->
-      <div class="grid2" style="margin-top:4px;">
-        <div class="box" style="border-left:4px solid var(--primary);">
-          <h2 class="section-title" style="margin-bottom:6px;">Our Details</h2>
-          <div style="display:grid; gap:4px;">
-            <div>
-              <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">Travel Agent</div>
-              <div style="font-size:11px; font-weight:700; color:var(--text);" id="dispAgentName">India Reisen</div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
-              <div>
-                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">GSTIN</div>
-                <div style="font-size:9px; color:var(--text);" id="dispAgentGST">—</div>
+        <div class="page" id="invoiceSheet">
+          <div class="hero">
+            <div class="hero-top">
+              <div class="brand">
+                <div class="logo-wrap"><img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen"></div>
+                <div class="brand-text">
+                  <h1>Commission Tax Invoice</h1>
+                  <p>India Reisen · GST &amp; TDS Commission Settlement</p>
+                  <div class="badge">A4 · Print Ready</div>
+                </div>
               </div>
-              <div>
-                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">PAN</div>
-                <div style="font-size:9px; color:var(--text);" id="dispAgentPAN">—</div>
-              </div>
-              <div id="sacDisplay">
-                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:2px;">SAC</div>
-                <div style="display:flex; gap:2px; align-items:center;">
-                  <div style="flex:2; padding:3px 4px; border:1px solid var(--border); border-radius:4px; background:#f8fbfd; font-size:9px; color:var(--text); font-weight:600; text-align:center;" id="dispAgentSAC1">—</div>
-                  <span style="color:#ccc; font-size:10px;">-</span>
-                  <div style="flex:1; padding:3px 4px; border:1px solid var(--border); border-radius:4px; background:#f8fbfd; font-size:9px; color:var(--text); font-weight:600; text-align:center;" id="dispAgentSAC2">—</div>
+              <div class="hero-card">
+                <h2>Invoice Details</h2>
+                <div class="hkv">
+                  <strong>Invoice No.</strong><span><input id="invNo" placeholder="Auto-generated" readonly /></span>
+                  <strong>Invoice Date</strong><span><input id="invDate" placeholder="DD/MM/YYYY" /></span>
+                  <strong>Period</strong><span><input id="invPeriod" placeholder="e.g. June 2025" /></span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="box" style="border-left:4px solid var(--accent-pink);">
-          <h2 class="section-title" style="color:var(--accent-pink); margin-bottom:6px;">Hotel Details</h2>
-          <div style="display:grid; gap:4px;">
-            <div>
-              <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:2px;">Select Hotel</div>
-              <input id="selectedHotel" placeholder="Type hotel name..." list="hotelsList" style="width:100%; padding:4px; border:1px solid var(--border); border-radius:6px; font-size:10px; font-weight:600;" />
-              <datalist id="hotelsList"></datalist>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-              <div>
-                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">GSTIN</div>
-                <div style="font-size:9px; color:var(--text);" id="dispHotelGST">—</div>
+          <div class="main">
+            <div class="g2">
+              <div class="box">
+                <div class="section-title">Travel Agent (Us)</div>
+                <div class="kv">
+                  <strong>Company</strong><span><input id="agName" value="India Reisen" /></span>
+                  <strong>Address</strong><span><input id="agAddr" placeholder="Communication address" /></span>
+                  <strong>GSTIN</strong><span><input id="agGstin" placeholder="27XXXXX" /></span>
+                  <strong>PAN</strong><span><input id="agPan" placeholder="AAAAA0000A" /></span>
+                  <strong>State</strong><span><input id="agState" placeholder="State &amp; Code" /></span>
+                </div>
               </div>
-              <div>
-                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">PAN</div>
-                <div style="font-size:9px; color:var(--text);" id="dispHotelPAN">—</div>
+              <div class="box">
+                <div class="section-title">Hotel (Billed To)</div>
+                <div class="kv">
+                  <strong>Hotel Name</strong><span><input id="htName" placeholder="Hotel name" /></span>
+                  <strong>Address</strong><span><input id="htAddr" placeholder="Hotel address" /></span>
+                  <strong>GSTIN</strong><span><input id="htGstin" placeholder="Hotel GSTIN" /></span>
+                  <strong>PAN</strong><span><input id="htPan" placeholder="Hotel PAN" /></span>
+                  <strong>State</strong><span><input id="htState" placeholder="State &amp; Code" /></span>
+                </div>
               </div>
             </div>
-            <div>
-              <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">Address</div>
-              <div style="font-size:9px; color:var(--text);" id="dispHotelAddr">—</div>
+
+            <div class="g2">
+              <div class="box">
+                <div class="section-title">Guest &amp; Booking</div>
+                <div class="kv">
+                  <strong>Guest Name</strong><span><input id="guestName" placeholder="Lead guest name" /></span>
+                  <strong>Booking Ref</strong><span><input id="bookingRef" placeholder="Confirmation / PNR" /></span>
+                  <strong>Check-in</strong><span><input id="checkIn" placeholder="DD/MM/YYYY" /></span>
+                  <strong>Check-out</strong><span><input id="checkOut" placeholder="DD/MM/YYYY" /></span>
+                  <strong>Nights</strong><span><input id="totalNights" type="number" min="1" value="1" /></span>
+                </div>
+              </div>
+              <div class="box">
+                <div class="section-title">Commission Rates (Applied to all rooms)</div>
+                <div class="kv">
+                  <strong>Commission %</strong><span><input id="commPct" type="number" value="10" step="0.01" min="0" /></span>
+                  <strong>GST on Comm %</strong><span><input id="commGstPct" type="number" value="18" step="0.01" min="0" /></span>
+                  <strong>TDS on Comm %</strong><span><input id="tdsPct" type="number" value="2" step="0.01" min="0" /></span>
+                  <strong>GST Type</strong><span>
+                    <select id="gstType">
+                      <option value="igst">IGST (Inter-State)</option>
+                      <option value="sgst" selected>CGST+SGST (Intra-State)</option>
+                    </select>
+                  </span>
+                  <strong>Currency</strong><span>
+                    <select id="currency">
+                      <option value="₹" selected>₹ INR – Indian Rupee</option>
+                      <option value="$">$ USD – US Dollar</option>
+                      <option value="€">€ EUR – Euro</option>
+                      <option value="£">£ GBP – British Pound</option>
+                      <option value="AED">AED – UAE Dirham</option>
+                      <option value="SGD">SGD – Singapore Dollar</option>
+                      <option value="A$">A$ AUD – Australian Dollar</option>
+                    </select>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="box room-table-wrap">
+              <div class="section-title" style="margin-bottom:6px;">Room-wise Booking Details</div>
+              <table class="inv-table" id="roomTable">
+                <thead><tr>
+                  <th style="width:20px">#</th><th style="min-width:90px">Room Type</th><th style="width:60px">Occupancy</th>
+                  <th style="width:35px">Rooms</th><th style="width:35px">Nights</th><th style="width:70px">Rate/Night (₹)</th>
+                  <th style="width:55px">Hotel GST%</th><th style="width:70px">Base Total (₹)</th><th style="width:70px">Commission (₹)</th>
+                  <th class="del-col no-print"></th>
+                </tr></thead>
+                <tbody id="roomBody"></tbody>
+                <tfoot><tr class="tfoot-row">
+                  <td colspan="7" style="text-align:right;font-weight:700;">Total Base Amount →</td>
+                  <td id="footBaseTotal">0.00</td><td id="footCommTotal">0.00</td><td class="del-col no-print"></td>
+                </tr></tfoot>
+              </table>
+              <button class="add-row-btn no-print" id="addRowBtn">+ Add Room Type</button>
+            </div>
+
+            <div class="calc-grid">
+              <div class="box">
+                <div class="section-title">Commission Summary</div>
+                <table class="calc-table"><tbody>
+                  <tr><td>Total Base Hotel Amount</td><td id="s_base">₹ 0.00</td></tr>
+                  <tr><td>Commission Amount (<span id="s_commPct">10</span>%)</td><td id="s_comm">₹ 0.00</td></tr>
+                  <tr id="igst_row" style="display:none"><td>IGST on Commission</td><td id="s_igst">₹ 0.00</td></tr>
+                  <tr id="cgst_row"><td>CGST on Commission</td><td id="s_cgst">₹ 0.00</td></tr>
+                  <tr id="sgst_row"><td>SGST on Commission</td><td id="s_sgst">₹ 0.00</td></tr>
+                  <tr class="deduct-row"><td>Less: TDS on Commission (<span id="s_tdsPct">2</span>%)</td><td id="s_tds">- ₹ 0.00</td></tr>
+                  <tr class="total-row"><td>Net Payable Commission</td><td id="s_net">₹ 0.00</td></tr>
+                  <tr><td colspan="2" style="font-size:9px;color:var(--muted);font-style:italic;font-weight:400;">Amount in Words: <span id="s_netWords" style="color:#253041;font-weight:700;font-style:normal;">—</span></td></tr>
+                </tbody></table>
+                <p class="note" style="margin-top:5px;">Net Payable = Commission + GST on Commission − TDS<br>TDS u/s 194H deducted by Hotel on commission payment.</p>
+              </div>
+              <div class="box">
+                <div class="section-title">GST Invoice Details</div>
+                <table class="calc-table"><tbody>
+                  <tr><td>HSN/SAC Code</td><td>998551</td></tr>
+                  <tr><td>Service Description</td><td>Tour Operator / Hotel Booking Commission</td></tr>
+                  <tr><td>Taxable Value</td><td id="g_taxable">₹ 0.00</td></tr>
+                  <tr id="g_igst_row" style="display:none"><td>IGST @ <span id="g_igstPct">18</span>%</td><td id="g_igst">₹ 0.00</td></tr>
+                  <tr id="g_cgst_row"><td>CGST @ <span id="g_cgstPct">9</span>%</td><td id="g_cgst">₹ 0.00</td></tr>
+                  <tr id="g_sgst_row"><td>SGST @ <span id="g_sgstPct">9</span>%</td><td id="g_sgst">₹ 0.00</td></tr>
+                  <tr class="total-row"><td>Total Invoice Value</td><td id="g_total">₹ 0.00</td></tr>
+                </tbody></table>
+                <p class="note" style="margin-top:5px;">GST applicable on commission (service fee), not on hotel room tariff.<br>Place of Supply: <input id="placeOfSupply" placeholder="State name" style="border:none;border-bottom:1px solid #ccc;font-size:8.5px;width:80px;padding:0 2px;background:transparent;" /></p>
+              </div>
+            </div>
+
+            <div class="bottom-row">
+              <div class="box">
+                <div class="section-title">Terms &amp; Notes</div>
+                <p class="note">• Commission earned on confirmed bookings only.</p>
+                <p class="note">• GST charged on commission service (SAC 998551).</p>
+                <p class="note">• TDS u/s 194H to be deducted by hotel at source.</p>
+                <p class="note">• Subject to reconciliation with hotel records.</p>
+                <p class="note">• E &amp; O.E. This is a computer-generated invoice.</p>
+              </div>
+              <div class="box">
+                <div class="section-title">Bank Details</div>
+                <div class="kv">
+                  <strong>Bank</strong><span><input id="bankName" placeholder="Bank name" /></span>
+                  <strong>A/C Name</strong><span><input id="bankAcName" placeholder="Account name" /></span>
+                  <strong>A/C No.</strong><span><input id="bankAcNo" placeholder="Account number" /></span>
+                  <strong>IFSC</strong><span><input id="bankIfsc" placeholder="IFSC code" /></span>
+                  <strong>Branch</strong><span><input id="bankBranch" placeholder="Branch" /></span>
+                </div>
+              </div>
+              <div class="box">
+                <div class="section-title">Authorized Signatory</div>
+                <div class="sig">
+                  <div><p class="note" style="margin-bottom:2px;">For India Reisen</p><p class="note">Name &amp; Designation</p></div>
+                  <div class="line">Signature &amp; Stamp</div>
+                </div>
+                <p class="note" style="margin-top:8px;">Declaration: I/We declare that this invoice shows actual price of services described and all particulars are true and correct.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Guest & Booking Information -->
-      <div class="box grid-full">
-        <h2 class="section-title">Guest & Booking Details</h2>
-        <div style="display:grid; grid-template-columns:2fr 1fr 1.2fr 1.2fr 0.8fr; gap:12px;">
-          <div class="admin-form-group" style="margin-bottom:0;">
-            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Guest Name</label>
-            <input id="guestName" placeholder="Full Name" style="width:100%;">
-          </div>
-          <div class="admin-form-group" style="margin-bottom:0;">
-            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Ref No.</label>
-            <input id="refNo" placeholder="Confirmation #" style="width:100%;">
-          </div>
-          <div class="admin-form-group" style="margin-bottom:0;">
-            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Check-in</label>
-            <input id="checkin" type="date" style="width:100%;">
-          </div>
-          <div class="admin-form-group" style="margin-bottom:0;">
-            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Check-out</label>
-            <input id="checkout" type="date" style="width:100%;">
-          </div>
-          <div class="admin-form-group" style="margin-bottom:0;">
-            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Nights</label>
-            <input id="totalNights" type="number" readonly value="0" style="width:100%; background:#f8fbfd;">
-          </div>
-        </div>
-      </div>
+  </div>
+</div>
 
-      <!-- Room Details Table -->
-      <div class="box grid-full" style="page-break-inside:auto; break-inside:auto;">
-        <h2 class="section-title">Room Details</h2>
-        <table class="rooms-table">
-          <thead>
-            <tr>
-              <th style="width:25%;">Room Type</th>
-              <th style="width:15%;">Qty</th>
-              <th style="width:20%;">Rate/Night</th>
-              <th style="width:20%;">Subtotal</th>
-              <th style="width:15%;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="roomsBody">
-            <tr class="room-row">
-              <td><input type="text" class="room-type" placeholder="e.g., Deluxe Double" value="" /></td>
-              <td><input type="number" class="room-qty" value="1" step="1" min="1" style="text-align:center;" /></td>
-              <td><input type="number" class="room-rate" value="0" step="0.01" min="0" style="text-align:right;" /></td>
-              <td><input type="text" class="room-subtotal" readonly style="text-align:right;" value="0.00" /></td>
-              <td style="text-align:center;"><button class="btn-icon danger" onclick="removeRoom(this)">✕</button></td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr style="background:var(--soft); font-weight:700; border-top:2px solid var(--primary);">
-              <td colspan="3" style="text-align:right; padding:4px;">Total Room Value</td>
-              <td style="text-align:right; padding:4px;">₹<span id="roomsTotal">0.00</span></td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-        <div class="add-btn-row hidden-print" style="margin-top:2px;">
-          <button class="btn btn-primary" onclick="addRoom()" style="background:var(--primary); padding:5px 8px; font-size:9px;">+ Add Room</button>
-        </div>
-      </div>
-
-      <!-- Calculation Summary -->
-      <div class="box highlight">
-        <h2 class="section-title">Calculation Summary</h2>
-        
-        <div class="summary-row">
-          <strong>Total Room Value (Base)</strong>
-          <span>₹<span id="totalRoomValue">0.00</span></span>
-        </div>
-
-        <div class="summary-row">
-          <div>
-            <strong>Hotel GST Rate</strong>
-            <input id="hotelGstRate" type="number" value="18" step="0.01" style="width:80px; height:24px; font-size:10px;" />
-          </div>
-          <span>₹<span id="hotelGst">0.00</span></span>
-        </div>
-
-        <div class="summary-row">
-          <strong>Total with Hotel GST</strong>
-          <span>₹<span id="totalWithHotelGst">0.00</span></span>
-        </div>
-
-        <div class="summary-row" style="border-top:2px solid var(--primary); margin-top:8px; padding-top:8px;">
-          <div>
-            <strong>Commission %</strong>
-            <input id="commissionPct" type="number" value="10" step="0.01" style="width:80px; height:24px; font-size:10px;" />
-          </div>
-          <span>₹<span id="commissionAmt">0.00</span></span>
-        </div>
-
-        <div class="summary-row">
-          <div>
-            <strong>GST on Commission (%)</strong>
-            <input id="commGstRate" type="number" value="18" step="0.01" style="width:80px; height:24px; font-size:10px;" />
-          </div>
-          <span>₹<span id="gstOnComm">0.00</span></span>
-        </div>
-
-        <div id="tdsSection" class="summary-row">
-          <div>
-            <strong>TDS on Commission (%)</strong>
-            <input id="tdsRate" type="number" value="2" step="0.01" style="width:80px; height:24px; font-size:10px;" />
-          </div>
-          <span>₹<span id="tdsOnComm">0.00</span></span>
-        </div>
-
-        <div class="summary-row total">
-          <strong style="font-size:12px;">NET PAYABLE COMMISSION</strong>
-          <span style="font-size:13px; color:var(--primary);">₹<span id="payableComm">0.00</span></span>
-        </div>
-
-        <p class="note" style="margin-top:10px; border-top:1px solid var(--border); padding-top:8px;">
-          <strong>Formula:</strong> Total Room Value = Sum of all rooms | Commission = Room Value × Rate | GST on Commission = Commission × Rate | TDS = Commission × Rate | Payable = Commission + GST - TDS
-        </p>
-      </div>
-
-      <!-- Bank Details & Notes -->
-      <div class="grid2">
-        <div class="box">
-          <h2 class="section-title">Bank Details</h2>
-          <table style="width:100%; border-collapse:collapse; font-size:10px;">
-            <tr>
-              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border); width:50%;">Bank Name</td>
-              <td style="padding:6px 4px; color:var(--text); border-bottom:1px solid var(--border); text-align:right;" id="dispBankName">—</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border);">Account Holder</td>
-              <td style="padding:6px 4px; color:var(--text); border-bottom:1px solid var(--border); text-align:right;" id="dispAccountName">—</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border);">Account Number</td>
-              <td style="padding:6px 4px; color:var(--text); border-bottom:1px solid var(--border); text-align:right; font-family:monospace;" id="dispAccountNo">—</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase;">IFSC Code</td>
-              <td style="padding:6px 4px; color:var(--text); text-align:right; font-family:monospace;" id="dispIFSC">—</td>
-            </tr>
-          </table>
-        </div>
-
-        <div class="box">
-          <h2 class="section-title">Booking Notes</h2>
-          <p class="note">✓ Commission invoice for confirmed booking</p>
-          <p class="note">✓ GST shown separately on service</p>
-          <p class="note">✓ TDS deducted as per tax rules</p>
-          <p class="note">✓ Final amount is net of deductions</p>
-          <p class="note">✓ Valid for settlement within 30 days</p>
-        </div>
-      </div>
-
-      <!-- Signatory -->
-      <div class="box grid-full">
-        <h2 class="section-title">Authorization</h2>
-        <div class="sig" style="position:relative;">
-          <!-- Stamp -->
-          <div style="position:absolute; right:80px; top:10px; opacity:0.15; transform:rotate(-15deg);">
-            <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1782349200/stamp_gvw5qk.png" alt="Stamp" style="width:80px; height:80px; object-fit:contain;">
-          </div>
-          
-          <div>
-            <p class="note"><strong>For India Reisen</strong></p>
-            <p class="note">________________________</p>
-            <p class="note" style="font-size:9px;" id="dispSignName1">Name & Designation</p>
-          </div>
-          <div style="flex:1;"></div>
-          <div>
-            <p class="note"><strong>Hotel Manager / Authorized Signatory</strong></p>
-            <p class="note">________________________</p>
-            <p class="note" style="font-size:9px;" id="dispSignName2">Name & Designation</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer with Communication Details -->
-      <div class="footer">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.2);">
-          <div style="font-size:18px; font-weight:700; color:#d1356f; letter-spacing:-0.5px;">🌸 India Reisen</div>
-          <div style="font-size:8px; color:#d6f7f4; font-style:italic;">Explore. Experience. Enchant</div>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; align-items:center;">
-          <div>
-            <div style="font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">ADDRESS</div>
-            <div style="font-size:9px; line-height:1.3;">C-16, Third Floor, Sector 02, Noida, U.P., India, 201301</div>
-          </div>
-          <div>
-            <div style="font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">EMAIL</div>
-            <div style="font-size:9px;">team@indiareisen.com</div>
-          </div>
-          <div>
-            <div style="font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">PHONE</div>
-            <div style="font-size:9px;">+91 9810827785</div>
-          </div>
-        </div>
-      </div>
-
+<!-- ═════════════ MODALS ═════════════ -->
+<div class="modal-backdrop no-print" id="agentModal">
+  <div class="modal">
+    <button class="modal-close" data-close="agentModal">✕</button>
+    <h3 id="agentModalTitle">Add Agent Profile</h3>
+    <div class="form-grid">
+      <div class="field full"><label>Company Name</label><input id="m_agName" /></div>
+      <div class="field full"><label>Address</label><textarea id="m_agAddr"></textarea></div>
+      <div class="field"><label>GSTIN</label><input id="m_agGstin" /></div>
+      <div class="field"><label>PAN</label><input id="m_agPan" /></div>
+      <div class="field full"><label>State &amp; Code</label><input id="m_agState" /></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" data-close="agentModal">Cancel</button>
+      <button class="btn" id="saveAgentBtn">Save Agent</button>
     </div>
   </div>
 </div>
 
+<div class="modal-backdrop no-print" id="hotelModal">
+  <div class="modal">
+    <button class="modal-close" data-close="hotelModal">✕</button>
+    <h3 id="hotelModalTitle">Add Hotel</h3>
+    <div class="form-grid">
+      <div class="field full"><label>Hotel Name</label><input id="m_htName" /></div>
+      <div class="field full"><label>Address</label><textarea id="m_htAddr"></textarea></div>
+      <div class="field"><label>City</label><input id="m_htCity" /></div>
+      <div class="field"><label>State &amp; Code</label><input id="m_htState" /></div>
+      <div class="field"><label>GSTIN</label><input id="m_htGstin" /></div>
+      <div class="field"><label>PAN</label><input id="m_htPan" /></div>
+      <div class="field"><label>Default Commission %</label><input id="m_htCommPct" type="number" step="0.01" value="10" /></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" data-close="hotelModal">Cancel</button>
+      <button class="btn" id="saveHotelBtn">Save Hotel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop no-print" id="bankModal">
+  <div class="modal">
+    <button class="modal-close" data-close="bankModal">✕</button>
+    <h3 id="bankModalTitle">Add Bank Account</h3>
+    <div class="form-grid">
+      <div class="field full"><label>Label (e.g. "Primary – HDFC")</label><input id="m_bkLabel" /></div>
+      <div class="field"><label>Bank Name</label><input id="m_bkName" /></div>
+      <div class="field"><label>Branch</label><input id="m_bkBranch" /></div>
+      <div class="field"><label>Account Name</label><input id="m_bkAcName" /></div>
+      <div class="field"><label>Account Number</label><input id="m_bkAcNo" /></div>
+      <div class="field"><label>IFSC Code</label><input id="m_bkIfsc" /></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" data-close="bankModal">Cancel</button>
+      <button class="btn" id="saveBankBtn">Save Bank Account</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop no-print" id="pickerModal">
+  <div class="modal">
+    <button class="modal-close" data-close="pickerModal">✕</button>
+    <h3 id="pickerModalTitle">Select</h3>
+    <table class="data-table"><tbody id="pickerBody"></tbody></table>
+  </div>
+</div>
+
+<div class="toast no-print" id="toast"></div>
+
 <script>
-// ============ STORAGE & STATE ============
-const storage = {
-  getCompanySettings() {
-    return JSON.parse(localStorage.getItem('companySettings') || '{"agentName":"India Reisen","agentAddr":"Ghaziabad, Uttar Pradesh","agentGST":"","agentPAN":"","agentSAC":"","agentEmail":"team@indiareisen.com","agentPhone":"+91 98108 27785","agentAuthName":"","agentDesignation":""}');
-  },
-  setCompanySettings(data) {
-    localStorage.setItem('companySettings', JSON.stringify(data));
-  },
-  getInvoiceSettings() {
-    return JSON.parse(localStorage.getItem('invoiceSettings') || '{"showTDS":true,"showSAC":true}');
-  },
-  setInvoiceSettings(data) {
-    localStorage.setItem('invoiceSettings', JSON.stringify(data));
-  },
-  getBankDetails() {
-    return JSON.parse(localStorage.getItem('bankDetails') || '{"bankName":"","accountName":"","accountNo":"","ifsc":""}');
-  },
-  setBankDetails(data) {
-    localStorage.setItem('bankDetails', JSON.stringify(data));
-  },
-  getHotels() {
-    return JSON.parse(localStorage.getItem('hotels') || '[]');
-  },
-  setHotels(data) {
-    localStorage.setItem('hotels', JSON.stringify(data));
-  },
-  getLogo() {
-    return localStorage.getItem('companyLogo');
-  },
-  setLogo(data) {
-    localStorage.setItem('companyLogo', data);
-  },
-  getInvoiceLog() {
-    return JSON.parse(localStorage.getItem('invoiceLog') || '[]');
-  },
-  setInvoiceLog(data) {
-    localStorage.setItem('invoiceLog', JSON.stringify(data));
-  },
-  logInvoiceEvent(eventType) {
-    const invoiceNo = (document.getElementById('invoiceNo') || {}).value || 'Untitled';
-    const guestName = (document.getElementById('guestName') || {}).value || '—';
-    const hotelName = (document.getElementById('selectedHotel') || {}).value || '—';
-    const amount = (document.getElementById('payableComm') || {}).textContent || '0.00';
-
-    const log = this.getInvoiceLog();
-    let entry = log.find(e => e.invoiceNo === invoiceNo);
-    if (!entry) {
-      entry = { invoiceNo, guestName, hotelName, amount, firstSeen: new Date().toISOString(), events: [] };
-      log.unshift(entry);
-    } else {
-      entry.guestName = guestName;
-      entry.hotelName = hotelName;
-      entry.amount = amount;
-    }
-    entry.events.unshift({ type: eventType, timestamp: new Date().toISOString() });
-    this.setInvoiceLog(log);
-    if (typeof renderInvoiceLog === 'function') renderInvoiceLog();
-  }
+/* ═══════════════════════════════════════════════════
+   STATE  (in-memory only — swap for window.storage later)
+   ═══════════════════════════════════════════════════ */
+const state = {
+  agents: [],
+  hotels: [],
+  banks: [],
+  invoices: [],
+  nextInvoiceSeq: 1,
+  editingInvoiceId: null
 };
-
-// ============ PAGE NAVIGATION ============
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.app-wrapper').forEach(w => w.classList.remove('active'));
-    
-    e.target.classList.add('active');
-    document.getElementById(e.target.dataset.page).classList.add('active');
-  });
-});
-
-// ============ ADMIN PAGE FUNCTIONS ============
-function saveCompanySettings() {
-  const sac1 = document.getElementById('agentSAC1').value;
-  const sac2 = document.getElementById('agentSAC2').value;
-  const agentSAC = sac1 && sac2 ? `${sac1}-${sac2}` : '';
-  
-  const settings = {
-    agentName: document.getElementById('agentName').value,
-    agentAddr: document.getElementById('agentAddr').value,
-    agentGST: document.getElementById('agentGST').value,
-    agentPAN: document.getElementById('agentPAN').value,
-    agentSAC: agentSAC,
-    agentEmail: document.getElementById('agentEmail').value,
-    agentPhone: document.getElementById('agentPhone').value,
-    agentAuthName: document.getElementById('agentAuthName').value,
-    agentDesignation: document.getElementById('agentDesignation').value
-  };
-  storage.setCompanySettings(settings);
-  const msg = document.getElementById('saveMessage');
-  msg.innerHTML = '<div class="success-message">✓ Company settings saved successfully!</div>';
-  setTimeout(() => msg.innerHTML = '', 3000);
-  updateInvoiceDisplay();
-}
-
-function saveBankDetails() {
-  const details = {
-    bankName: document.getElementById('bankName').value,
-    accountName: document.getElementById('accountName').value,
-    accountNo: document.getElementById('accountNo').value,
-    ifsc: document.getElementById('ifsc').value
-  };
-  storage.setBankDetails(details);
-  const msg = document.getElementById('bankSaveMessage');
-  msg.innerHTML = '<div class="success-message">✓ Bank details saved successfully!</div>';
-  setTimeout(() => msg.innerHTML = '', 3000);
-  updateInvoiceDisplay();
-}
-
-function saveInvoiceSettings() {
-  const settings = {
-    showTDS: document.getElementById('showTDS').checked,
-    showSAC: document.getElementById('showSAC').checked
-  };
-  storage.setInvoiceSettings(settings);
-  const msg = document.getElementById('settingsSaveMessage');
-  msg.innerHTML = '<div class="success-message">✓ Invoice settings saved successfully!</div>';
-  setTimeout(() => msg.innerHTML = '', 3000);
-  updateInvoiceDisplay();
-  updateCalculations();
-}
-
-function addHotel() {
-  const name = document.getElementById('hotelNameInput').value.trim();
-  const city = document.getElementById('hotelCityInput').value.trim();
-  const addr = document.getElementById('hotelAddrInput').value.trim();
-  const gstin = document.getElementById('hotelGSTInput').value.trim();
-  const pan = document.getElementById('hotelPANInput').value.trim();
-
-  if (!name || !city) {
-    alert('Please fill Hotel Name and City');
-    return;
-  }
-
-  const hotels = storage.getHotels();
-  hotels.push({ id: Date.now(), name, city, addr, gstin, pan });
-  storage.setHotels(hotels);
-
-  document.getElementById('hotelNameInput').value = '';
-  document.getElementById('hotelCityInput').value = '';
-  document.getElementById('hotelAddrInput').value = '';
-  document.getElementById('hotelGSTInput').value = '';
-  document.getElementById('hotelPANInput').value = '';
-
-  renderHotels();
-  updateHotelsList();
-}
-
-function deleteHotel(id) {
-  const hotels = storage.getHotels().filter(h => h.id !== id);
-  storage.setHotels(hotels);
-  renderHotels();
-  updateHotelsList();
-}
-
-function renderHotels() {
-  const container = document.getElementById('hotelsList');
-  const hotels = storage.getHotels();
-  
-  container.innerHTML = hotels.map(h => `
-    <div class="hotel-card">
-      <button class="delete-btn" onclick="deleteHotel(${h.id})">🗑️</button>
-      <h3>${h.name}</h3>
-      <p><strong>${h.city}</strong></p>
-      <p>${h.addr || '—'}</p>
-      <p style="font-size:10px; margin-top:6px;">GSTIN: ${h.gstin || '—'}</p>
-      <p style="font-size:10px;">PAN: ${h.pan || '—'}</p>
-    </div>
-  `).join('');
-}
-
-function updateHotelsList() {
-  const datalist = document.getElementById('hotelsList');
-  const hotels = storage.getHotels();
-  datalist.innerHTML = hotels.map(h => `<option value="${h.name}">`).join('');
-}
-
-function renderDashboard() {
-  const company = storage.getCompanySettings();
-  document.getElementById('dashCompanyName').textContent = company.agentName || '—';
-  document.getElementById('dashCompanyGST').textContent = 'GST: ' + (company.agentGST || '—');
-
-  const hotels = storage.getHotels();
-  document.getElementById('dashHotelCount').textContent = hotels.length;
-
-  const log = storage.getInvoiceLog();
-  document.getElementById('dashInvoiceCount').textContent = log.length;
-}
-
-function renderInvoiceLog() {
-  const container = document.getElementById('invoiceLogContainer');
-  const log = storage.getInvoiceLog();
-
-  if (log.length === 0) {
-    container.innerHTML = '<p class="note">No invoices generated yet.</p>';
-    renderDashboard();
-    return;
-  }
-
-  const formatTime = (iso) => new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-
-  container.innerHTML = log.map(entry => `
-    <div style="border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; background:#f9fafb;">
-      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
-        <div>
-          <div style="font-weight:700; font-size:13px; color:var(--text);">${entry.invoiceNo}</div>
-          <div style="font-size:11px; color:var(--muted); margin-top:2px;">${entry.guestName} — ${entry.hotelName}</div>
-        </div>
-        <div style="font-weight:700; font-size:13px; color:var(--primary); white-space:nowrap;">₹${entry.amount}</div>
-      </div>
-      <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700; margin-bottom:4px;">Access Log</div>
-      <div style="display:grid; gap:4px;">
-        ${entry.events.map(ev => `
-          <div style="display:flex; justify-content:space-between; font-size:11px; padding:4px 8px; background:#fff; border-radius:4px; border:1px solid var(--border);">
-            <span style="font-weight:600; color:var(--text);">${ev.type}</span>
-            <span style="color:var(--muted);">${formatTime(ev.timestamp)}</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-
-  renderDashboard();
-}
-
-function clearInvoiceLog() {
-  if (confirm('Clear all invoice history and access log? This cannot be undone.')) {
-    storage.setInvoiceLog([]);
-    renderInvoiceLog();
-  }
-}
-
-// Logo Upload
-document.getElementById('logoUpload').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const base64 = event.target.result;
-    storage.setLogo(base64);
-    
-    document.getElementById('logoPreview').innerHTML = `<img src="${base64}" alt="Logo">`;
-    document.getElementById('invoiceLogo').src = base64;
-  };
-  reader.readAsDataURL(file);
-});
-
-// ============ INVOICE PAGE FUNCTIONS ============
-document.getElementById('selectedHotel').addEventListener('change', (e) => {
-  const hotels = storage.getHotels();
-  const selected = hotels.find(h => h.name === e.target.value);
-  if (selected) {
-    document.getElementById('dispHotelAddr').textContent = selected.addr || '—';
-    document.getElementById('dispHotelGST').textContent = selected.gstin || '—';
-    document.getElementById('dispHotelPAN').textContent = selected.pan || '—';
-  }
-});
-
-function updateInvoiceDisplay() {
-  const settings = storage.getCompanySettings();
-  document.getElementById('dispAgentName').textContent = settings.agentName;
-  document.getElementById('dispAgentGST').textContent = settings.agentGST || '—';
-  document.getElementById('dispAgentPAN').textContent = settings.agentPAN || '—';
-  
-  // Split SAC code into 4-digit and 2-digit parts
-  if (settings.agentSAC) {
-    const sacParts = settings.agentSAC.split('-');
-    document.getElementById('dispAgentSAC1').textContent = sacParts[0] || '—';
-    document.getElementById('dispAgentSAC2').textContent = sacParts[1] || '—';
-  } else {
-    document.getElementById('dispAgentSAC1').textContent = '—';
-    document.getElementById('dispAgentSAC2').textContent = '—';
-  }
-  
-  // Update authorization signature line with Name and Designation
-  const signName1 = settings.agentAuthName && settings.agentDesignation ? 
-    `${settings.agentAuthName}, ${settings.agentDesignation}` : 
-    'Name & Designation';
-  document.getElementById('dispSignName1').textContent = signName1;
-
-  const bank = storage.getBankDetails();
-  document.getElementById('dispBankName').textContent = bank.bankName || '—';
-  document.getElementById('dispAccountName').textContent = bank.accountName || '—';
-  document.getElementById('dispAccountNo').textContent = bank.accountNo || '—';
-  document.getElementById('dispIFSC').textContent = bank.ifsc || '—';
-
-  // Handle visibility settings
-  const invoiceSettings = storage.getInvoiceSettings();
-  
-  // TDS visibility - use class only
-  const tdsElement = document.getElementById('tdsSection');
-  const sacElement = document.getElementById('sacDisplay');
-  
-  if (invoiceSettings.showTDS) {
-    tdsElement.classList.remove('hidden-in-print');
-  } else {
-    tdsElement.classList.add('hidden-in-print');
-  }
-  
-  // SAC visibility - use class only
-  if (invoiceSettings.showSAC) {
-    sacElement.classList.remove('hidden-in-print');
-  } else {
-    sacElement.classList.add('hidden-in-print');
-  }
-}
-
-function calculateRoomSubtotal(row) {
-  const qty = parseFloat(row.querySelector('.room-qty').value) || 0;
-  const rate = parseFloat(row.querySelector('.room-rate').value) || 0;
-  const nights = parseFloat(document.getElementById('totalNights').value) || 0;
-  const subtotal = qty * rate * nights;
-  row.querySelector('.room-subtotal').value = subtotal.toFixed(2);
-  return subtotal;
-}
-
-function updateNights() {
-  const checkin = new Date(document.getElementById('checkin').value);
-  const checkout = new Date(document.getElementById('checkout').value);
-  if (checkin && checkout && checkout > checkin) {
-    const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
-    document.getElementById('totalNights').value = nights;
-    document.getElementById('nightsDisplay').textContent = nights + ' night' + (nights !== 1 ? 's' : '');
-    updateCalculations();
-  }
-}
-
-function updateCalculations() {
-  let totalRoomValue = 0;
-  const rows = document.querySelectorAll('.room-row');
-  
-  rows.forEach(row => {
-    totalRoomValue += calculateRoomSubtotal(row);
-  });
-
-  // Update rooms total display
-  document.getElementById('roomsTotal').textContent = totalRoomValue.toFixed(2);
-
-  const hotelGstRate = parseFloat(document.getElementById('hotelGstRate').value) || 0;
-  const hotelGst = totalRoomValue * hotelGstRate / 100;
-  const totalWithGst = totalRoomValue + hotelGst;
-
-  const commPct = parseFloat(document.getElementById('commissionPct').value) || 0;
-  const commission = totalRoomValue * commPct / 100;
-
-  const commGstRate = parseFloat(document.getElementById('commGstRate').value) || 0;
-  const gstOnComm = commission * commGstRate / 100;
-
-  const invoiceSettings = storage.getInvoiceSettings();
-  let tds = 0;
-  if (invoiceSettings.showTDS) {
-    const tdsRate = parseFloat(document.getElementById('tdsRate').value) || 0;
-    tds = commission * tdsRate / 100;
-  }
-
-  const payable = commission + gstOnComm - tds;
-
-  document.getElementById('totalRoomValue').textContent = totalRoomValue.toFixed(2);
-  document.getElementById('hotelGst').textContent = hotelGst.toFixed(2);
-  document.getElementById('totalWithHotelGst').textContent = totalWithGst.toFixed(2);
-  document.getElementById('commissionAmt').textContent = commission.toFixed(2);
-  document.getElementById('gstOnComm').textContent = gstOnComm.toFixed(2);
-  document.getElementById('tdsOnComm').textContent = tds.toFixed(2);
-  document.getElementById('payableComm').textContent = payable.toFixed(2);
-}
-
-function addRoom() {
-  const tbody = document.getElementById('roomsBody');
-  const row = document.createElement('tr');
-  row.className = 'room-row';
-  row.innerHTML = `
-    <td><input type="text" class="room-type" placeholder="e.g., Deluxe Double" /></td>
-    <td><input type="number" class="room-qty" value="1" step="1" min="1" style="text-align:center;" /></td>
-    <td><input type="number" class="room-rate" value="0" step="0.01" min="0" style="text-align:right;" /></td>
-    <td><input type="text" class="room-subtotal" readonly style="text-align:right;" value="0.00" /></td>
-    <td style="text-align:center;"><button class="btn-icon danger" onclick="removeRoom(this)">✕</button></td>
-  `;
-  
-  row.querySelectorAll('input[type="number"], input.room-type').forEach(input => {
-    input.addEventListener('input', updateCalculations);
-  });
-  
-  tbody.appendChild(row);
-  updateCalculations();
-}
-
-function removeRoom(btn) {
-  btn.closest('.room-row').remove();
-  updateCalculations();
-}
-
-// ============ EVENT LISTENERS ============
-document.getElementById('invoiceDate').valueAsDate = new Date();
-document.getElementById('checkin').addEventListener('change', updateNights);
-document.getElementById('checkout').addEventListener('change', updateNights);
-document.getElementById('hotelGstRate').addEventListener('input', updateCalculations);
-document.getElementById('commissionPct').addEventListener('input', updateCalculations);
-document.getElementById('commGstRate').addEventListener('input', updateCalculations);
-document.getElementById('tdsRate').addEventListener('input', updateCalculations);
-
-document.getElementById('showTDS').addEventListener('change', () => {
-  saveInvoiceSettings();
-  updateInvoiceDisplay();
-  updateCalculations();
-});
-
-document.getElementById('showSAC').addEventListener('change', () => {
-  saveInvoiceSettings();
-  updateInvoiceDisplay();
-});
-
-document.querySelectorAll('.room-row input[type="number"], .room-row input.room-type').forEach(input => {
-  input.addEventListener('input', updateCalculations);
-});
-
-document.getElementById('printPdfBtn').addEventListener('click', () => {
-  storage.logInvoiceEvent('Printed');
-  window.print();
-});
-
-document.getElementById('savePdfBtn').addEventListener('click', () => {
-  storage.logInvoiceEvent('Saved as PDF');
-  // Trigger print dialog with focus on "Save as PDF" option
-  window.print();
-});
-
-document.getElementById('savePngBtn').addEventListener('click', async () => {
-  storage.logInvoiceEvent('Downloaded PNG');
-  const btn = document.getElementById('savePngBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Generating...';
-  
+function saveState(){
   try {
-    // Load html2canvas library
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    document.head.appendChild(script);
-    
-    script.onload = () => {
-      const container = document.querySelector('.container');
-      html2canvas(container, {
-        backgroundColor: '#fff',
-        scale: 2,
-        logging: false,
-        allowTaint: true,
-        useCORS: true
-      }).then(canvas => {
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `Commission_Invoice_${new Date().toISOString().split('T')[0]}.png`;
-        link.click();
-        
-        btn.disabled = false;
-        btn.textContent = '🖼️ Download PNG';
-      }).catch(err => {
-        console.error('Error generating PNG:', err);
-        alert('Error generating PNG. Please try again.');
-        btn.disabled = false;
-        btn.textContent = '🖼️ Download PNG';
-      });
-    };
-  } catch (err) {
-    console.error('Error loading html2canvas:', err);
-    alert('Error loading image library. Please try again.');
-    btn.disabled = false;
-    btn.textContent = '🖼️ Download PNG';
+    localStorage.setItem('irCommissionState', JSON.stringify({
+      agents: state.agents,
+      hotels: state.hotels,
+      banks: state.banks,
+      invoices: state.invoices
+    }));
+  } catch(e) {
+    console.error('Error saving state:', e);
   }
+}
+function loadState(){
+  try {
+    const saved = localStorage.getItem('irCommissionState');
+    if (saved) {
+      const data = JSON.parse(saved);
+      state.agents = data.agents || [];
+      state.hotels = data.hotels || [];
+      state.banks = data.banks || [];
+      state.invoices = data.invoices || [];
+    }
+  } catch(e) {
+    console.error('Error loading state:', e);
+  }
+}
+const fmt  = n => Number(n||0).toFixed(2);
+function getCurrency(){
+  const el = document.getElementById('currency');
+  return el ? el.value : '₹';
+}
+const fmtI = n => getCurrency() + ' ' + fmt(n);
+const fmtD = n => '- ' + getCurrency() + ' ' + fmt(n);
+const fmtCur = (n, cur) => (cur || '₹') + ' ' + fmt(n);
+
+/* ── Number to words (Indian numbering: crore/lakh/thousand) ── */
+const ONES = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
+  'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const TENS = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+
+function twoDigits(n){
+  if(n < 20) return ONES[n];
+  const t = Math.floor(n/10), o = n%10;
+  return TENS[t] + (o ? ' ' + ONES[o] : '');
+}
+function threeDigits(n){
+  const h = Math.floor(n/100), r = n%100;
+  let s = h ? ONES[h] + ' Hundred' : '';
+  if(r) s += (s ? ' ' : '') + twoDigits(r);
+  return s;
+}
+function integerToWords(num){
+  num = Math.floor(num);
+  if(num === 0) return 'Zero';
+  const crore = Math.floor(num / 10000000); num %= 10000000;
+  const lakh  = Math.floor(num / 100000);    num %= 100000;
+  const thou  = Math.floor(num / 1000);      num %= 1000;
+  const rest  = num;
+  let parts = [];
+  if(crore) parts.push(threeDigits(crore) + ' Crore');
+  if(lakh)  parts.push(threeDigits(lakh) + ' Lakh');
+  if(thou)  parts.push(threeDigits(thou) + ' Thousand');
+  if(rest)  parts.push(threeDigits(rest));
+  return parts.join(' ');
+}
+function amountInWords(amount){
+  amount = Math.abs(Number(amount) || 0);
+  const rupees = Math.floor(amount);
+  const paise  = Math.round((amount - rupees) * 100);
+  const cur = getCurrency();
+  const unitName = cur === '₹' ? 'Rupees' : (cur === '$' ? 'Dollars' : (cur === '€' ? 'Euros' : (cur === '£' ? 'Pounds' : 'Units')));
+  let words = integerToWords(rupees) + ' ' + unitName;
+  if(paise > 0) words += ' and ' + integerToWords(paise) + ' Paise';
+  return words + ' Only';
+}
+const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════ */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
+  if(name==='dashboard') renderDashboard();
+  if(name==='invoices')  renderInvoicesList();
+  if(name==='agents')    renderAgents();
+  if(name==='hotels')    renderHotels();
+  if(name==='banks')     renderBanks();
+}
+document.querySelectorAll('.nav-btn').forEach(b=>{
+  b.addEventListener('click', ()=> showView(b.dataset.view));
+});
+document.getElementById('btnNewFromDash').addEventListener('click', startNewInvoice);
+document.getElementById('btnNewFromList').addEventListener('click', startNewInvoice);
+
+function startNewInvoice(){
+  state.editingInvoiceId = null;
+  resetEditor();
+  document.getElementById('invNo').value = peekNextInvoiceNo();
+  document.getElementById('editorInvNoPreview').textContent = peekNextInvoiceNo();
+  showView('invoiceEditor');
+}
+
+/* ═══════════════════════════════════════════════════
+   INVOICE NUMBER SEQUENCE
+   ═══════════════════════════════════════════════════ */
+function peekNextInvoiceNo(){
+  const now = new Date();
+  const yr = now.getFullYear();
+  const mo = String(now.getMonth()+1).padStart(2,'0');
+  const prefix = `IR/CMSN/${yr}/${mo}/`;
+  const existingSeqs = state.invoices
+    .filter(inv => inv.invNo && inv.invNo.startsWith(prefix))
+    .map(inv => parseInt(inv.invNo.split('/').pop(), 10))
+    .filter(n => !isNaN(n));
+  const nextSeq = existingSeqs.length ? Math.max(...existingSeqs) + 1 : 1;
+  return `${prefix}${String(nextSeq).padStart(3,'0')}`;
+}
+
+/* ═══════════════════════════════════════════════════
+   ROOM TABLE (invoice editor)
+   ═══════════════════════════════════════════════════ */
+let rowId = 0;
+function addRow(defaults){
+  rowId++;
+  const d = defaults || {};
+  const tr = document.createElement('tr');
+  tr.dataset.id = rowId;
+  tr.innerHTML = `
+    <td style="text-align:center;font-weight:700;" class="row-num">${rowId}</td>
+    <td><input class="rt" placeholder="Deluxe / Suite…" value="${d.type||''}" /></td>
+    <td>
+      <select class="occ" style="width:100%;height:20px;font-size:9px;border:1px solid #ccd7e3;border-radius:4px;padding:0 3px;">
+        <option value="SGL" ${d.occ==='SGL'?'selected':''}>Single (SGL)</option>
+        <option value="DBL" ${!d.occ||d.occ==='DBL'?'selected':''}>Double (DBL)</option>
+        <option value="TPL" ${d.occ==='TPL'?'selected':''}>Triple (TPL)</option>
+        <option value="QUAD"${d.occ==='QUAD'?'selected':''}>Quad</option>
+        <option value="CWB" ${d.occ==='CWB'?'selected':''}>CWB</option>
+      </select>
+    </td>
+    <td><input class="rooms" type="number" min="1" value="${d.rooms||1}" /></td>
+    <td><input class="nts"   type="number" min="1" value="${d.nts||''}" placeholder="—" title="Leave blank to use invoice nights" /></td>
+    <td><input class="rate"  type="number" min="0" step="0.01" value="${d.rate||0}" /></td>
+    <td><input class="hgst"  type="number" min="0" step="0.01" value="${d.hgst||0}" /></td>
+    <td><input class="baseT" type="text" readonly value="0.00" /></td>
+    <td><input class="commT" type="text" readonly value="0.00" /></td>
+    <td class="del-col no-print"><button class="del-btn" title="Remove row">✕</button></td>
+  `;
+  tr.querySelectorAll('input,select').forEach(el => el.addEventListener('input', calcAll));
+  tr.querySelector('.del-btn').addEventListener('click', ()=>{ tr.remove(); renum(); calcAll(); });
+  document.getElementById('roomBody').appendChild(tr);
+  calcAll();
+}
+function renum(){
+  document.querySelectorAll('#roomBody tr').forEach((tr,i)=>{
+    const cell = tr.querySelector('.row-num');
+    if(cell) cell.textContent = i+1;
+  });
+}
+function getRoomRows(){
+  return Array.from(document.querySelectorAll('#roomBody tr')).map(tr=>({
+    type: tr.querySelector('.rt').value,
+    occ:  tr.querySelector('.occ').value,
+    rooms:+tr.querySelector('.rooms').value || 1,
+    nts:  tr.querySelector('.nts').value,
+    rate: +tr.querySelector('.rate').value || 0,
+    hgst: +tr.querySelector('.hgst').value || 0
+  }));
+}
+
+/* ═══════════════════════════════════════════════════
+   MASTER CALC (invoice editor totals)
+   ═══════════════════════════════════════════════════ */
+function calcAll(){
+  const nights   = +document.getElementById('totalNights').value || 1;
+  const commPct  = +document.getElementById('commPct').value     || 0;
+  const commGst  = +document.getElementById('commGstPct').value  || 0;
+  const tdsPct   = +document.getElementById('tdsPct').value      || 0;
+  const gstType  = document.getElementById('gstType').value;
+
+  let totalBase = 0, totalComm = 0;
+  document.querySelectorAll('#roomBody tr').forEach(tr=>{
+    const n     = +tr.querySelector('.nts').value   || nights;
+    const rooms = +tr.querySelector('.rooms').value || 1;
+    const rate  = +tr.querySelector('.rate').value  || 0;
+    const base  = rate * rooms * n;
+    const comm  = base * commPct / 100;
+    tr.querySelector('.baseT').value = fmt(base);
+    tr.querySelector('.commT').value = fmt(comm);
+    totalBase += base; totalComm += comm;
+  });
+
+  document.getElementById('footBaseTotal').textContent = fmt(totalBase);
+  document.getElementById('footCommTotal').textContent = fmt(totalComm);
+
+  const gstAmt = totalComm * commGst / 100;
+  const tdsAmt = totalComm * tdsPct  / 100;
+  const net    = totalComm + gstAmt  - tdsAmt;
+
+  document.getElementById('s_base').textContent    = fmtI(totalBase);
+  document.getElementById('s_comm').textContent    = fmtI(totalComm);
+  document.getElementById('s_commPct').textContent = commPct;
+  document.getElementById('s_tds').textContent     = fmtD(tdsAmt);
+  document.getElementById('s_tdsPct').textContent  = tdsPct;
+  document.getElementById('s_net').textContent     = fmtI(net);
+  document.getElementById('s_netWords').textContent = amountInWords(net);
+
+  const isIGST = gstType === 'igst';
+  document.getElementById('igst_row').style.display = isIGST ? '' : 'none';
+  document.getElementById('cgst_row').style.display = isIGST ? 'none' : '';
+  document.getElementById('sgst_row').style.display = isIGST ? 'none' : '';
+  document.getElementById('g_igst_row').style.display = isIGST ? '' : 'none';
+  document.getElementById('g_cgst_row').style.display = isIGST ? 'none' : '';
+  document.getElementById('g_sgst_row').style.display = isIGST ? 'none' : '';
+
+  if(isIGST){
+    document.getElementById('s_igst').textContent    = fmtI(gstAmt);
+    document.getElementById('g_igstPct').textContent = fmt(commGst);
+    document.getElementById('g_igst').textContent    = fmtI(gstAmt);
+  } else {
+    const half = gstAmt / 2;
+    document.getElementById('s_cgst').textContent    = fmtI(half);
+    document.getElementById('s_sgst').textContent    = fmtI(half);
+    document.getElementById('g_cgstPct').textContent = fmt(commGst/2);
+    document.getElementById('g_sgstPct').textContent = fmt(commGst/2);
+    document.getElementById('g_cgst').textContent    = fmtI(half);
+    document.getElementById('g_sgst').textContent    = fmtI(half);
+  }
+
+  const totalInv = totalComm + gstAmt;
+  document.getElementById('g_taxable').textContent = fmtI(totalComm);
+  document.getElementById('g_total').textContent   = fmtI(totalInv);
+
+  return { totalBase, totalComm, gstAmt, tdsAmt, net };
+}
+
+['totalNights','commPct','commGstPct','tdsPct','gstType','currency'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcAll);
+});
+document.getElementById('addRowBtn').addEventListener('click', ()=> addRow());
+document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+
+/* ═══════════════════════════════════════════════════
+   RESET / LOAD EDITOR
+   ═══════════════════════════════════════════════════ */
+function resetEditor(){
+  document.getElementById('roomBody').innerHTML = '';
+  rowId = 0;
+  ['invDate','invPeriod','agAddr','agGstin','agPan','agState','htName','htAddr','htGstin','htPan','htState',
+   'guestName','bookingRef','checkIn','checkOut','placeOfSupply','bankName','bankAcName','bankAcNo','bankIfsc','bankBranch']
+   .forEach(id=> document.getElementById(id).value = '');
+  document.getElementById('agName').value = 'India Reisen';
+  document.getElementById('totalNights').value = 1;
+  document.getElementById('commPct').value = 10;
+  document.getElementById('commGstPct').value = 18;
+  document.getElementById('tdsPct').value = 2;
+  document.getElementById('gstType').value = 'sgst';
+  document.getElementById('currency').value = '₹';
+  document.getElementById('invStatus').value = 'draft';
+  addRow({ type:'Deluxe Room', occ:'DBL', rooms:2, rate:5000, hgst:12 });
+  addRow({ type:'Standard Room', occ:'SGL', rooms:1, rate:3500, hgst:12 });
+}
+
+function loadInvoiceIntoEditor(inv){
+  document.getElementById('invNo').value = inv.invNo;
+  document.getElementById('editorInvNoPreview').textContent = inv.invNo;
+  document.getElementById('invDate').value = inv.invDate || '';
+  document.getElementById('invPeriod').value = inv.invPeriod || '';
+  document.getElementById('invStatus').value = inv.status || 'draft';
+  document.getElementById('agName').value = inv.agent.name || 'India Reisen';
+  document.getElementById('agAddr').value = inv.agent.addr || '';
+  document.getElementById('agGstin').value = inv.agent.gstin || '';
+  document.getElementById('agPan').value = inv.agent.pan || '';
+  document.getElementById('agState').value = inv.agent.state || '';
+  document.getElementById('htName').value = inv.hotel.name || '';
+  document.getElementById('htAddr').value = inv.hotel.addr || '';
+  document.getElementById('htGstin').value = inv.hotel.gstin || '';
+  document.getElementById('htPan').value = inv.hotel.pan || '';
+  document.getElementById('htState').value = inv.hotel.state || '';
+  document.getElementById('guestName').value = inv.guestName || '';
+  document.getElementById('bookingRef').value = inv.bookingRef || '';
+  document.getElementById('checkIn').value = inv.checkIn || '';
+  document.getElementById('checkOut').value = inv.checkOut || '';
+  document.getElementById('totalNights').value = inv.nights || 1;
+  document.getElementById('commPct').value = inv.commPct;
+  document.getElementById('commGstPct').value = inv.commGstPct;
+  document.getElementById('tdsPct').value = inv.tdsPct;
+  document.getElementById('gstType').value = inv.gstType;
+  document.getElementById('currency').value = inv.currency || '₹';
+  document.getElementById('placeOfSupply').value = inv.placeOfSupply || '';
+  document.getElementById('bankName').value = inv.bank.name || '';
+  document.getElementById('bankAcName').value = inv.bank.acName || '';
+  document.getElementById('bankAcNo').value = inv.bank.acNo || '';
+  document.getElementById('bankIfsc').value = inv.bank.ifsc || '';
+  document.getElementById('bankBranch').value = inv.bank.branch || '';
+
+  document.getElementById('roomBody').innerHTML = '';
+  rowId = 0;
+  inv.rooms.forEach(r=> addRow(r));
+  calcAll();
+}
+
+/* ═══════════════════════════════════════════════════
+   SAVE INVOICE
+   ═══════════════════════════════════════════════════ */
+document.getElementById('saveInvBtn').addEventListener('click', ()=>{
+  const totals = calcAll();
+  const rooms = getRoomRows();
+  if(!document.getElementById('htName').value.trim()){
+    toast('⚠ Please enter a hotel name before saving'); return;
+  }
+  let invNo = document.getElementById('invNo').value;
+
+  const invData = {
+    id: state.editingInvoiceId || uid(),
+    invNo,
+    invDate: document.getElementById('invDate').value,
+    invPeriod: document.getElementById('invPeriod').value,
+    status: document.getElementById('invStatus').value,
+    agent: {
+      name: document.getElementById('agName').value,
+      addr: document.getElementById('agAddr').value,
+      gstin: document.getElementById('agGstin').value,
+      pan: document.getElementById('agPan').value,
+      state: document.getElementById('agState').value
+    },
+    hotel: {
+      name: document.getElementById('htName').value,
+      addr: document.getElementById('htAddr').value,
+      gstin: document.getElementById('htGstin').value,
+      pan: document.getElementById('htPan').value,
+      state: document.getElementById('htState').value
+    },
+    guestName: document.getElementById('guestName').value,
+    bookingRef: document.getElementById('bookingRef').value,
+    checkIn: document.getElementById('checkIn').value,
+    checkOut: document.getElementById('checkOut').value,
+    nights: +document.getElementById('totalNights').value,
+    commPct: +document.getElementById('commPct').value,
+    commGstPct: +document.getElementById('commGstPct').value,
+    tdsPct: +document.getElementById('tdsPct').value,
+    gstType: document.getElementById('gstType').value,
+    currency: document.getElementById('currency').value,
+    placeOfSupply: document.getElementById('placeOfSupply').value,
+    bank: {
+      name: document.getElementById('bankName').value,
+      acName: document.getElementById('bankAcName').value,
+      acNo: document.getElementById('bankAcNo').value,
+      ifsc: document.getElementById('bankIfsc').value,
+      branch: document.getElementById('bankBranch').value
+    },
+    rooms,
+    totals,
+    savedAt: new Date().toISOString()
+  };
+
+  if(state.editingInvoiceId){
+    const idx = state.invoices.findIndex(i=>i.id===state.editingInvoiceId);
+    state.invoices[idx] = invData;
+    toast('✓ Invoice updated');
+  } else {
+    state.invoices.unshift(invData);
+    state.editingInvoiceId = invData.id;
+    toast('✓ Invoice saved as ' + invNo);
+  }
+  saveState();
+  renderDashboard();
 });
 
-// ============ PAGE NUMBERING ============
-// ============ INITIALIZATION ============
-(function init() {
-  // Load company settings
-  const settings = storage.getCompanySettings();
-  document.getElementById('agentName').value = settings.agentName;
-  document.getElementById('agentAddr').value = settings.agentAddr;
-  document.getElementById('agentGST').value = settings.agentGST;
-  document.getElementById('agentPAN').value = settings.agentPAN;
-  
-  // Split SAC code into two parts
-  if (settings.agentSAC) {
-    const sacParts = settings.agentSAC.split('-');
-    document.getElementById('agentSAC1').value = sacParts[0] || '';
-    document.getElementById('agentSAC2').value = sacParts[1] || '';
+/* ═══════════════════════════════════════════════════
+   INVOICES LIST
+   ═══════════════════════════════════════════════════ */
+function renderInvoicesList(){
+  const body = document.getElementById('invoicesBody');
+  const q = (document.getElementById('invSearch').value||'').toLowerCase();
+  const statusF = document.getElementById('invFilterStatus').value;
+  let rows = state.invoices.filter(inv=>{
+    const hay = (inv.invNo+inv.hotel.name+inv.guestName).toLowerCase();
+    return hay.includes(q) && (!statusF || inv.status===statusF);
+  });
+  if(!rows.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="9">No invoices yet. Click "+ New Invoice" to create one.</td></tr>`;
+    return;
   }
-  
-  document.getElementById('agentEmail').value = settings.agentEmail;
-  document.getElementById('agentPhone').value = settings.agentPhone;
-  document.getElementById('agentAuthName').value = settings.agentAuthName || '';
-  document.getElementById('agentDesignation').value = settings.agentDesignation || '';
+  body.innerHTML = rows.map(inv=>`
+    <tr>
+      <td style="padding-left:16px;font-weight:700;">${inv.invNo}</td>
+      <td>${esc(inv.hotel.name)||'—'}</td>
+      <td>${esc(inv.guestName)||'—'}</td>
+      <td>${esc(inv.invDate)||'—'}</td>
+      <td><span class="tag tag-${inv.status}">${inv.status}</span></td>
+      <td class="num">${fmtCur(inv.totals.totalBase, inv.currency)}</td>
+      <td class="num">${fmtCur(inv.totals.totalComm, inv.currency)}</td>
+      <td class="num" style="font-weight:700;">${fmtCur(inv.totals.net, inv.currency)}</td>
+      <td style="padding-right:16px;white-space:nowrap;">
+        <button class="btn btn-sm btn-outline" onclick="editInvoice('${inv.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${inv.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+document.getElementById('invSearch').addEventListener('input', renderInvoicesList);
+document.getElementById('invFilterStatus').addEventListener('change', renderInvoicesList);
 
-  // Load invoice settings
-  const invoiceSettings = storage.getInvoiceSettings();
-  document.getElementById('showTDS').checked = invoiceSettings.showTDS;
-  document.getElementById('showSAC').checked = invoiceSettings.showSAC;
+function editInvoice(id){
+  const inv = state.invoices.find(i=>i.id===id);
+  if(!inv) return;
+  state.editingInvoiceId = id;
+  loadInvoiceIntoEditor(inv);
+  showView('invoiceEditor');
+}
+function deleteInvoice(id){
+  if(!confirm('Delete this invoice? This cannot be undone.')) return;
+  state.invoices = state.invoices.filter(i=>i.id!==id);
+  renderInvoicesList(); renderDashboard();
+  saveState();
+  toast('Invoice deleted');
+}
 
-  // Load bank details
-  const bank = storage.getBankDetails();
-  document.getElementById('bankName').value = bank.bankName;
-  document.getElementById('accountName').value = bank.accountName;
-  document.getElementById('accountNo').value = bank.accountNo;
-  document.getElementById('ifsc').value = bank.ifsc;
+/* ═══════════════════════════════════════════════════
+   DASHBOARD
+   ═══════════════════════════════════════════════════ */
+function renderDashboard(){
+  document.getElementById('stat_count').textContent = state.invoices.length;
+  const totalComm = state.invoices.reduce((s,i)=>s+i.totals.totalComm,0);
+  const totalNet  = state.invoices.reduce((s,i)=>s+i.totals.net,0);
+  const draftCt   = state.invoices.filter(i=>i.status==='draft').length;
+  document.getElementById('stat_comm').textContent = fmtCur(totalComm, '₹');
+  document.getElementById('stat_net').textContent  = fmtCur(totalNet, '₹');
+  document.getElementById('stat_draft').textContent = draftCt;
 
-  // Load logo
-  const logo = storage.getLogo();
-  if (logo) {
-    document.getElementById('invoiceLogo').src = logo;
-    document.getElementById('logoPreview').innerHTML = `<img src="${logo}" alt="Logo">`;
+  const body = document.getElementById('dashRecentBody');
+  const recent = state.invoices.slice(0,6);
+  if(!recent.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">No invoices yet.</td></tr>`;
+    return;
   }
+  body.innerHTML = recent.map(inv=>`
+    <tr>
+      <td style="font-weight:700;">${inv.invNo}</td>
+      <td>${esc(inv.hotel.name)||'—'}</td>
+      <td>${esc(inv.invDate)||'—'}</td>
+      <td><span class="tag tag-${inv.status}">${inv.status}</span></td>
+      <td class="num" style="font-weight:700;">${fmtCur(inv.totals.net, inv.currency)}</td>
+      <td><button class="btn btn-sm btn-outline" onclick="editInvoice('${inv.id}')">Open</button></td>
+    </tr>`).join('');
+}
 
-  // Load hotels
+/* ═══════════════════════════════════════════════════
+   AGENTS (master data)
+   ═══════════════════════════════════════════════════ */
+function renderAgents(){
+  const body = document.getElementById('agentsBody');
+  if(!state.agents.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="5">No agent profiles yet. Add one to reuse details quickly when creating invoices.</td></tr>`;
+    return;
+  }
+  body.innerHTML = state.agents.map(a=>`
+    <tr>
+      <td style="padding-left:16px;font-weight:700;">${esc(a.name)}</td>
+      <td>${esc(a.gstin)||'—'}</td>
+      <td>${esc(a.pan)||'—'}</td>
+      <td>${esc(a.state)||'—'}</td>
+      <td style="padding-right:16px;white-space:nowrap;">
+        <button class="btn btn-sm btn-outline" onclick="openAgentModal('${a.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteAgent('${a.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+function openAgentModal(id){
+  const a = id ? state.agents.find(x=>x.id===id) : null;
+  document.getElementById('agentModalTitle').textContent = a ? 'Edit Agent Profile' : 'Add Agent Profile';
+  document.getElementById('m_agName').value  = a ? a.name  : 'India Reisen';
+  document.getElementById('m_agAddr').value  = a ? a.addr  : '';
+  document.getElementById('m_agGstin').value = a ? a.gstin : '';
+  document.getElementById('m_agPan').value   = a ? a.pan   : '';
+  document.getElementById('m_agState').value = a ? a.state : '';
+  document.getElementById('agentModal').dataset.editId = id || '';
+  openModal('agentModal');
+}
+document.getElementById('btnAddAgent').addEventListener('click', ()=> openAgentModal(null));
+document.getElementById('saveAgentBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('m_agName').value.trim();
+  if(!name){ toast('⚠ Agent name is required'); return; }
+  const editId = document.getElementById('agentModal').dataset.editId;
+  const data = {
+    id: editId || uid(),
+    name,
+    addr: document.getElementById('m_agAddr').value,
+    gstin: document.getElementById('m_agGstin').value,
+    pan: document.getElementById('m_agPan').value,
+    state: document.getElementById('m_agState').value
+  };
+  if(editId){
+    const idx = state.agents.findIndex(a=>a.id===editId);
+    state.agents[idx] = data;
+  } else {
+    state.agents.push(data);
+  }
+  closeModal('agentModal');
+  renderAgents();
+  saveState();
+  toast('✓ Agent profile saved');
+});
+function deleteAgent(id){
+  if(!confirm('Delete this agent profile?')) return;
+  state.agents = state.agents.filter(a=>a.id!==id);
+  renderAgents();
+  saveState();
+}
+
+/* ═══════════════════════════════════════════════════
+   HOTELS (master data)
+   ═══════════════════════════════════════════════════ */
+function renderHotels(){
+  const body = document.getElementById('hotelsBody');
+  const q = (document.getElementById('hotelSearch').value||'').toLowerCase();
+  const rows = state.hotels.filter(h=> (h.name+h.city).toLowerCase().includes(q));
+  if(!rows.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">No hotels saved yet. Add one to speed up invoice creation.</td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map(h=>`
+    <tr>
+      <td style="padding-left:16px;font-weight:700;">${esc(h.name)}</td>
+      <td>${esc(h.city)}${h.state?', '+esc(h.state):''}</td>
+      <td>${esc(h.gstin)||'—'}</td>
+      <td>${esc(h.pan)||'—'}</td>
+      <td>${h.commPct}%</td>
+      <td style="padding-right:16px;white-space:nowrap;">
+        <button class="btn btn-sm btn-outline" onclick="openHotelModal('${h.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteHotel('${h.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+document.getElementById('hotelSearch').addEventListener('input', renderHotels);
+function openHotelModal(id){
+  const h = id ? state.hotels.find(x=>x.id===id) : null;
+  document.getElementById('hotelModalTitle').textContent = h ? 'Edit Hotel' : 'Add Hotel';
+  document.getElementById('m_htName').value = h ? h.name : '';
+  document.getElementById('m_htAddr').value = h ? h.addr : '';
+  document.getElementById('m_htCity').value = h ? h.city : '';
+  document.getElementById('m_htState').value = h ? h.state : '';
+  document.getElementById('m_htGstin').value = h ? h.gstin : '';
+  document.getElementById('m_htPan').value = h ? h.pan : '';
+  document.getElementById('m_htCommPct').value = h ? h.commPct : 10;
+  document.getElementById('hotelModal').dataset.editId = id || '';
+  openModal('hotelModal');
+}
+document.getElementById('btnAddHotel').addEventListener('click', ()=> openHotelModal(null));
+document.getElementById('saveHotelBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('m_htName').value.trim();
+  if(!name){ toast('⚠ Hotel name is required'); return; }
+  const editId = document.getElementById('hotelModal').dataset.editId;
+  const data = {
+    id: editId || uid(),
+    name,
+    addr: document.getElementById('m_htAddr').value,
+    city: document.getElementById('m_htCity').value,
+    state: document.getElementById('m_htState').value,
+    gstin: document.getElementById('m_htGstin').value,
+    pan: document.getElementById('m_htPan').value,
+    commPct: +document.getElementById('m_htCommPct').value || 0
+  };
+  if(editId){
+    const idx = state.hotels.findIndex(h=>h.id===editId);
+    state.hotels[idx] = data;
+  } else {
+    state.hotels.push(data);
+  }
+  closeModal('hotelModal');
   renderHotels();
-  updateHotelsList();
-  updateInvoiceDisplay();
+  saveState();
+  toast('✓ Hotel saved');
+});
+function deleteHotel(id){
+  if(!confirm('Delete this hotel?')) return;
+  state.hotels = state.hotels.filter(h=>h.id!==id);
+  renderHotels();
+  saveState();
+}
 
-  // Load records dashboard and invoice log
-  renderInvoiceLog();
+/* ═══════════════════════════════════════════════════
+   BANK DETAILS (master data)
+   ═══════════════════════════════════════════════════ */
+function renderBanks(){
+  const body = document.getElementById('banksBody');
+  if(!state.banks.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="7">No bank accounts saved yet. Add one to reuse it on invoices.</td></tr>`;
+    return;
+  }
+  body.innerHTML = state.banks.map(b=>`
+    <tr>
+      <td style="padding-left:16px;font-weight:700;">${esc(b.label)}</td>
+      <td>${esc(b.name)||'—'}</td>
+      <td>${esc(b.acName)||'—'}</td>
+      <td>${esc(b.acNo)||'—'}</td>
+      <td>${esc(b.ifsc)||'—'}</td>
+      <td>${esc(b.branch)||'—'}</td>
+      <td style="padding-right:16px;white-space:nowrap;">
+        <button class="btn btn-sm btn-outline" onclick="openBankModal('${b.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteBank('${b.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+function openBankModal(id){
+  const b = id ? state.banks.find(x=>x.id===id) : null;
+  document.getElementById('bankModalTitle').textContent = b ? 'Edit Bank Account' : 'Add Bank Account';
+  document.getElementById('m_bkLabel').value  = b ? b.label  : '';
+  document.getElementById('m_bkName').value   = b ? b.name   : '';
+  document.getElementById('m_bkBranch').value = b ? b.branch : '';
+  document.getElementById('m_bkAcName').value = b ? b.acName : '';
+  document.getElementById('m_bkAcNo').value   = b ? b.acNo   : '';
+  document.getElementById('m_bkIfsc').value   = b ? b.ifsc   : '';
+  document.getElementById('bankModal').dataset.editId = id || '';
+  openModal('bankModal');
+}
+document.getElementById('btnAddBank').addEventListener('click', ()=> openBankModal(null));
+document.getElementById('saveBankBtn').addEventListener('click', ()=>{
+  const label = document.getElementById('m_bkLabel').value.trim();
+  if(!label){ toast('⚠ A label is required (e.g. "Primary – HDFC")'); return; }
+  const editId = document.getElementById('bankModal').dataset.editId;
+  const data = {
+    id: editId || uid(),
+    label,
+    name: document.getElementById('m_bkName').value,
+    branch: document.getElementById('m_bkBranch').value,
+    acName: document.getElementById('m_bkAcName').value,
+    acNo: document.getElementById('m_bkAcNo').value,
+    ifsc: document.getElementById('m_bkIfsc').value
+  };
+  if(editId){
+    const idx = state.banks.findIndex(b=>b.id===editId);
+    state.banks[idx] = data;
+  } else {
+    state.banks.push(data);
+  }
+  closeModal('bankModal');
+  renderBanks();
+  saveState();
+  toast('✓ Bank account saved');
+});
+function deleteBank(id){
+  if(!confirm('Delete this bank account?')) return;
+  state.banks = state.banks.filter(b=>b.id!==id);
+  renderBanks();
+  saveState();
+}
 
-  // Initialize calculations
-  updateCalculations();
-})();
+/* ═══════════════════════════════════════════════════
+   LOAD AGENT/HOTEL INTO INVOICE (picker modal)
+   ═══════════════════════════════════════════════════ */
+function openPicker(type){
+  const list = type==='agent' ? state.agents : type==='hotel' ? state.hotels : state.banks;
+  document.getElementById('pickerModalTitle').textContent =
+    type==='agent' ? 'Select Agent Profile' : type==='hotel' ? 'Select Hotel' : 'Select Bank Account';
+  const body = document.getElementById('pickerBody');
+  const emptyLabel = type==='agent' ? 'agent profiles' : type==='hotel' ? 'hotels' : 'bank accounts';
+  const tabName = type==='agent' ? 'Travel Agents' : type==='hotel' ? 'Hotels' : 'Bank Details';
+  if(!list.length){
+    body.innerHTML = `<tr class="empty-row"><td>No ${emptyLabel} saved yet. Add one from the ${tabName} tab first.</td></tr>`;
+  } else if(type==='bank'){
+    body.innerHTML = list.map(item=>`
+      <tr style="cursor:pointer;" onclick="pickBank('${item.id}')">
+        <td style="padding:9px 6px;font-weight:700;">${esc(item.label)}</td>
+        <td style="padding:9px 6px;color:var(--muted);">${esc(item.name)} · ${esc(item.acNo)}</td>
+      </tr>`).join('');
+  } else {
+    body.innerHTML = list.map(item=>`
+      <tr style="cursor:pointer;" onclick="pick${type==='agent'?'Agent':'Hotel'}('${item.id}')">
+        <td style="padding:9px 6px;font-weight:700;">${esc(item.name)}</td>
+        <td style="padding:9px 6px;color:var(--muted);">${esc(item.gstin||item.city||'')}</td>
+      </tr>`).join('');
+  }
+  openModal('pickerModal');
+}
+document.getElementById('loadAgentBtn').addEventListener('click', ()=> openPicker('agent'));
+document.getElementById('loadHotelBtn').addEventListener('click', ()=> openPicker('hotel'));
+document.getElementById('loadBankBtn').addEventListener('click', ()=> openPicker('bank'));
+
+function pickAgent(id){
+  const a = state.agents.find(x=>x.id===id);
+  document.getElementById('agName').value = a.name;
+  document.getElementById('agAddr').value = a.addr;
+  document.getElementById('agGstin').value = a.gstin;
+  document.getElementById('agPan').value = a.pan;
+  document.getElementById('agState').value = a.state;
+  closeModal('pickerModal');
+  toast('Loaded agent: ' + a.name);
+}
+function pickHotel(id){
+  const h = state.hotels.find(x=>x.id===id);
+  document.getElementById('htName').value = h.name;
+  document.getElementById('htAddr').value = h.addr;
+  document.getElementById('htGstin').value = h.gstin;
+  document.getElementById('htPan').value = h.pan;
+  document.getElementById('htState').value = h.state;
+  document.getElementById('commPct').value = h.commPct;
+  calcAll();
+  closeModal('pickerModal');
+  toast('Loaded hotel: ' + h.name);
+}
+function pickBank(id){
+  const b = state.banks.find(x=>x.id===id);
+  document.getElementById('bankName').value = b.name;
+  document.getElementById('bankAcName').value = b.acName;
+  document.getElementById('bankAcNo').value = b.acNo;
+  document.getElementById('bankIfsc').value = b.ifsc;
+  document.getElementById('bankBranch').value = b.branch;
+  closeModal('pickerModal');
+  toast('Loaded bank: ' + b.label);
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL HELPERS
+   ═══════════════════════════════════════════════════ */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(btn=>{
+  btn.addEventListener('click', ()=> closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.modal-backdrop').forEach(bd=>{
+  bd.addEventListener('click', e=>{ if(e.target===bd) bd.classList.remove('open'); });
+});
+
+function esc(s){
+  return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════ */
+loadState();
+resetEditor();
+document.getElementById('invNo').value = peekNextInvoiceNo();
+document.getElementById('editorInvNoPreview').textContent = peekNextInvoiceNo();
+renderDashboard();
 </script>
 </body>
 </html>
