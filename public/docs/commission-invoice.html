@@ -1040,6 +1040,38 @@ th{
 <!-- ADMIN PAGE -->
 <div class="app-wrapper active" id="admin">
   <div class="admin-container">
+    <!-- Records Dashboard -->
+    <div class="admin-section">
+      <h2>📊 Records Dashboard</h2>
+      <div class="admin-grid" style="margin-bottom:0;">
+        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
+          <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Saved Company</div>
+          <div style="font-size:14px; font-weight:700; color:var(--text);" id="dashCompanyName">—</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;" id="dashCompanyGST">GST: —</div>
+        </div>
+        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
+          <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Saved Suppliers</div>
+          <div style="font-size:20px; font-weight:700; color:var(--primary);" id="dashHotelCount">0</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;">hotels in database</div>
+        </div>
+        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
+          <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Invoices Generated</div>
+          <div style="font-size:20px; font-weight:700; color:var(--accent-pink);" id="dashInvoiceCount">0</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;">unique invoice numbers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice History & Access Log -->
+    <div class="admin-section">
+      <h2>🧾 Invoice History & Access Log</h2>
+      <p class="note" style="margin-bottom:16px;">Every time an invoice is printed, saved as PDF, or downloaded as PNG, it's logged here with a timestamp. This is stored locally in this browser only.</p>
+      <div id="invoiceLogContainer" style="max-height:500px; overflow-y:auto;">
+        <p class="note">No invoices generated yet.</p>
+      </div>
+      <button class="btn btn-secondary" onclick="clearInvoiceLog()" style="margin-top:12px;">🗑️ Clear Log</button>
+    </div>
+
     <!-- Logo Management -->
     <div class="admin-section">
       <h2>📸 Logo Management</h2>
@@ -1508,6 +1540,32 @@ const storage = {
   },
   setLogo(data) {
     localStorage.setItem('companyLogo', data);
+  },
+  getInvoiceLog() {
+    return JSON.parse(localStorage.getItem('invoiceLog') || '[]');
+  },
+  setInvoiceLog(data) {
+    localStorage.setItem('invoiceLog', JSON.stringify(data));
+  },
+  logInvoiceEvent(eventType) {
+    const invoiceNo = (document.getElementById('invoiceNo') || {}).value || 'Untitled';
+    const guestName = (document.getElementById('guestName') || {}).value || '—';
+    const hotelName = (document.getElementById('selectedHotel') || {}).value || '—';
+    const amount = (document.getElementById('payableComm') || {}).textContent || '0.00';
+
+    const log = this.getInvoiceLog();
+    let entry = log.find(e => e.invoiceNo === invoiceNo);
+    if (!entry) {
+      entry = { invoiceNo, guestName, hotelName, amount, firstSeen: new Date().toISOString(), events: [] };
+      log.unshift(entry);
+    } else {
+      entry.guestName = guestName;
+      entry.hotelName = hotelName;
+      entry.amount = amount;
+    }
+    entry.events.unshift({ type: eventType, timestamp: new Date().toISOString() });
+    this.setInvoiceLog(log);
+    if (typeof renderInvoiceLog === 'function') renderInvoiceLog();
   }
 };
 
@@ -1626,6 +1684,61 @@ function updateHotelsList() {
   const datalist = document.getElementById('hotelsList');
   const hotels = storage.getHotels();
   datalist.innerHTML = hotels.map(h => `<option value="${h.name}">`).join('');
+}
+
+function renderDashboard() {
+  const company = storage.getCompanySettings();
+  document.getElementById('dashCompanyName').textContent = company.agentName || '—';
+  document.getElementById('dashCompanyGST').textContent = 'GST: ' + (company.agentGST || '—');
+
+  const hotels = storage.getHotels();
+  document.getElementById('dashHotelCount').textContent = hotels.length;
+
+  const log = storage.getInvoiceLog();
+  document.getElementById('dashInvoiceCount').textContent = log.length;
+}
+
+function renderInvoiceLog() {
+  const container = document.getElementById('invoiceLogContainer');
+  const log = storage.getInvoiceLog();
+
+  if (log.length === 0) {
+    container.innerHTML = '<p class="note">No invoices generated yet.</p>';
+    renderDashboard();
+    return;
+  }
+
+  const formatTime = (iso) => new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+  container.innerHTML = log.map(entry => `
+    <div style="border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; background:#f9fafb;">
+      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+        <div>
+          <div style="font-weight:700; font-size:13px; color:var(--text);">${entry.invoiceNo}</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px;">${entry.guestName} — ${entry.hotelName}</div>
+        </div>
+        <div style="font-weight:700; font-size:13px; color:var(--primary); white-space:nowrap;">₹${entry.amount}</div>
+      </div>
+      <div style="font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:700; margin-bottom:4px;">Access Log</div>
+      <div style="display:grid; gap:4px;">
+        ${entry.events.map(ev => `
+          <div style="display:flex; justify-content:space-between; font-size:11px; padding:4px 8px; background:#fff; border-radius:4px; border:1px solid var(--border);">
+            <span style="font-weight:600; color:var(--text);">${ev.type}</span>
+            <span style="color:var(--muted);">${formatTime(ev.timestamp)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  renderDashboard();
+}
+
+function clearInvoiceLog() {
+  if (confirm('Clear all invoice history and access log? This cannot be undone.')) {
+    storage.setInvoiceLog([]);
+    renderInvoiceLog();
+  }
 }
 
 // Logo Upload
@@ -1812,14 +1925,19 @@ document.querySelectorAll('.room-row input[type="number"], .room-row input.room-
   input.addEventListener('input', updateCalculations);
 });
 
-document.getElementById('printPdfBtn').addEventListener('click', () => window.print());
+document.getElementById('printPdfBtn').addEventListener('click', () => {
+  storage.logInvoiceEvent('Printed');
+  window.print();
+});
 
 document.getElementById('savePdfBtn').addEventListener('click', () => {
+  storage.logInvoiceEvent('Saved as PDF');
   // Trigger print dialog with focus on "Save as PDF" option
   window.print();
 });
 
 document.getElementById('savePngBtn').addEventListener('click', async () => {
+  storage.logInvoiceEvent('Downloaded PNG');
   const btn = document.getElementById('savePngBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Generating...';
@@ -1906,6 +2024,9 @@ document.getElementById('savePngBtn').addEventListener('click', async () => {
   renderHotels();
   updateHotelsList();
   updateInvoiceDisplay();
+
+  // Load records dashboard and invoice log
+  renderInvoiceLog();
 
   // Initialize calculations
   updateCalculations();
