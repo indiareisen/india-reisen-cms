@@ -33,6 +33,7 @@ import FinancialReports from './pages/website-admin/FinancialReports'
 import ActivityLog from './pages/website-admin/ActivityLog'
 import EmailTemplates from './pages/website-admin/EmailTemplates'
 import FAQManager from './pages/website-admin/FAQManager'
+import Documentation from './pages/website-admin/Documentation'
 
 // 🔒 Change this constant if you ever want to rotate the secret admin path
 const ADMIN_PATH = 'ir-team-8x2k'
@@ -74,6 +75,7 @@ export default function App() {
             <Route path={`/${ADMIN_PATH}/activity`} element={<ActivityLog />} />
             <Route path={`/${ADMIN_PATH}/email-templates`} element={<EmailTemplates />} />
             <Route path={`/${ADMIN_PATH}/faqs`} element={<FAQManager />} />
+            <Route path={`/${ADMIN_PATH}/documentation`} element={<Documentation />} />
             <Route path={`/${ADMIN_PATH}/social`} element={<SocialMediaCreator />} />
             <Route path={`/${ADMIN_PATH}/settings`} element={<WebsiteSettings />} />
           </Route>
