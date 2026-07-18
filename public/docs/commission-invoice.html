@@ -1,0 +1,1915 @@
+ls -la public/docs/<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>India Reisen - Commission Invoice System</title>
+
+<style>
+:root{
+  --hero:#0b5f59;
+  --hero2:#083f3c;
+  --primary:#0f766e;
+  --soft:#eefdfa;
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --border:#d9e2ec;
+  --text:#1f2937;
+  --muted:#5f6b7a;
+  --accent-pink:#d1356f;
+  --accent-gold:#D4A574;
+  --shadow:0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-light:0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+@page { 
+  size: A4; 
+  margin: 4mm; 
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  line-height:1;
+}
+
+.app-wrapper{
+  display:none;
+}
+.app-wrapper.active{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.invoice-toolbar{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:120px;
+  flex-shrink:0;
+}
+
+.invoice-toolbar button{
+  width:100%;
+  padding:10px 6px;
+  font-size:11px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:600;
+  transition:all 0.2s;
+}
+
+.invoice-toolbar button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 8px rgba(0,0,0,0.15);
+}
+
+.invoice-toolbar button:active{
+  transform:translateY(0);
+}
+
+@media print{
+  .invoice-toolbar{
+    display:none !important;
+  }
+}
+
+/* NAVIGATION TABS */
+.nav-tabs{
+  display:flex;
+  gap:0;
+  background:#fff;
+  border-bottom:2px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 4px rgba(0,0,0,0.02);
+}
+.nav-tabs button{
+  flex:1;
+  padding:12px 16px;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  font-weight:600;
+  font-size:13px;
+  cursor:pointer;
+  border-bottom:3px solid transparent;
+  transition:all 0.2s;
+}
+.nav-tabs button:hover{
+  color:var(--primary);
+  background:#f9fafb;
+}
+.nav-tabs button.active{
+  color:var(--primary);
+  border-bottom-color:var(--primary);
+}
+
+/* ADMIN PAGE */
+.admin-container{
+  max-width:1000px;
+  margin:20px auto;
+  padding:0 16px;
+}
+
+.admin-section{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow-light);
+}
+
+.admin-section h2{
+  margin:0 0 16px;
+  font-size:16px;
+  font-weight:700;
+  color:var(--primary);
+}
+
+.admin-form-group{
+  margin-bottom:16px;
+}
+
+.admin-form-group label{
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  color:#253041;
+  margin-bottom:6px;
+}
+
+.admin-form-group input,
+.admin-form-group textarea,
+.admin-form-group select{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:12px;
+  font-family:inherit;
+}
+
+.admin-form-group input:focus,
+.admin-form-group textarea:focus,
+.admin-form-group select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+.admin-form-group textarea{
+  resize:vertical;
+  min-height:80px;
+}
+
+.file-input-wrapper{
+  position:relative;
+}
+
+.file-input-wrapper input[type="file"]{
+  display:none;
+}
+
+.file-input-label{
+  display:inline-block;
+  padding:10px 16px;
+  background:var(--primary);
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:12px;
+  transition:background 0.2s;
+}
+
+.file-input-label:hover{
+  background:var(--hero2);
+}
+
+.logo-preview{
+  width:120px;
+  height:120px;
+  border:2px dashed var(--border);
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f9fafb;
+  margin-top:10px;
+  overflow:hidden;
+}
+
+.logo-preview img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+
+.hotel-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+  gap:16px;
+  margin-top:16px;
+}
+
+.hotel-card{
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  background:#f9fafb;
+  position:relative;
+}
+
+.hotel-card h3{
+  margin:0 0 8px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--text);
+}
+
+.hotel-card p{
+  margin:4px 0;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.hotel-card .delete-btn{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:24px;
+  height:24px;
+  border:none;
+  background:#fee2e2;
+  color:#ef4444;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:14px;
+  transition:all 0.2s;
+}
+
+.hotel-card .delete-btn:hover{
+  background:#fca5a5;
+  color:#fff;
+}
+
+.admin-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:20px;
+}
+
+@media(max-width:768px){
+  .admin-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+.btn{
+  display:inline-block;
+  padding:10px 16px;
+  border-radius:6px;
+  text-decoration:none;
+  font-weight:600;
+  font-size:12px;
+  border:none;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.btn-primary{
+  background:var(--primary);
+  color:#fff;
+}
+
+.btn-primary:hover{
+  background:var(--hero2);
+}
+
+.btn-secondary{
+  background:#f0f0f0;
+  color:var(--text);
+}
+
+.btn-secondary:hover{
+  background:#e0e0e0;
+}
+
+.success-message{
+  background:#d1fae5;
+  color:#065f46;
+  padding:10px 12px;
+  border-radius:6px;
+  font-size:12px;
+  margin-bottom:12px;
+  border-left:3px solid #10b981;
+}
+
+/* INVOICE PAGE */
+.container{
+  width:100%;
+  max-width:190mm;
+  margin:2px auto;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+.hero{
+  background:linear-gradient(135deg,var(--hero2),var(--hero));
+  color:#fff;
+  padding:6px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:6px;
+}
+
+.hero-brand{
+  display:flex;
+  gap:4px;
+  align-items:flex-start;
+  flex:1;
+}
+
+.logo-wrap{
+  width:45px;
+  flex:0 0 45px;
+  border-radius:6px;
+  overflow:hidden;
+}
+
+.logo-wrap img{
+  width:45px;
+  height:45px;
+  display:block;
+  object-fit:contain;
+  background:#fff;
+  padding:1px;
+}
+
+.brand-text h1{
+  margin:0;
+  font-size:17px;
+  line-height:1.05;
+  font-weight:700;
+  letter-spacing:-0.1px;
+}
+
+.brand-text p{
+  margin:1px 0 0;
+  font-size:9px;
+  color:#d6f7f4;
+  line-height:1.2;
+}
+
+.badge{
+  display:inline-block;
+  margin-top:3px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:rgba(255,255,255,.15);
+  color:#e7fffd;
+  font-size:8px;
+  font-weight:700;
+}
+
+.footer{
+  background:linear-gradient(135deg,var(--hero2),var(--hero));
+  color:#fff;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+
+.footer div div:first-child{
+  color:#d6f7f4;
+}
+
+.hero-invoice{
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:6px;
+  padding:7px;
+  min-width:170px;
+}
+
+.hero-invoice h2{
+  margin:0 0 5px;
+  font-size:9px;
+  font-weight:700;
+  color:#fff;
+  text-transform:uppercase;
+  letter-spacing:0.3px;
+}
+
+.hero-invoice-row{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:2px 5px;
+  margin-bottom:3px;
+  align-items:center;
+}
+
+.hero-invoice-row label{
+  font-size:8px;
+  color:#d6f7f4;
+  font-weight:700;
+}
+
+.hero-invoice-row input{
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  font-size:9px;
+  padding:3px 4px;
+  border-radius:4px;
+  height:20px;
+}
+
+.hero-invoice-row input::placeholder{
+  color:rgba(255,255,255,.6);
+}
+
+.hero-actions{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+}
+
+.btn-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  padding:0;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  font-size:16px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.btn-icon:hover{
+  background:var(--soft);
+  border-color:var(--primary);
+  color:var(--primary);
+}
+
+.btn-icon.danger:hover{
+  background:#fee2e2;
+  border-color:#ef4444;
+  color:#ef4444;
+}
+
+.main{ padding:4px; }
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+  margin:2px 0;
+  break-inside:auto;
+  page-break-inside:auto;
+}
+
+.grid-full{
+  margin:2px 0;
+  break-inside:auto;
+  page-break-inside:auto;
+}
+
+.box{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  padding:4px;
+  break-inside:auto;
+  page-break-inside:auto;
+}
+
+.box.highlight{
+  border:2px solid var(--primary);
+  background:rgba(15, 118, 110, 0.02);
+  break-inside:auto;
+  page-break-inside:auto;
+}
+
+.section-title{
+  margin:0 0 4px;
+  font-size:10px;
+  font-weight:700;
+  color:var(--primary);
+  letter-spacing:.1px;
+  text-transform:uppercase;
+}
+
+.kv{
+  display:grid;
+  grid-template-columns:85px 1fr;
+  gap:4px 6px;
+}
+
+.kv strong{
+  font-size:9px;
+  font-weight:700;
+  color:#253041;
+}
+
+.kv span{
+  font-size:9px;
+  color:var(--muted);
+  font-weight:400;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+select{
+  width:100%;
+  padding:4px 5px;
+  border:1px solid #ccd7e3;
+  border-radius:4px;
+  font-size:9px;
+  background:#fff;
+  height:22px;
+  font-family:inherit;
+  font-weight:400;
+  color:var(--text);
+}
+
+input[readonly]{ 
+  background:#f8fbfd; 
+  cursor:not-allowed;
+}
+
+input:focus,select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 2px rgba(15, 118, 110, 0.1);
+}
+
+.booking-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:8px;
+}
+
+.booking-row .input-label{
+  font-size:9px;
+  font-weight:700;
+  color:#5f6b7a;
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:1px;
+}
+
+th,td{
+  border:1px solid var(--border);
+  padding:2px 3px;
+  font-size:9px;
+  line-height:1;
+  font-family:inherit;
+  font-weight:400;
+}
+
+th{
+  background:var(--soft);
+  color:#173f3c;
+  text-align:left;
+  font-weight:700;
+}
+
+.rooms-table td input{
+  width:100%;
+}
+
+.total-row{
+  background:#f0fdfa;
+  font-weight:700;
+}
+
+.total-row td{
+  border-top:2px solid var(--primary);
+}
+
+.add-btn-row{
+  margin-top:3px;
+  text-align:center;
+}
+
+.note{
+  font-size:8px;
+  color:#5b6573;
+  line-height:1.3;
+  margin:2px 0;
+}
+
+.sig{
+  min-height:45px;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:6px;
+}
+
+.line{
+  border-top:1px solid #111;
+  width:120px;
+  text-align:center;
+  padding-top:2px;
+  font-size:9px;
+}
+
+.summary-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px;
+  align-items:center;
+  padding:3px 0;
+  border-bottom:1px solid var(--border);
+  font-size:9px;
+}
+
+.summary-row:last-child{
+  border-bottom:none;
+}
+
+.summary-row strong{
+  font-weight:700;
+}
+
+.summary-row.total{
+  background:var(--soft);
+  padding:4px;
+  border-radius:6px;
+  border:none;
+  margin-top:2px;
+}
+
+.hidden-print{ display:block; }
+
+.hidden-in-print{ display:none !important; }
+
+@media print{
+  *{
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body{
+    background:var(--bg) !important;
+    margin:0 !important;
+    padding:0 !important;
+    counter-reset: page-counter;
+  }
+
+  .container {
+    counter-increment: page-counter;
+  }
+
+  .page-footer {
+    text-align:center;
+    font-size:8px;
+    color:#999;
+    padding:4px 0;
+    border-top:1px solid var(--border);
+    margin:2px 0 0 0;
+    break-inside:avoid;
+    page-break-inside:avoid;
+    display:block !important;
+  }
+
+  .page-footer.hidden-in-edit {
+    display:block !important;
+  }
+
+  .footer{
+    background:linear-gradient(135deg,var(--hero2),var(--hero)) !important;
+    color:#fff !important;
+    padding:10px !important;
+    margin-top:8px !important;
+    border-radius:8px !important;
+    break-inside:avoid !important;
+    page-break-inside:avoid !important;
+  }
+
+  .footer div div:first-child{
+    color:#d6f7f4 !important;
+  }
+
+  .nav-tabs,
+  .hidden-print,
+  .hidden-in-print{
+    display:none !important;
+  }
+
+  .container{
+    margin:0 !important;
+    width:100% !important;
+    max-width:none !important;
+    border:1px solid var(--border) !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    page-break-after:avoid !important;
+  }
+
+  .hero{
+    background:linear-gradient(135deg,var(--hero2),var(--hero)) !important;
+    color:#fff !important;
+    padding:20px !important;
+    page-break-inside:avoid !important;
+    display:flex !important;
+    justify-content:space-between !important;
+    align-items:flex-start !important;
+    gap:20px !important;
+  }
+
+  .hero-brand{
+    display:flex !important;
+    gap:6px !important;
+    align-items:flex-start !important;
+    flex:1 !important;
+  }
+
+  .logo-wrap{
+    width:45px !important;
+    flex:0 0 45px !important;
+    border-radius:6px !important;
+    overflow:hidden !important;
+  }
+
+  .logo-wrap img{
+    width:45px !important;
+    height:45px !important;
+    display:block !important;
+    object-fit:contain !important;
+    background:#fff !important;
+    padding:1px !important;
+  }
+
+  .brand-text h1{
+    color:#fff !important;
+    margin:0 !important;
+    font-size:17px !important;
+    font-weight:700 !important;
+    line-height:1.05 !important;
+    letter-spacing:-0.1px !important;
+  }
+
+  .brand-text p{
+    color:#d6f7f4 !important;
+    margin:1px 0 0 !important;
+    font-size:9px !important;
+    line-height:1.2 !important;
+  }
+
+  .badge{
+    display:inline-block !important;
+    margin-top:3px !important;
+    padding:2px 5px !important;
+    border-radius:999px !important;
+    background:rgba(255,255,255,.15) !important;
+    color:#e7fffd !important;
+    font-size:8px !important;
+    font-weight:700 !important;
+  }
+
+  .hero-invoice{
+    background:rgba(255,255,255,.1) !important;
+    border:1px solid rgba(255,255,255,.2) !important;
+    border-radius:6px !important;
+    padding:7px !important;
+    min-width:170px !important;
+  }
+
+  .hero-invoice h2{
+    margin:0 0 5px !important;
+    font-size:9px !important;
+    font-weight:700 !important;
+    color:#fff !important;
+    text-transform:uppercase !important;
+    letter-spacing:0.3px !important;
+  }
+
+  .hero-invoice-row{
+    display:grid !important;
+    grid-template-columns:auto 1fr !important;
+    gap:2px 5px !important;
+    margin-bottom:3px !important;
+    align-items:center !important;
+  }
+
+  .hero-invoice-row label{
+    font-size:8px !important;
+    color:#d6f7f4 !important;
+    font-weight:700 !important;
+  }
+
+  .hero-invoice-row input{
+    background:rgba(255,255,255,.15) !important;
+    border:1px solid rgba(255,255,255,.2) !important;
+    color:#fff !important;
+    font-size:9px !important;
+    padding:3px 4px !important;
+    border-radius:4px !important;
+    height:20px !important;
+  }
+
+  .main{
+    padding:12px !important;
+  }
+
+  .box {
+    border:1px solid var(--border) !important;
+    border-radius:12px !important;
+    background:#fff !important;
+    padding:12px !important;
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+    margin:12px 0 !important;
+  }
+
+  .box[style*="border-left:4px solid var(--primary)"] {
+    border-left:4px solid var(--primary) !important;
+  }
+
+  .box[style*="border-left:4px solid var(--accent-pink)"] {
+    border-left:4px solid var(--accent-pink) !important;
+  }
+
+  .box.highlight{
+    border:2px solid var(--primary) !important;
+    background:rgba(15, 118, 110, 0.02) !important;
+  }
+
+  .grid2{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:12px !important;
+    margin:12px 0 !important;
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+  }
+
+  .grid-full{
+    margin:12px 0 !important;
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+  }
+
+  .section-title{
+    color:var(--primary) !important;
+    margin:0 0 12px !important;
+    font-size:13px !important;
+    font-weight:700 !important;
+    letter-spacing:.2px !important;
+    text-transform:uppercase !important;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  select{
+    border:none !important;
+    background:transparent !important;
+    padding:0 !important;
+    height:auto !important;
+    color:var(--text) !important;
+    font-size:11px !important;
+    font-weight:400 !important;
+  }
+
+  input[readonly]{
+    background:transparent !important;
+    color:var(--text) !important;
+  }
+
+  .hero-invoice-row input{
+    color:#fff !important;
+  }
+
+  table{
+    width:100% !important;
+    border-collapse:collapse !important;
+    margin-bottom:8px !important;
+  }
+
+  th, td{
+    border:1px solid var(--border) !important;
+    padding:7px 8px !important;
+    font-size:11px !important;
+    line-height:1.3 !important;
+    font-weight:400 !important;
+  }
+
+  th{
+    background:var(--soft) !important;
+    color:#173f3c !important;
+    text-align:left !important;
+    font-weight:700 !important;
+  }
+
+  tfoot tr {
+    background:var(--soft) !important;
+    font-weight:700 !important;
+    border-top:2px solid var(--primary) !important;
+  }
+
+  .total-row{
+    background:#f0fdfa !important;
+    font-weight:700 !important;
+    border-top:2px solid var(--primary) !important;
+  }
+
+  .summary-row{
+    display:grid !important;
+    grid-template-columns:1fr auto !important;
+    gap:12px !important;
+    align-items:center !important;
+    padding:8px 0 !important;
+    border-bottom:1px solid var(--border) !important;
+    font-size:11px !important;
+  }
+
+  .summary-row.total{
+    background:var(--soft) !important;
+    padding:8px !important;
+    border-radius:6px !important;
+    border:none !important;
+    margin-top:4px !important;
+  }
+
+  .note{
+    font-size:10px !important;
+    color:#5b6573 !important;
+    line-height:1.5 !important;
+    margin:6px 0 !important;
+  }
+
+  .sig{
+    min-height:54px !important;
+    display:flex !important;
+    align-items:end !important;
+    justify-content:space-between !important;
+    gap:8px !important;
+  }
+
+  .line{
+    border-top:1px solid #111 !important;
+    width:130px !important;
+    text-align:center !important;
+    padding-top:4px !important;
+    font-size:10px !important;
+  }
+}
+
+@media(max-width:1024px){
+  .grid2{
+    grid-template-columns:1fr;
+  }
+  .hero{
+    flex-direction:column;
+    gap:16px;
+  }
+  .hero-invoice{
+    min-width:0;
+    width:100%;
+  }
+}
+
+@media(max-width:768px){
+  .container{
+    margin:8px;
+  }
+  .hero{
+    padding:8px;
+    flex-direction:row;
+  }
+  .main{
+    padding:6px;
+  }
+  .grid2{
+    grid-template-columns:1fr;
+    gap:6px;
+  }
+  .hero-brand{
+    flex-direction:row;
+    align-items:flex-start;
+  }
+  .brand-text h1{
+    font-size:16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="nav-tabs hidden-print">
+  <button class="nav-btn active" data-page="invoice">📄 Commission Invoice</button>
+  <button class="nav-btn" data-page="admin">⚙️ Admin Settings</button>
+</div>
+
+<!-- ADMIN PAGE -->
+<div class="app-wrapper active" id="admin">
+  <div class="admin-container">
+    <!-- Logo Management -->
+    <div class="admin-section">
+      <h2>📸 Logo Management</h2>
+      <div class="admin-form-group">
+        <label>Company Logo (will appear on all invoices)</label>
+        <div class="file-input-wrapper">
+          <label class="file-input-label">
+            Upload Logo
+            <input type="file" id="logoUpload" accept="image/*">
+          </label>
+        </div>
+        <div class="logo-preview" id="logoPreview">
+          <span style="color:var(--muted); font-size:12px;">No logo uploaded</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- India Reisen Settings -->
+    <div class="admin-section">
+      <h2>🏢 India Reisen Details</h2>
+      <div class="admin-grid">
+        <div class="admin-form-group">
+          <label>Company Name</label>
+          <input type="text" id="agentName" value="India Reisen">
+        </div>
+        <div class="admin-form-group">
+          <label>Address</label>
+          <input type="text" id="agentAddr" value="Ghaziabad, Uttar Pradesh">
+        </div>
+        <div class="admin-form-group">
+          <label>GSTIN</label>
+          <input type="text" id="agentGST" placeholder="07XXXXX0000X1Z0">
+        </div>
+        <div class="admin-form-group">
+          <label>PAN</label>
+          <input type="text" id="agentPAN" placeholder="XXXXXXXXXX">
+        </div>
+        <div class="admin-form-group">
+          <label>SAC Code</label>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <input type="text" id="agentSAC1" placeholder="4 digits" maxlength="4" inputmode="numeric" style="flex:1;">
+            <span style="color:var(--border); font-weight:bold;">-</span>
+            <input type="text" id="agentSAC2" placeholder="2 digits" maxlength="2" inputmode="numeric" style="flex:0.5;">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>Email</label>
+          <input type="email" id="agentEmail" value="team@indiareisen.com">
+        </div>
+        <div class="admin-form-group">
+          <label>Phone</label>
+          <input type="text" id="agentPhone" value="+91 98108 27785">
+        </div>
+        <div class="admin-form-group">
+          <label>Authorized Person Name</label>
+          <input type="text" id="agentAuthName" placeholder="e.g., Rajesh Kumar">
+        </div>
+        <div class="admin-form-group">
+          <label>Designation</label>
+          <input type="text" id="agentDesignation" placeholder="e.g., Travel Consultant, Manager">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveCompanySettings()">💾 Save Company Settings</button>
+      <div id="saveMessage"></div>
+    </div>
+
+    <!-- Invoice Settings -->
+    <div class="admin-section">
+      <h2>⚙️ Invoice Settings</h2>
+      <p class="note" style="margin-bottom:16px;">Control which fields appear on commission invoices</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
+            <input type="checkbox" id="showTDS" checked style="width:18px; height:18px; cursor:pointer;">
+            <span style="font-weight:600; color:var(--text);">Show TDS on Commission</span>
+          </label>
+          <p class="note" style="margin-top:8px; margin-bottom:0;">When enabled: Payable = Commission + GST - TDS<br>When disabled: Payable = Commission + GST</p>
+        </div>
+        
+        <div style="border:1px solid var(--border); border-radius:8px; padding:14px; background:#f9fafb;">
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
+            <input type="checkbox" id="showSAC" checked style="width:18px; height:18px; cursor:pointer;">
+            <span style="font-weight:600; color:var(--text);">Show SAC Code</span>
+          </label>
+          <p class="note" style="margin-top:8px; margin-bottom:0;">SAC (Service Accounting Code) will appear in "Our Details" section</p>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveInvoiceSettings()" style="margin-top:16px;">💾 Save Invoice Settings</button>
+      <div id="settingsSaveMessage"></div>
+    </div>
+    <div class="admin-section">
+      <h2>🏦 Bank Details</h2>
+      <p class="note" style="margin-bottom:16px;">These bank details will appear on all commission invoices</p>
+      <div class="admin-grid">
+        <div class="admin-form-group">
+          <label>Bank Name</label>
+          <input type="text" id="bankName" placeholder="e.g., HDFC Bank">
+        </div>
+        <div class="admin-form-group">
+          <label>Account Holder Name</label>
+          <input type="text" id="accountName" placeholder="Account name">
+        </div>
+        <div class="admin-form-group">
+          <label>Account Number</label>
+          <input type="text" id="accountNo" placeholder="Account number">
+        </div>
+        <div class="admin-form-group">
+          <label>IFSC Code</label>
+          <input type="text" id="ifsc" placeholder="IFSC code">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveBankDetails()">💾 Save Bank Details</button>
+      <div id="bankSaveMessage"></div>
+    </div>
+    <div class="admin-section">
+      <h2>🏨 Hotel Database</h2>
+      <div class="admin-form-group">
+        <label>Hotel Name</label>
+        <input type="text" id="hotelNameInput" placeholder="e.g., The Taj Hotel Delhi">
+      </div>
+      <div class="admin-grid">
+        <div class="admin-form-group">
+          <label>City</label>
+          <input type="text" id="hotelCityInput" placeholder="e.g., New Delhi">
+        </div>
+        <div class="admin-form-group">
+          <label>Address</label>
+          <input type="text" id="hotelAddrInput" placeholder="Full address">
+        </div>
+        <div class="admin-form-group">
+          <label>GSTIN</label>
+          <input type="text" id="hotelGSTInput" placeholder="Hotel GSTIN">
+        </div>
+        <div class="admin-form-group">
+          <label>PAN</label>
+          <input type="text" id="hotelPANInput" placeholder="Hotel PAN">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addHotel()">➕ Add Hotel</button>
+
+      <div class="hotel-grid" id="hotelsList">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE PAGE -->
+<div class="app-wrapper" id="invoice">
+  <div class="invoice-toolbar">
+    <button class="btn btn-primary" id="printPdfBtn" style="background:#0b5f59; color:#fff;">🖨️ Print</button>
+    <button class="btn btn-primary" id="savePdfBtn" style="background:#d1356f; color:#fff;">💾 Save PDF</button>
+    <button class="btn btn-primary" id="savePngBtn" style="background:#0f766e; color:#fff;">🖼️ Download PNG</button>
+  </div>
+  <div class="container">
+    <div class="hero">
+      <div class="hero-brand">
+        <div class="logo-wrap">
+          <img id="invoiceLogo" src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png" alt="India Reisen Logo">
+        </div>
+        <div class="brand-text">
+          <h1>Commission Tax Invoice</h1>
+          <p style="margin:2px 0 0;">GST & TDS Settlement for Hotel Commissions</p>
+        </div>
+      </div>
+
+      <div class="hero-invoice">
+        <h2>Invoice Details</h2>
+        <div class="hero-invoice-row">
+          <label>Invoice No.</label>
+          <input id="invoiceNo" value="IR-2024-" />
+        </div>
+        <div class="hero-invoice-row">
+          <label>Date</label>
+          <input id="invoiceDate" type="date" />
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- Our Details (Left) | Hotel Details (Right) -->
+      <div class="grid2" style="margin-top:4px;">
+        <div class="box" style="border-left:4px solid var(--primary);">
+          <h2 class="section-title" style="margin-bottom:6px;">Our Details</h2>
+          <div style="display:grid; gap:4px;">
+            <div>
+              <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">Travel Agent</div>
+              <div style="font-size:11px; font-weight:700; color:var(--text);" id="dispAgentName">India Reisen</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
+              <div>
+                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">GSTIN</div>
+                <div style="font-size:9px; color:var(--text);" id="dispAgentGST">—</div>
+              </div>
+              <div>
+                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">PAN</div>
+                <div style="font-size:9px; color:var(--text);" id="dispAgentPAN">—</div>
+              </div>
+              <div id="sacDisplay">
+                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:2px;">SAC</div>
+                <div style="display:flex; gap:2px; align-items:center;">
+                  <div style="flex:2; padding:3px 4px; border:1px solid var(--border); border-radius:4px; background:#f8fbfd; font-size:9px; color:var(--text); font-weight:600; text-align:center;" id="dispAgentSAC1">—</div>
+                  <span style="color:#ccc; font-size:10px;">-</span>
+                  <div style="flex:1; padding:3px 4px; border:1px solid var(--border); border-radius:4px; background:#f8fbfd; font-size:9px; color:var(--text); font-weight:600; text-align:center;" id="dispAgentSAC2">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box" style="border-left:4px solid var(--accent-pink);">
+          <h2 class="section-title" style="color:var(--accent-pink); margin-bottom:6px;">Hotel Details</h2>
+          <div style="display:grid; gap:4px;">
+            <div>
+              <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:2px;">Select Hotel</div>
+              <input id="selectedHotel" placeholder="Type hotel name..." list="hotelsList" style="width:100%; padding:4px; border:1px solid var(--border); border-radius:6px; font-size:10px; font-weight:600;" />
+              <datalist id="hotelsList"></datalist>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+              <div>
+                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">GSTIN</div>
+                <div style="font-size:9px; color:var(--text);" id="dispHotelGST">—</div>
+              </div>
+              <div>
+                <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">PAN</div>
+                <div style="font-size:9px; color:var(--text);" id="dispHotelPAN">—</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:1px;">Address</div>
+              <div style="font-size:9px; color:var(--text);" id="dispHotelAddr">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guest & Booking Information -->
+      <div class="box grid-full">
+        <h2 class="section-title">Guest & Booking Details</h2>
+        <div style="display:grid; grid-template-columns:2fr 1fr 1.2fr 1.2fr 0.8fr; gap:12px;">
+          <div class="admin-form-group" style="margin-bottom:0;">
+            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Guest Name</label>
+            <input id="guestName" placeholder="Full Name" style="width:100%;">
+          </div>
+          <div class="admin-form-group" style="margin-bottom:0;">
+            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Ref No.</label>
+            <input id="refNo" placeholder="Confirmation #" style="width:100%;">
+          </div>
+          <div class="admin-form-group" style="margin-bottom:0;">
+            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Check-in</label>
+            <input id="checkin" type="date" style="width:100%;">
+          </div>
+          <div class="admin-form-group" style="margin-bottom:0;">
+            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Check-out</label>
+            <input id="checkout" type="date" style="width:100%;">
+          </div>
+          <div class="admin-form-group" style="margin-bottom:0;">
+            <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Nights</label>
+            <input id="totalNights" type="number" readonly value="0" style="width:100%; background:#f8fbfd;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Details Table -->
+      <div class="box grid-full" style="page-break-inside:auto; break-inside:auto;">
+        <h2 class="section-title">Room Details</h2>
+        <table class="rooms-table">
+          <thead>
+            <tr>
+              <th style="width:25%;">Room Type</th>
+              <th style="width:15%;">Qty</th>
+              <th style="width:20%;">Rate/Night</th>
+              <th style="width:20%;">Subtotal</th>
+              <th style="width:15%;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="roomsBody">
+            <tr class="room-row">
+              <td><input type="text" class="room-type" placeholder="e.g., Deluxe Double" value="" /></td>
+              <td><input type="number" class="room-qty" value="1" step="1" min="1" style="text-align:center;" /></td>
+              <td><input type="number" class="room-rate" value="0" step="0.01" min="0" style="text-align:right;" /></td>
+              <td><input type="text" class="room-subtotal" readonly style="text-align:right;" value="0.00" /></td>
+              <td style="text-align:center;"><button class="btn-icon danger" onclick="removeRoom(this)">✕</button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--soft); font-weight:700; border-top:2px solid var(--primary);">
+              <td colspan="3" style="text-align:right; padding:4px;">Total Room Value</td>
+              <td style="text-align:right; padding:4px;">₹<span id="roomsTotal">0.00</span></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <div class="add-btn-row hidden-print" style="margin-top:2px;">
+          <button class="btn btn-primary" onclick="addRoom()" style="background:var(--primary); padding:5px 8px; font-size:9px;">+ Add Room</button>
+        </div>
+      </div>
+
+      <!-- Calculation Summary -->
+      <div class="box highlight">
+        <h2 class="section-title">Calculation Summary</h2>
+        
+        <div class="summary-row">
+          <strong>Total Room Value (Base)</strong>
+          <span>₹<span id="totalRoomValue">0.00</span></span>
+        </div>
+
+        <div class="summary-row">
+          <div>
+            <strong>Hotel GST Rate</strong>
+            <input id="hotelGstRate" type="number" value="18" step="0.01" style="width:80px; height:24px; font-size:10px;" />
+          </div>
+          <span>₹<span id="hotelGst">0.00</span></span>
+        </div>
+
+        <div class="summary-row">
+          <strong>Total with Hotel GST</strong>
+          <span>₹<span id="totalWithHotelGst">0.00</span></span>
+        </div>
+
+        <div class="summary-row" style="border-top:2px solid var(--primary); margin-top:8px; padding-top:8px;">
+          <div>
+            <strong>Commission %</strong>
+            <input id="commissionPct" type="number" value="10" step="0.01" style="width:80px; height:24px; font-size:10px;" />
+          </div>
+          <span>₹<span id="commissionAmt">0.00</span></span>
+        </div>
+
+        <div class="summary-row">
+          <div>
+            <strong>GST on Commission (%)</strong>
+            <input id="commGstRate" type="number" value="18" step="0.01" style="width:80px; height:24px; font-size:10px;" />
+          </div>
+          <span>₹<span id="gstOnComm">0.00</span></span>
+        </div>
+
+        <div id="tdsSection" class="summary-row">
+          <div>
+            <strong>TDS on Commission (%)</strong>
+            <input id="tdsRate" type="number" value="2" step="0.01" style="width:80px; height:24px; font-size:10px;" />
+          </div>
+          <span>₹<span id="tdsOnComm">0.00</span></span>
+        </div>
+
+        <div class="summary-row total">
+          <strong style="font-size:12px;">NET PAYABLE COMMISSION</strong>
+          <span style="font-size:13px; color:var(--primary);">₹<span id="payableComm">0.00</span></span>
+        </div>
+
+        <p class="note" style="margin-top:10px; border-top:1px solid var(--border); padding-top:8px;">
+          <strong>Formula:</strong> Total Room Value = Sum of all rooms | Commission = Room Value × Rate | GST on Commission = Commission × Rate | TDS = Commission × Rate | Payable = Commission + GST - TDS
+        </p>
+      </div>
+
+      <!-- Bank Details & Notes -->
+      <div class="grid2">
+        <div class="box">
+          <h2 class="section-title">Bank Details</h2>
+          <table style="width:100%; border-collapse:collapse; font-size:10px;">
+            <tr>
+              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border); width:50%;">Bank Name</td>
+              <td style="padding:6px 4px; color:var(--text); border-bottom:1px solid var(--border); text-align:right;" id="dispBankName">—</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border);">Account Holder</td>
+              <td style="padding:6px 4px; color:var(--text); border-bottom:1px solid var(--border); text-align:right;" id="dispAccountName">—</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border);">Account Number</td>
+              <td style="padding:6px 4px; color:var(--text); border-bottom:1px solid var(--border); text-align:right; font-family:monospace;" id="dispAccountNo">—</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 4px; font-weight:700; color:var(--muted); text-transform:uppercase;">IFSC Code</td>
+              <td style="padding:6px 4px; color:var(--text); text-align:right; font-family:monospace;" id="dispIFSC">—</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="box">
+          <h2 class="section-title">Booking Notes</h2>
+          <p class="note">✓ Commission invoice for confirmed booking</p>
+          <p class="note">✓ GST shown separately on service</p>
+          <p class="note">✓ TDS deducted as per tax rules</p>
+          <p class="note">✓ Final amount is net of deductions</p>
+          <p class="note">✓ Valid for settlement within 30 days</p>
+        </div>
+      </div>
+
+      <!-- Signatory -->
+      <div class="box grid-full">
+        <h2 class="section-title">Authorization</h2>
+        <div class="sig" style="position:relative;">
+          <!-- Stamp -->
+          <div style="position:absolute; right:80px; top:10px; opacity:0.15; transform:rotate(-15deg);">
+            <img src="https://res.cloudinary.com/dl1q4dw72/image/upload/v1782349200/stamp_gvw5qk.png" alt="Stamp" style="width:80px; height:80px; object-fit:contain;">
+          </div>
+          
+          <div>
+            <p class="note"><strong>For India Reisen</strong></p>
+            <p class="note">________________________</p>
+            <p class="note" style="font-size:9px;" id="dispSignName1">Name & Designation</p>
+          </div>
+          <div style="flex:1;"></div>
+          <div>
+            <p class="note"><strong>Hotel Manager / Authorized Signatory</strong></p>
+            <p class="note">________________________</p>
+            <p class="note" style="font-size:9px;" id="dispSignName2">Name & Designation</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer with Communication Details -->
+      <div class="footer">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.2);">
+          <div style="font-size:18px; font-weight:700; color:#d1356f; letter-spacing:-0.5px;">🌸 India Reisen</div>
+          <div style="font-size:8px; color:#d6f7f4; font-style:italic;">Explore. Experience. Enchant</div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; align-items:center;">
+          <div>
+            <div style="font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">ADDRESS</div>
+            <div style="font-size:9px; line-height:1.3;">C-16, Third Floor, Sector 02, Noida, U.P., India, 201301</div>
+          </div>
+          <div>
+            <div style="font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">EMAIL</div>
+            <div style="font-size:9px;">team@indiareisen.com</div>
+          </div>
+          <div>
+            <div style="font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">PHONE</div>
+            <div style="font-size:9px;">+91 9810827785</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ STORAGE & STATE ============
+const storage = {
+  getCompanySettings() {
+    return JSON.parse(localStorage.getItem('companySettings') || '{"agentName":"India Reisen","agentAddr":"Ghaziabad, Uttar Pradesh","agentGST":"","agentPAN":"","agentSAC":"","agentEmail":"team@indiareisen.com","agentPhone":"+91 98108 27785","agentAuthName":"","agentDesignation":""}');
+  },
+  setCompanySettings(data) {
+    localStorage.setItem('companySettings', JSON.stringify(data));
+  },
+  getInvoiceSettings() {
+    return JSON.parse(localStorage.getItem('invoiceSettings') || '{"showTDS":true,"showSAC":true}');
+  },
+  setInvoiceSettings(data) {
+    localStorage.setItem('invoiceSettings', JSON.stringify(data));
+  },
+  getBankDetails() {
+    return JSON.parse(localStorage.getItem('bankDetails') || '{"bankName":"","accountName":"","accountNo":"","ifsc":""}');
+  },
+  setBankDetails(data) {
+    localStorage.setItem('bankDetails', JSON.stringify(data));
+  },
+  getHotels() {
+    return JSON.parse(localStorage.getItem('hotels') || '[]');
+  },
+  setHotels(data) {
+    localStorage.setItem('hotels', JSON.stringify(data));
+  },
+  getLogo() {
+    return localStorage.getItem('companyLogo');
+  },
+  setLogo(data) {
+    localStorage.setItem('companyLogo', data);
+  }
+};
+
+// ============ PAGE NAVIGATION ============
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.app-wrapper').forEach(w => w.classList.remove('active'));
+    
+    e.target.classList.add('active');
+    document.getElementById(e.target.dataset.page).classList.add('active');
+  });
+});
+
+// ============ ADMIN PAGE FUNCTIONS ============
+function saveCompanySettings() {
+  const sac1 = document.getElementById('agentSAC1').value;
+  const sac2 = document.getElementById('agentSAC2').value;
+  const agentSAC = sac1 && sac2 ? `${sac1}-${sac2}` : '';
+  
+  const settings = {
+    agentName: document.getElementById('agentName').value,
+    agentAddr: document.getElementById('agentAddr').value,
+    agentGST: document.getElementById('agentGST').value,
+    agentPAN: document.getElementById('agentPAN').value,
+    agentSAC: agentSAC,
+    agentEmail: document.getElementById('agentEmail').value,
+    agentPhone: document.getElementById('agentPhone').value,
+    agentAuthName: document.getElementById('agentAuthName').value,
+    agentDesignation: document.getElementById('agentDesignation').value
+  };
+  storage.setCompanySettings(settings);
+  const msg = document.getElementById('saveMessage');
+  msg.innerHTML = '<div class="success-message">✓ Company settings saved successfully!</div>';
+  setTimeout(() => msg.innerHTML = '', 3000);
+  updateInvoiceDisplay();
+}
+
+function saveBankDetails() {
+  const details = {
+    bankName: document.getElementById('bankName').value,
+    accountName: document.getElementById('accountName').value,
+    accountNo: document.getElementById('accountNo').value,
+    ifsc: document.getElementById('ifsc').value
+  };
+  storage.setBankDetails(details);
+  const msg = document.getElementById('bankSaveMessage');
+  msg.innerHTML = '<div class="success-message">✓ Bank details saved successfully!</div>';
+  setTimeout(() => msg.innerHTML = '', 3000);
+  updateInvoiceDisplay();
+}
+
+function saveInvoiceSettings() {
+  const settings = {
+    showTDS: document.getElementById('showTDS').checked,
+    showSAC: document.getElementById('showSAC').checked
+  };
+  storage.setInvoiceSettings(settings);
+  const msg = document.getElementById('settingsSaveMessage');
+  msg.innerHTML = '<div class="success-message">✓ Invoice settings saved successfully!</div>';
+  setTimeout(() => msg.innerHTML = '', 3000);
+  updateInvoiceDisplay();
+  updateCalculations();
+}
+
+function addHotel() {
+  const name = document.getElementById('hotelNameInput').value.trim();
+  const city = document.getElementById('hotelCityInput').value.trim();
+  const addr = document.getElementById('hotelAddrInput').value.trim();
+  const gstin = document.getElementById('hotelGSTInput').value.trim();
+  const pan = document.getElementById('hotelPANInput').value.trim();
+
+  if (!name || !city) {
+    alert('Please fill Hotel Name and City');
+    return;
+  }
+
+  const hotels = storage.getHotels();
+  hotels.push({ id: Date.now(), name, city, addr, gstin, pan });
+  storage.setHotels(hotels);
+
+  document.getElementById('hotelNameInput').value = '';
+  document.getElementById('hotelCityInput').value = '';
+  document.getElementById('hotelAddrInput').value = '';
+  document.getElementById('hotelGSTInput').value = '';
+  document.getElementById('hotelPANInput').value = '';
+
+  renderHotels();
+  updateHotelsList();
+}
+
+function deleteHotel(id) {
+  const hotels = storage.getHotels().filter(h => h.id !== id);
+  storage.setHotels(hotels);
+  renderHotels();
+  updateHotelsList();
+}
+
+function renderHotels() {
+  const container = document.getElementById('hotelsList');
+  const hotels = storage.getHotels();
+  
+  container.innerHTML = hotels.map(h => `
+    <div class="hotel-card">
+      <button class="delete-btn" onclick="deleteHotel(${h.id})">🗑️</button>
+      <h3>${h.name}</h3>
+      <p><strong>${h.city}</strong></p>
+      <p>${h.addr || '—'}</p>
+      <p style="font-size:10px; margin-top:6px;">GSTIN: ${h.gstin || '—'}</p>
+      <p style="font-size:10px;">PAN: ${h.pan || '—'}</p>
+    </div>
+  `).join('');
+}
+
+function updateHotelsList() {
+  const datalist = document.getElementById('hotelsList');
+  const hotels = storage.getHotels();
+  datalist.innerHTML = hotels.map(h => `<option value="${h.name}">`).join('');
+}
+
+// Logo Upload
+document.getElementById('logoUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const base64 = event.target.result;
+    storage.setLogo(base64);
+    
+    document.getElementById('logoPreview').innerHTML = `<img src="${base64}" alt="Logo">`;
+    document.getElementById('invoiceLogo').src = base64;
+  };
+  reader.readAsDataURL(file);
+});
+
+// ============ INVOICE PAGE FUNCTIONS ============
+document.getElementById('selectedHotel').addEventListener('change', (e) => {
+  const hotels = storage.getHotels();
+  const selected = hotels.find(h => h.name === e.target.value);
+  if (selected) {
+    document.getElementById('dispHotelAddr').textContent = selected.addr || '—';
+    document.getElementById('dispHotelGST').textContent = selected.gstin || '—';
+    document.getElementById('dispHotelPAN').textContent = selected.pan || '—';
+  }
+});
+
+function updateInvoiceDisplay() {
+  const settings = storage.getCompanySettings();
+  document.getElementById('dispAgentName').textContent = settings.agentName;
+  document.getElementById('dispAgentGST').textContent = settings.agentGST || '—';
+  document.getElementById('dispAgentPAN').textContent = settings.agentPAN || '—';
+  
+  // Split SAC code into 4-digit and 2-digit parts
+  if (settings.agentSAC) {
+    const sacParts = settings.agentSAC.split('-');
+    document.getElementById('dispAgentSAC1').textContent = sacParts[0] || '—';
+    document.getElementById('dispAgentSAC2').textContent = sacParts[1] || '—';
+  } else {
+    document.getElementById('dispAgentSAC1').textContent = '—';
+    document.getElementById('dispAgentSAC2').textContent = '—';
+  }
+  
+  // Update authorization signature line with Name and Designation
+  const signName1 = settings.agentAuthName && settings.agentDesignation ? 
+    `${settings.agentAuthName}, ${settings.agentDesignation}` : 
+    'Name & Designation';
+  document.getElementById('dispSignName1').textContent = signName1;
+
+  const bank = storage.getBankDetails();
+  document.getElementById('dispBankName').textContent = bank.bankName || '—';
+  document.getElementById('dispAccountName').textContent = bank.accountName || '—';
+  document.getElementById('dispAccountNo').textContent = bank.accountNo || '—';
+  document.getElementById('dispIFSC').textContent = bank.ifsc || '—';
+
+  // Handle visibility settings
+  const invoiceSettings = storage.getInvoiceSettings();
+  
+  // TDS visibility - use class only
+  const tdsElement = document.getElementById('tdsSection');
+  const sacElement = document.getElementById('sacDisplay');
+  
+  if (invoiceSettings.showTDS) {
+    tdsElement.classList.remove('hidden-in-print');
+  } else {
+    tdsElement.classList.add('hidden-in-print');
+  }
+  
+  // SAC visibility - use class only
+  if (invoiceSettings.showSAC) {
+    sacElement.classList.remove('hidden-in-print');
+  } else {
+    sacElement.classList.add('hidden-in-print');
+  }
+}
+
+function calculateRoomSubtotal(row) {
+  const qty = parseFloat(row.querySelector('.room-qty').value) || 0;
+  const rate = parseFloat(row.querySelector('.room-rate').value) || 0;
+  const nights = parseFloat(document.getElementById('totalNights').value) || 0;
+  const subtotal = qty * rate * nights;
+  row.querySelector('.room-subtotal').value = subtotal.toFixed(2);
+  return subtotal;
+}
+
+function updateNights() {
+  const checkin = new Date(document.getElementById('checkin').value);
+  const checkout = new Date(document.getElementById('checkout').value);
+  if (checkin && checkout && checkout > checkin) {
+    const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+    document.getElementById('totalNights').value = nights;
+    document.getElementById('nightsDisplay').textContent = nights + ' night' + (nights !== 1 ? 's' : '');
+    updateCalculations();
+  }
+}
+
+function updateCalculations() {
+  let totalRoomValue = 0;
+  const rows = document.querySelectorAll('.room-row');
+  
+  rows.forEach(row => {
+    totalRoomValue += calculateRoomSubtotal(row);
+  });
+
+  // Update rooms total display
+  document.getElementById('roomsTotal').textContent = totalRoomValue.toFixed(2);
+
+  const hotelGstRate = parseFloat(document.getElementById('hotelGstRate').value) || 0;
+  const hotelGst = totalRoomValue * hotelGstRate / 100;
+  const totalWithGst = totalRoomValue + hotelGst;
+
+  const commPct = parseFloat(document.getElementById('commissionPct').value) || 0;
+  const commission = totalRoomValue * commPct / 100;
+
+  const commGstRate = parseFloat(document.getElementById('commGstRate').value) || 0;
+  const gstOnComm = commission * commGstRate / 100;
+
+  const invoiceSettings = storage.getInvoiceSettings();
+  let tds = 0;
+  if (invoiceSettings.showTDS) {
+    const tdsRate = parseFloat(document.getElementById('tdsRate').value) || 0;
+    tds = commission * tdsRate / 100;
+  }
+
+  const payable = commission + gstOnComm - tds;
+
+  document.getElementById('totalRoomValue').textContent = totalRoomValue.toFixed(2);
+  document.getElementById('hotelGst').textContent = hotelGst.toFixed(2);
+  document.getElementById('totalWithHotelGst').textContent = totalWithGst.toFixed(2);
+  document.getElementById('commissionAmt').textContent = commission.toFixed(2);
+  document.getElementById('gstOnComm').textContent = gstOnComm.toFixed(2);
+  document.getElementById('tdsOnComm').textContent = tds.toFixed(2);
+  document.getElementById('payableComm').textContent = payable.toFixed(2);
+}
+
+function addRoom() {
+  const tbody = document.getElementById('roomsBody');
+  const row = document.createElement('tr');
+  row.className = 'room-row';
+  row.innerHTML = `
+    <td><input type="text" class="room-type" placeholder="e.g., Deluxe Double" /></td>
+    <td><input type="number" class="room-qty" value="1" step="1" min="1" style="text-align:center;" /></td>
+    <td><input type="number" class="room-rate" value="0" step="0.01" min="0" style="text-align:right;" /></td>
+    <td><input type="text" class="room-subtotal" readonly style="text-align:right;" value="0.00" /></td>
+    <td style="text-align:center;"><button class="btn-icon danger" onclick="removeRoom(this)">✕</button></td>
+  `;
+  
+  row.querySelectorAll('input[type="number"], input.room-type').forEach(input => {
+    input.addEventListener('input', updateCalculations);
+  });
+  
+  tbody.appendChild(row);
+  updateCalculations();
+}
+
+function removeRoom(btn) {
+  btn.closest('.room-row').remove();
+  updateCalculations();
+}
+
+// ============ EVENT LISTENERS ============
+document.getElementById('invoiceDate').valueAsDate = new Date();
+document.getElementById('checkin').addEventListener('change', updateNights);
+document.getElementById('checkout').addEventListener('change', updateNights);
+document.getElementById('hotelGstRate').addEventListener('input', updateCalculations);
+document.getElementById('commissionPct').addEventListener('input', updateCalculations);
+document.getElementById('commGstRate').addEventListener('input', updateCalculations);
+document.getElementById('tdsRate').addEventListener('input', updateCalculations);
+
+document.getElementById('showTDS').addEventListener('change', () => {
+  saveInvoiceSettings();
+  updateInvoiceDisplay();
+  updateCalculations();
+});
+
+document.getElementById('showSAC').addEventListener('change', () => {
+  saveInvoiceSettings();
+  updateInvoiceDisplay();
+});
+
+document.querySelectorAll('.room-row input[type="number"], .room-row input.room-type').forEach(input => {
+  input.addEventListener('input', updateCalculations);
+});
+
+document.getElementById('printPdfBtn').addEventListener('click', () => window.print());
+
+document.getElementById('savePdfBtn').addEventListener('click', () => {
+  // Trigger print dialog with focus on "Save as PDF" option
+  window.print();
+});
+
+document.getElementById('savePngBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('savePngBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+  
+  try {
+    // Load html2canvas library
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    document.head.appendChild(script);
+    
+    script.onload = () => {
+      const container = document.querySelector('.container');
+      html2canvas(container, {
+        backgroundColor: '#fff',
+        scale: 2,
+        logging: false,
+        allowTaint: true,
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `Commission_Invoice_${new Date().toISOString().split('T')[0]}.png`;
+        link.click();
+        
+        btn.disabled = false;
+        btn.textContent = '🖼️ Download PNG';
+      }).catch(err => {
+        console.error('Error generating PNG:', err);
+        alert('Error generating PNG. Please try again.');
+        btn.disabled = false;
+        btn.textContent = '🖼️ Download PNG';
+      });
+    };
+  } catch (err) {
+    console.error('Error loading html2canvas:', err);
+    alert('Error loading image library. Please try again.');
+    btn.disabled = false;
+    btn.textContent = '🖼️ Download PNG';
+  }
+});
+
+// ============ PAGE NUMBERING ============
+// ============ INITIALIZATION ============
+(function init() {
+  // Load company settings
+  const settings = storage.getCompanySettings();
+  document.getElementById('agentName').value = settings.agentName;
+  document.getElementById('agentAddr').value = settings.agentAddr;
+  document.getElementById('agentGST').value = settings.agentGST;
+  document.getElementById('agentPAN').value = settings.agentPAN;
+  
+  // Split SAC code into two parts
+  if (settings.agentSAC) {
+    const sacParts = settings.agentSAC.split('-');
+    document.getElementById('agentSAC1').value = sacParts[0] || '';
+    document.getElementById('agentSAC2').value = sacParts[1] || '';
+  }
+  
+  document.getElementById('agentEmail').value = settings.agentEmail;
+  document.getElementById('agentPhone').value = settings.agentPhone;
+  document.getElementById('agentAuthName').value = settings.agentAuthName || '';
+  document.getElementById('agentDesignation').value = settings.agentDesignation || '';
+
+  // Load invoice settings
+  const invoiceSettings = storage.getInvoiceSettings();
+  document.getElementById('showTDS').checked = invoiceSettings.showTDS;
+  document.getElementById('showSAC').checked = invoiceSettings.showSAC;
+
+  // Load bank details
+  const bank = storage.getBankDetails();
+  document.getElementById('bankName').value = bank.bankName;
+  document.getElementById('accountName').value = bank.accountName;
+  document.getElementById('accountNo').value = bank.accountNo;
+  document.getElementById('ifsc').value = bank.ifsc;
+
+  // Load logo
+  const logo = storage.getLogo();
+  if (logo) {
+    document.getElementById('invoiceLogo').src = logo;
+    document.getElementById('logoPreview').innerHTML = `<img src="${logo}" alt="Logo">`;
+  }
+
+  // Load hotels
+  renderHotels();
+  updateHotelsList();
+  updateInvoiceDisplay();
+
+  // Initialize calculations
+  updateCalculations();
+})();
+</script>
+</body>
+</html>
