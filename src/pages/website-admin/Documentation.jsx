@@ -11,6 +11,12 @@ export default function Documentation() {
       description: 'GST-compliant split invoice tool for billing guests directly — main tour invoice plus service charges, saved clients, saved invoice history, and PDF export.',
       icon: '💳',
       href: '/docs/gst-invoice.html'
+    },
+    {
+      title: 'Social Media Studio',
+      description: 'AI-assisted caption writer and image watermarking studio — punchline overlays, brand presets, multi-platform captions, and bulk image export.',
+      icon: '✨',
+      href: '/docs/social-media-studio.html'
     }
   ]
 
