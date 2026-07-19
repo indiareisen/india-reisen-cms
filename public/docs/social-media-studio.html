@@ -2017,7 +2017,35 @@
   }
 
   // ---- AI-powered caption generation (Claude Sonnet, with image understanding) ----
-  const AI_MODEL = 'claude-sonnet-4-6';
+  window.storage = window.storage || {};
+  function storageGet(key){
+    try {
+      const raw = localStorage.getItem('irw_' + key);
+      return raw ? JSON.parse(raw) : undefined;
+    } catch(e) { return undefined; }
+  }
+  function storageSet(key, value){
+    try {
+      localStorage.setItem('irw_' + key, JSON.stringify(value));
+    } catch(e) { console.error('storageSet error', e); }
+  }
+  function storageList(prefix){
+    try {
+      const keys = [];
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(k && k.indexOf('irw_' + prefix) === 0){
+          keys.push(k.slice(4));
+        }
+      }
+      return keys;
+    } catch(e) { return []; }
+  }
+  function storageDelete(key){
+    try { localStorage.removeItem('irw_' + key); } catch(e) {}
+  }
+
+  const AI_MODEL = 'claude-sonnet-5';
 
   let userApiKey = '';
   const apiKeyInput = document.getElementById('irw-apikey-input');
@@ -2026,29 +2054,16 @@
   }
 
   async function callClaudeAPI(systemPrompt, userContent){
-    const headers = { 'Content-Type': 'application/json' };
-    if(userApiKey){
-      headers['x-api-key'] = userApiKey;
-      headers['anthropic-version'] = '2023-06-01';
-      headers['anthropic-dangerous-direct-browser-access'] = 'true';
-    }
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://project-5alhy.vercel.app/api/generate-social-posts', {
       method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: AI_MODEL,
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userContent }]
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ systemPrompt, content: userContent })
     });
-    if(!response.ok){
-      let detail = '';
-      try{ const errJson = await response.json(); detail = (errJson && errJson.error && errJson.error.message) ? ': ' + errJson.error.message : ''; }catch(e){}
-      throw new Error('AI service returned status ' + response.status + detail);
-    }
     const data = await response.json();
-    const text = (data.content || []).map(b => b.type === 'text' ? b.text : '').join('\n').trim();
+    if(!response.ok || !data.success){
+      throw new Error(data.error || ('AI service returned status ' + response.status));
+    }
+    const text = (data.text || '').trim();
     if(!text) throw new Error('AI returned an empty response');
     return text;
   }
