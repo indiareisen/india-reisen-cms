@@ -5,6 +5,12 @@ export default function Documentation() {
       description: 'Standalone tool for generating hotel commission invoices — company details, hotel database, commission/GST/TDS calculations, and PDF/PNG export.',
       icon: '🧾',
       href: '/docs/commission-invoice.html'
+    },
+    {
+      title: 'GST Invoice (Guest Billing)',
+      description: 'GST-compliant split invoice tool for billing guests directly — main tour invoice plus service charges, saved clients, saved invoice history, and PDF export.',
+      icon: '💳',
+      href: '/docs/gst-invoice.html'
     }
   ]
 

@@ -1,0 +1,3026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>India Reisen - GST Invoice (Split)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root{
+      --brand:#d81b60;
+      --brand-dark:#b3124f;
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --bg:#eef1f4;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      padding:4px;
+      background:var(--bg);
+      font-family:Inter, Arial, Helvetica, sans-serif;
+      color:var(--ink);
+    }
+    .toolbar{
+      width:100%;
+      max-width:794px;
+      margin:0 auto 4px auto;
+      display:flex;
+      justify-content:flex-end;
+      gap:6px;
+    }
+    .btn{
+      border:0;
+      border-radius:7px;
+      padding:7px 11px;
+      font-size:11.5px;
+      font-weight:700;
+      cursor:pointer;
+      background:var(--brand);
+      color:#fff;
+    }
+    .btn:hover{ background:var(--brand-dark); }
+    .invoice{
+      width:100%;
+      max-width:794px;
+      margin:0 auto;
+      background:#fff;
+      border:1px solid #e6e8eb;
+      overflow:hidden;
+      box-shadow:none;
+    }
+    .invoice-part{
+      border-bottom:3px dashed var(--brand);
+      position:relative;
+    }
+    .invoice-part:last-child{
+      border-bottom:none;
+    }
+    .status-stamp{
+      position:absolute;
+      top:38%;
+      left:50%;
+      transform:translate(-50%,-50%) rotate(-22deg);
+      font-size:52px;
+      font-weight:900;
+      letter-spacing:4px;
+      opacity:.14;
+      pointer-events:none;
+      z-index:5;
+      border:6px solid currentColor;
+      border-radius:10px;
+      padding:6px 24px;
+      display:none;
+      white-space:nowrap;
+    }
+    .stamp-paid{ color:#16a34a; }
+    .stamp-overdue{ color:#dc2626; }
+    .stamp-unpaid{ color:#d97706; }
+    .header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-bottom:3px solid var(--brand);
+      background:linear-gradient(90deg,#ffffff 0%, #fff8fc 100%);
+    }
+    .logo{
+      width:56px;
+      height:56px;
+      object-fit:contain;
+      border-radius:8px;
+      background:#fff;
+      flex:0 0 56px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:20px;
+      line-height:1;
+      letter-spacing:.4px;
+      color:var(--brand);
+    }
+    .brand .sub{
+      margin-top:2px;
+      font-size:9.5px;
+      color:var(--muted);
+    }
+    .part-label{
+      background:var(--brand);
+      color:#fff;
+      padding:3px 8px;
+      font-size:10px;
+      font-weight:700;
+      border-radius:5px;
+      margin-left:auto;
+    }
+    .title-row{
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+      padding:6px 12px 3px 12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .invoice-title{
+      margin:0;
+      font-size:14px;
+      font-weight:800;
+    }
+    .invoice-no{
+      min-width:280px;
+      text-align:right;
+      font-size:10.5px;
+      line-height:1.5;
+      color:#4b5563;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px;
+      padding:4px 12px 0 12px;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:9px;
+      background:#fff;
+      padding:7px 7px 5px 7px;
+    }
+    .card h3{
+      margin:0 0 4px 0;
+      padding-bottom:3px;
+      border-bottom:1px solid #f1f1f1;
+      font-size:11.5px;
+      color:var(--brand);
+    }
+    table{ width:100%; border-collapse:collapse; }
+    .info td{
+      padding:1px 0;
+      vertical-align:top;
+      font-size:10.5px;
+    }
+    .info td:first-child{
+      width:40%;
+      color:var(--muted);
+      padding-right:5px;
+    }
+    .field{
+      width:100%;
+      border:1px solid #dfe3e8;
+      border-radius:5px;
+      padding:3px 5px;
+      font-size:10.5px;
+      font-family:inherit;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+    .field.small{ max-width:100px; }
+    .field:focus{ border-color:rgba(216,27,96,.45); box-shadow:0 0 0 3px rgba(216,27,96,.08); }
+    .field.print-text{
+      border:none;
+      background:transparent;
+      padding:0;
+      box-shadow:none;
+      font-weight:600;
+      min-height:13px;
+    }
+    .section{ padding:5px 12px 0 12px; }
+    .table-scroll{
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .items{
+      width:100%;
+      min-width:620px;
+      border-collapse:collapse;
+      font-size:10.5px;
+      border:1px solid var(--line);
+    }
+    .items th,.items td{
+      border-bottom:1px solid var(--line);
+      border-right:1px solid var(--line);
+      padding:4px 4px;
+    }
+    .items th:last-child,.items td:last-child{ border-right:none; }
+    .items th{
+      background:#f9e7ef;
+      color:var(--brand-dark);
+      font-weight:800;
+    }
+    .items tbody tr:last-child td{ border-bottom:none; }
+    .col-remove{ text-align:center; }
+    .row-remove-btn{
+      border:1px solid #f1c3d3;
+      background:#fff;
+      color:var(--brand-dark);
+      border-radius:5px;
+      width:20px;
+      height:20px;
+      line-height:1;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      padding:0;
+    }
+    .row-remove-btn:hover{ background:#fdeef3; }
+    .row-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:2px;
+      justify-content:center;
+      align-items:center;
+    }
+    .row-move-btn, .row-dup-btn{
+      border:1px solid #f1c3d3;
+      background:#fff;
+      color:var(--brand-dark);
+      border-radius:4px;
+      width:16px;
+      height:16px;
+      line-height:1;
+      font-size:8.5px;
+      font-weight:700;
+      cursor:pointer;
+      padding:0;
+    }
+    .row-move-btn:hover, .row-dup-btn:hover{ background:#fdeef3; }
+    .btn-add-row{
+      margin:6px 0 2px 0;
+      border:1px dashed var(--brand);
+      background:#fff8fc;
+      color:var(--brand-dark);
+      font-weight:700;
+      font-size:10.5px;
+      padding:5px 10px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    .btn-add-row:hover{ background:#fbe4ee; }
+    @media print{
+      .btn-add-row, .col-remove{ display:none; }
+    }
+    .center{ text-align:center; }
+    .right{ text-align:right; }
+    .summary-wrap{
+      display:flex;
+      justify-content:flex-end;
+      padding:5px 12px 0 12px;
+    }
+    .summary{
+      width:300px;
+      border-collapse:collapse;
+      font-size:10.5px;
+      border:1px solid var(--line);
+    }
+    .summary td{
+      border-bottom:1px solid var(--line);
+      padding:5px 7px;
+    }
+    .summary td:first-child{
+      background:#fafafa;
+      color:#374151;
+      width:58%;
+    }
+    .summary tr:last-child td{ border-bottom:none; }
+    .summary .grand td{
+      background:var(--brand);
+      color:#fff;
+      font-weight:800;
+      font-size:11.5px;
+    }
+    .amount-in-words{
+      padding:5px 12px 6px 12px;
+      font-size:10px;
+      color:#4b5563;
+      line-height:1.3;
+    }
+    .amount-in-words strong{
+      color:#111827;
+    }
+    .discount-cell select, .discount-cell input{ font-size:10.5px; }
+    .roundoff-row td{ font-style:italic; color:#6b7280; }
+    .advance-block{
+      margin:6px 12px 0 12px;
+      padding:10px 12px;
+      border:1px dashed var(--brand);
+      border-radius:8px;
+      background:#fff8fc;
+    }
+    .advance-block-title{
+      font-size:11px;
+      font-weight:800;
+      color:var(--brand-dark);
+      margin-bottom:6px;
+    }
+    .advance-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:10.5px;
+      background:#fff;
+    }
+    .advance-table th{
+      background:#fbe4ee;
+      color:var(--brand-dark);
+      font-size:9.5px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      padding:5px 7px;
+      text-align:left;
+      border:1px solid var(--line);
+    }
+    .advance-table td{
+      border:1px solid var(--line);
+      padding:4px 6px;
+    }
+    .advance-block .summary{ width:100%; margin-left:auto; }
+    .advance-block .summary-wrap{ padding:0; }
+    .bank-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:6px;
+      padding:5px 12px 0 12px;
+    }
+    .compact-card{
+      padding:7px 7px 5px 7px;
+    }
+    .compact-card h3{
+      font-size:11.5px;
+      margin-bottom:3px;
+      padding-bottom:3px;
+    }
+    .compact-info td{
+      padding:1px 0;
+      font-size:10px;
+    }
+    .field.compact{
+      padding:3px 4px;
+      font-size:10px;
+      border-radius:4px;
+    }
+    .signature-wrap{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:6px;
+      padding:5px 12px 0 12px;
+    }
+    .signature-box{
+      border:1px solid var(--line);
+      border-radius:9px;
+      padding:7px 9px;
+      min-height:50px;
+      background:#fff;
+    }
+    .sig-line{
+      border-bottom:1px solid #111827;
+      height:18px;
+      margin-bottom:4px;
+      display:flex;
+      align-items:flex-end;
+    }
+    .sig-image{
+      max-height:32px;
+      max-width:170px;
+      display:block;
+    }
+    .sig-label{
+      font-size:10px;
+      color:#4b5563;
+      font-weight:600;
+    }
+    .stamp-box{
+      display:flex;
+      justify-content:flex-end;
+      padding:4px 12px 0 12px;
+    }
+    .stamp-placeholder{
+      width:72px;
+      height:72px;
+      border:1px dashed #cbd5e1;
+      border-radius:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:9px;
+      color:#94a3b8;
+      background:#fafafa;
+      text-align:center;
+      padding:6px;
+    }
+    .notes{
+      margin:5px 12px 6px 12px;
+      padding:6px 8px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      background:#fcfcfd;
+      font-size:10px;
+      line-height:1.35;
+      color:#4b5563;
+    }
+    .footer{
+      border-top:1px solid var(--line);
+      padding:6px 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+      flex-wrap:wrap;
+      font-size:9.5px;
+      color:#555;
+      background:#fff;
+    }
+    .pdf-only{ display:none; }
+    @page{ size:A4; margin:4.5mm; }
+    @media print{
+      body{ background:#fff; padding:0; }
+      .toolbar{ display:none; }
+      .tabs{ display:none; }
+      .invoice{
+        width:100%;
+        border:none;
+        box-shadow:none;
+      }
+      .btn-add-row, .row-remove-btn, .row-move-btn, .row-dup-btn, .col-remove,
+      .rate-preset-select, .split-mode-select, .no-print{
+        display:none !important;
+      }
+      input, select, textarea{
+        border:none !important;
+        background:transparent !important;
+        -webkit-appearance:none;
+        appearance:none;
+        color:inherit;
+      }
+      .advance-block .btn-add-row{ display:none !important; }
+      #gstRate1, #gstRate2{ display:inline-block !important; }
+    }
+
+    /* ===== Tabs / Admin / Saved Invoices ===== */
+    .tabs{
+      width:100%;
+      max-width:794px;
+      margin:0 auto 8px auto;
+      display:flex;
+      gap:6px;
+    }
+    .tab-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      font-weight:700;
+      font-size:12px;
+      padding:8px 14px;
+      border-radius:8px 8px 0 0;
+      cursor:pointer;
+    }
+    .tab-btn.active{
+      background:var(--brand);
+      color:#fff;
+      border-color:var(--brand);
+    }
+    .panel{ width:100%; max-width:794px; margin:0 auto; }
+    .hidden{ display:none; }
+    .panel.hidden{ display:none; }
+
+    /* ===== Invoice Part sub-tabs (Main Invoice / Service Charges) ===== */
+    .subtabs{
+      width:100%;
+      max-width:794px;
+      margin:0 auto 4px auto;
+      display:flex;
+      gap:6px;
+    }
+    .subtab-btn{
+      flex:1;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      font-weight:700;
+      font-size:11.5px;
+      padding:7px 11px;
+      border-radius:7px;
+      cursor:pointer;
+    }
+    .subtab-btn.active{
+      background:var(--brand);
+      color:#fff;
+      border-color:var(--brand);
+    }
+    .subtab-btn.disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    @media print{
+      .subtabs{ display:none; }
+      .no-print{ display:none; }
+    }
+
+    .admin-gate{
+      width:100%;
+      max-width:794px;
+      margin:40px auto;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:28px;
+      text-align:center;
+    }
+    .admin-gate h2{ margin:0 0 6px 0; font-size:16px; color:var(--brand); }
+    .admin-gate p{ font-size:11.5px; color:var(--muted); margin:0 0 14px 0; }
+    .admin-gate input{
+      width:220px;
+      padding:8px 10px;
+      border:1px solid #dfe3e8;
+      border-radius:6px;
+      font-size:13px;
+      margin-right:6px;
+    }
+    .admin-warning{
+      width:100%;
+      max-width:794px;
+      margin:0 auto 10px auto;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#9a3412;
+      font-size:10.5px;
+      padding:8px 12px;
+      border-radius:8px;
+      line-height:1.4;
+    }
+    .admin-wrap{
+      width:100%;
+      max-width:794px;
+      margin:0 auto 30px auto;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+    }
+    .admin-section{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+    }
+    .admin-section:last-child{ border-bottom:none; }
+    .admin-section h3{
+      margin:0 0 10px 0;
+      font-size:13px;
+      color:var(--brand-dark);
+      border-bottom:1px solid #f1f1f1;
+      padding-bottom:6px;
+    }
+    .admin-row{
+      display:grid;
+      grid-template-columns:160px 1fr;
+      gap:10px;
+      align-items:center;
+      margin-bottom:8px;
+    }
+    .admin-row label{ font-size:11px; color:var(--muted); }
+    .admin-row input, .admin-row select, .admin-row textarea{
+      width:100%;
+      border:1px solid #dfe3e8;
+      border-radius:6px;
+      padding:6px 8px;
+      font-size:11.5px;
+      font-family:inherit;
+    }
+    .admin-row textarea{ resize:vertical; min-height:50px; }
+    .gstin-entry{
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px;
+      margin-bottom:8px;
+      position:relative;
+      background:#fafafa;
+    }
+    .gstin-entry .remove-btn{
+      position:absolute;
+      top:8px; right:8px;
+      background:#fff;
+      border:1px solid #fca5a5;
+      color:#dc2626;
+      border-radius:6px;
+      font-size:10px;
+      padding:3px 8px;
+      cursor:pointer;
+    }
+    .small-btn{
+      border:1px solid var(--brand);
+      background:#fff;
+      color:var(--brand);
+      font-weight:700;
+      font-size:11px;
+      padding:6px 12px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    .small-btn.solid{ background:var(--brand); color:#fff; }
+    .small-btn.danger{ border-color:#dc2626; color:#dc2626; }
+    .admin-actions{ display:flex; gap:8px; flex-wrap:wrap; padding:14px 16px; }
+    .save-msg{ font-size:11px; color:#16a34a; font-weight:700; margin-left:6px; }
+
+    .saved-list{ padding:14px 16px; }
+    .saved-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:9px 12px;
+      margin-bottom:7px;
+      font-size:11.5px;
+      background:#fafafa;
+    }
+    .saved-item .meta{ color:#374151; }
+    .saved-item .meta .inv-no{ font-weight:800; color:var(--brand-dark); }
+    .saved-item .meta .sub{ color:var(--muted); font-size:10.5px; }
+    .saved-item .actions{ display:flex; gap:6px; }
+    .empty-state{ text-align:center; color:var(--muted); font-size:11.5px; padding:18px; }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnInvoice" onclick="showTab('invoice')">Invoice</button>
+    <button class="tab-btn" id="tabBtnAdmin" onclick="showTab('admin')">Admin</button>
+  </div>
+
+  <div class="toolbar" id="invoiceToolbar">
+    <label style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--ink);margin-right:auto;background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 11px;">
+      <input type="checkbox" id="includeServiceInvoice" checked onchange="toggleServiceInvoice()">
+      Include Service Charges Invoice (Part 2)
+    </label>
+    <button class="btn" onclick="saveCurrentInvoice()">Save Invoice</button>
+    <button class="btn" onclick="calculateTotals()">Recalculate</button>
+    <button class="btn" onclick="generatePDF()">Convert to PDF</button>
+    <button class="btn" onclick="sharePDF()">Share / Email PDF</button>
+  </div>
+
+  <div class="panel" id="panelInvoice">
+  <div class="subtabs" id="invoiceSubtabs">
+    <button class="subtab-btn active" id="subtabBtnPart1" onclick="showInvoicePart(1)">Part 1: Main Invoice</button>
+    <button class="subtab-btn" id="subtabBtnPart2" onclick="showInvoicePart(2)">Part 2: Service Charges</button>
+  </div>
+  <div class="invoice" id="invoice">
+    <!-- PART 1: Main Invoice -->
+    <div class="invoice-part" id="invoicePart1">
+      <div class="status-stamp" id="statusStamp1"></div>
+      <div class="header">
+        <img src="data:image/png;base64,PASTE_BASE64_HERE" alt="India Reisen Logo" class="logo" id="logo-image-1" />
+        <div class="brand">
+          <h1>INDIA REISEN</h1>
+          <div class="sub">explore. experience. enchant.</div>
+          <div class="sub">GST Tax Invoice</div>
+        </div>
+        <div class="part-label">PART 1: MAIN INVOICE</div>
+      </div>
+
+      <div class="title-row">
+        <div><p class="invoice-title">Tax Invoice - Main Tour Package</p></div>
+        <div class="invoice-no">
+          <div><strong>Invoice No:</strong> <input class="field small" id="invoiceNo1" value="TOA/2025-26/001" oninput="syncInvoiceNumber()"> <button type="button" class="small-btn no-print" style="padding:2px 7px;font-size:9px;" onclick="suggestNewInvoiceNumber()" title="Suggest next number based on saved invoices">Next #</button></div>
+          <div><strong>Invoice Date:</strong> <input class="field small" id="invoiceDate1" value="08-06-2026"></div>
+          <div><strong>Place of Supply:</strong> 
+            <select class="field small" id="placeOfSupply1" onchange="calculateTotals()">
+              <option value="Delhi">Delhi</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Assam">Assam</option>
+              <option value="Bihar">Bihar</option>
+              <option value="Chhattisgarh">Chhattisgarh</option>
+              <option value="Goa">Goa</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Haryana">Haryana</option>
+              <option value="Himachal Pradesh">Himachal Pradesh</option>
+              <option value="Jharkhand">Jharkhand</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Kerala">Kerala</option>
+              <option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Manipur">Manipur</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Odisha">Odisha</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Rajasthan" selected>Rajasthan</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Telangana">Telangana</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Uttarakhand">Uttarakhand</option>
+              <option value="West Bengal">West Bengal</option>
+              <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+              <option value="Ladakh">Ladakh</option>
+              <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+              <option value="Lakshadweep">Lakshadweep</option>
+              <option value="Puducherry">Puducherry</option>
+            </select>
+          </div>
+          <div><strong>Currency:</strong> 
+            <select class="field small" id="currency1" onchange="calculateTotals()">
+              <option value="INR" selected>INR ₹</option>
+              <option value="USD">USD $</option>
+              <option value="EUR">EUR €</option>
+              <option value="GBP">GBP £</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Supplier Details</h3>
+          <table class="info">
+            <tr><td>Company Name</td><td id="infoCompanyName1">India Reisen</td></tr>
+            <tr>
+              <td>GSTIN</td>
+              <td>
+                <select class="field" id="supplierGSTIN1" onchange="updateSupplierAddress1()">
+                  <option value="09AADFI3860R1ZQ">09AADFI3860R1ZQ (Uttar Pradesh)</option>
+                  <option value="08AADFI3860R1ZS">08AADFI3860R1ZS (Rajasthan)</option>
+                </select>
+                <div id="supplierGSTINText1" class="pdf-only"></div>
+                <div id="supplierGSTINAddressText1" class="pdf-only" style="margin-top:2px;"></div>
+                <div id="supplierStateText1" class="pdf-only" style="margin-top:2px;font-size:9px;color:#666;"></div>
+              </td>
+            </tr>
+            <tr>
+              <td>Address</td>
+              <td>
+                <input class="field" id="supplierAddress1" readonly>
+                <div id="supplierAddressText1" class="pdf-only"></div>
+              </td>
+            </tr>
+            <tr><td>Website</td><td id="infoWebsite1">www.indiareisen.com</td></tr>
+            <tr><td>Phone</td><td id="infoPhone1">+91 98108 27785</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Customer Details <button type="button" class="small-btn no-print" style="float:right;font-size:9px;padding:3px 8px;" onclick="saveCurrentCustomerAsClient()">📇 Save as Client</button></h3>
+          <table class="info">
+            <tr><td>Name</td><td><input class="field" id="customerName1" value="Rajesh Kumar"></td></tr>
+            <tr><td>Contact</td><td><input class="field" id="customerPhone1" value="9876543210"></td></tr>
+            <tr><td>Email</td><td><input class="field" id="customerEmail1" value="rajesh@example.com"></td></tr>
+            <tr><td>Address</td><td><input class="field" id="customerAddress1" value="123 Main Street, New Delhi, 110001"></td></tr>
+            <tr><td>GSTIN</td><td><input class="field" id="customerGSTIN1" value="07AABCU9603R1ZT"></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid" style="padding-top:4px;">
+        <div class="card">
+          <h3>Tour Details</h3>
+          <table class="info">
+            <tr><td>Tour Package</td><td><input class="field" id="tourPackage1" value="Kashmir Paradise Tour"></td></tr>
+            <tr><td>Package SAC</td><td><select class="field" id="packageSAC1"><option value="998552" selected>998552</option><option value="998551">998551</option><option value="998555">998555</option><option value="998599">998599</option></select></td></tr>
+            <tr><td>Taxable Value</td><td><input class="field" id="taxableValue1" type="number" value="42750" oninput="calculateTotals()"></td></tr>
+            <tr><td>GST Rate (%)</td><td>
+              <select class="field rate-preset-select" id="gstRate1Sel" onchange="handleGstRatePreset(1)" style="margin-bottom:4px;">
+                <option value="0">0%</option>
+                <option value="5" selected>5%</option>
+                <option value="12">12%</option>
+                <option value="18">18%</option>
+                <option value="28">28%</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input class="field" id="gstRate1" type="number" value="5" oninput="calculateTotals()" style="display:none;">
+            </td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Payment Details</h3>
+          <table class="info">
+            <tr><td>Status</td><td><input class="field" id="paymentStatus1" value="Paid"></td></tr>
+            <tr><td>Date</td><td><input class="field" id="paymentDate1" value="08-06-2026"></td></tr>
+            <tr><td>Mode</td><td><input class="field" id="paymentMode1" value="Online"></td></tr>
+            <tr><td>Remarks</td><td><input class="field" id="remarks1" value="Advance payment received"></td></tr>
+            <tr><td>Due Date</td><td><input class="field" id="dueDate1" type="date" onchange="calculateTotals()"></td></tr>
+            <tr><td>GST Split</td><td>
+              <select class="field split-mode-select" id="gstSplitMode1" onchange="calculateTotals()">
+                <option value="auto" selected>Auto (from Place of Supply)</option>
+                <option value="intra">Force Intra-State (CGST+SGST)</option>
+                <option value="inter">Force Inter-State (IGST)</option>
+              </select>
+              <div style="font-size:9.5px;color:var(--muted);margin-top:2px;">Currently: <span id="gstSplitResolved1">—</span></div>
+            </td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="bank-grid">
+        <div class="card compact-card">
+          <h3>Bank Details</h3>
+          <div style="margin-bottom:6px;">
+            <label style="font-size:10px;color:var(--muted);">Select Bank: </label>
+            <select class="field compact" id="bankSelect1" onchange="applyBankSelection('1')" style="max-width:220px;display:inline-block;"></select>
+          </div>
+          <table class="info compact-info">
+            <tr><td>Bank</td><td><input class="field compact" id="bankName1" value="HDFC Bank"></td></tr>
+            <tr><td>Account</td><td><input class="field compact" id="accountName1" value="India Reisen"></td></tr>
+            <tr><td>A/C No.</td><td><input class="field compact" id="accountNumber1" value="XXXXXXXXXXXX"></td></tr>
+            <tr><td>IFSC</td><td><input class="field compact" id="ifscCode1" value="HDFC000XXXX"></td></tr>
+            <tr><td>UPI</td><td><input class="field compact" id="upiId1" value="indiareisen@upi"></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="table-scroll">
+        <table class="items">
+          <thead>
+            <tr>
+              <th style="width:4%;">#</th>
+              <th>Description</th>
+              <th style="width:8%;">SAC</th>
+              <th style="width:6%;" class="right">Qty</th>
+              <th style="width:9%;" class="right">Rate</th>
+              <th style="width:11%;" class="right">Taxable</th>
+              <th style="width:9%;" class="right">GST</th>
+              <th style="width:11%;" class="right">Total</th>
+              <th style="width:10%;" class="col-remove"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="center row-num">1</td>
+              <td><input class="field item-desc" id="line1Desc1" value="Kashmir Paradise Tour"></td>
+              <td class="center"><input class="field item-sac" id="line1SAC1" value="998552"></td>
+              <td class="center"><input class="field item-qty" id="line1Qty1" type="number" value="1" oninput="calculateTotals()"></td>
+              <td class="right"><input class="field item-rate" id="line1Rate1" type="number" value="42750" oninput="calculateTotals()"></td>
+              <td class="right"><input class="field item-taxable" id="line1Taxable1" type="number" readonly></td>
+              <td class="right"><input class="field item-gst" id="line1GST1" type="number" readonly></td>
+              <td class="right"><input class="field item-total" id="line1Total1" type="number" readonly></td>
+              <td class="center col-remove">
+                <div class="row-actions">
+                  <button type="button" class="row-move-btn" onclick="moveItemRow(this,-1)" title="Move up">▲</button>
+                  <button type="button" class="row-move-btn" onclick="moveItemRow(this,1)" title="Move down">▼</button>
+                  <button type="button" class="row-dup-btn" onclick="duplicateItemRow(this)" title="Duplicate row">⧉</button>
+                  <button type="button" class="row-remove-btn" onclick="removeItemRow(this)" title="Remove row">×</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <button type="button" class="btn-add-row" onclick="addItemRow(1)">+ Add Row</button>
+      </div>
+
+      <div class="summary-wrap">
+        <table class="summary">
+          <tr><td>Discount</td><td class="right discount-cell">
+            <select class="field" id="discountType1" onchange="calculateTotals()" style="width:54px;display:inline-block;">
+              <option value="flat" selected>₹</option>
+              <option value="pct">%</option>
+            </select>
+            <input class="field" id="discountValue1" type="number" value="0" oninput="calculateTotals()" style="width:calc(100% - 60px);display:inline-block;">
+          </td></tr>
+          <tr><td>Taxable Value</td><td class="right"><input class="field" id="sumTaxable1" readonly></td></tr>
+          <tr><td>CGST</td><td class="right"><input class="field" id="sumCGST1" readonly></td></tr>
+          <tr><td>SGST</td><td class="right"><input class="field" id="sumSGST1" readonly></td></tr>
+          <tr><td>IGST</td><td class="right"><input class="field" id="sumIGST1" readonly></td></tr>
+          <tr class="roundoff-row" id="roundOffRow1" style="display:none;"><td>Round Off</td><td class="right"><input class="field" id="roundOff1" readonly></td></tr>
+          <tr class="grand"><td>Grand Total</td><td class="right"><input class="field" id="sumGrand1" readonly></td></tr>
+        </table>
+      </div>
+
+      <div class="advance-block" id="advanceBlock1" style="display:none;">
+        <div class="advance-block-title">Advance Payments Received</div>
+        <table class="advance-table">
+          <thead><tr><th>Date</th><th>Mode</th><th class="right">Amount</th><th class="col-remove"></th></tr></thead>
+          <tbody id="advanceTbody1"></tbody>
+        </table>
+        <button type="button" class="btn-add-row" onclick="addAdvancePayment(1)">+ Add Payment</button>
+        <table class="summary" style="margin-top:8px;">
+          <tr><td>Total Advance Received</td><td class="right"><input class="field" id="advanceReceived1" readonly></td></tr>
+          <tr class="grand"><td>Balance Payable</td><td class="right"><input class="field" id="balancePayable1" readonly></td></tr>
+        </table>
+      </div>
+
+      <div class="amount-in-words">
+        <strong>Amount in Words:</strong> <span id="amountInWords1"></span>
+      </div>
+
+      <div class="signature-wrap">
+        <div class="signature-box">
+          <div class="sig-line"><img id="sigImage1" class="sig-image" style="display:none;"></div>
+          <div class="sig-label">Authorized Signatory</div>
+        </div>
+      </div>
+
+      <div class="stamp-box">
+        <div class="stamp-placeholder">Digital Stamp</div>
+      </div>
+
+      <div class="notes">
+        <strong>Terms:</strong> Rates are based on the current itinerary and may vary in case of changes requested by the guest. Any additional charges, taxes, or services not included in the package will be billed separately. The company is not responsible for delays, force majeure events, or service interruptions beyond its control.
+      </div>
+
+      <div class="footer">
+        <div><strong>Website:</strong> www.indiareisen.com</div>
+        <div><strong>Phone:</strong> +91 98108 27785</div>
+      </div>
+    </div>
+
+    <!-- PART 2: Service Charges Invoice -->
+    <div class="invoice-part" id="invoicePart2">
+      <div class="status-stamp" id="statusStamp2"></div>
+      <div class="header">
+        <img src="data:image/png;base64,PASTE_BASE64_HERE" alt="India Reisen Logo" class="logo" id="logo-image-2" />
+        <div class="brand">
+          <h1>INDIA REISEN</h1>
+          <div class="sub">explore. experience. enchant.</div>
+          <div class="sub">GST Tax Invoice</div>
+        </div>
+        <div class="part-label">PART 2: SERVICE CHARGES INVOICE</div>
+      </div>
+
+      <div class="title-row">
+        <div><p class="invoice-title">Tax Invoice - Service Charges</p></div>
+        <div class="invoice-no">
+          <div><strong>Invoice No:</strong> <input class="field small" id="invoiceNo2" readonly></div>
+          <div><strong>Invoice Date:</strong> <input class="field small" id="invoiceDate2" value="08-06-2026"></div>
+          <div><strong>Place of Supply:</strong> 
+            <select class="field small" id="placeOfSupply2" onchange="calculateTotals()">
+              <option value="Delhi">Delhi</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Assam">Assam</option>
+              <option value="Bihar">Bihar</option>
+              <option value="Chhattisgarh">Chhattisgarh</option>
+              <option value="Goa">Goa</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Haryana">Haryana</option>
+              <option value="Himachal Pradesh">Himachal Pradesh</option>
+              <option value="Jharkhand">Jharkhand</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Kerala">Kerala</option>
+              <option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Manipur">Manipur</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Odisha">Odisha</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Rajasthan" selected>Rajasthan</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Telangana">Telangana</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Uttarakhand">Uttarakhand</option>
+              <option value="West Bengal">West Bengal</option>
+              <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+              <option value="Ladakh">Ladakh</option>
+              <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+              <option value="Lakshadweep">Lakshadweep</option>
+              <option value="Puducherry">Puducherry</option>
+            </select>
+          </div>
+          <div><strong>Currency:</strong> 
+            <select class="field small" id="currency2" onchange="calculateTotals()">
+              <option value="INR" selected>INR ₹</option>
+              <option value="USD">USD $</option>
+              <option value="EUR">EUR €</option>
+              <option value="GBP">GBP £</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Supplier Details</h3>
+          <table class="info">
+            <tr><td>Company Name</td><td id="infoCompanyName2">India Reisen</td></tr>
+            <tr>
+              <td>GSTIN</td>
+              <td>
+                <select class="field" id="supplierGSTIN2" onchange="updateSupplierAddress2()">
+                  <option value="09AADFI3860R1ZQ">09AADFI3860R1ZQ (Uttar Pradesh)</option>
+                  <option value="08AADFI3860R1ZS">08AADFI3860R1ZS (Rajasthan)</option>
+                </select>
+                <div id="supplierGSTINText2" class="pdf-only"></div>
+                <div id="supplierGSTINAddressText2" class="pdf-only" style="margin-top:2px;"></div>
+                <div id="supplierStateText2" class="pdf-only" style="margin-top:2px;font-size:9px;color:#666;"></div>
+              </td>
+            </tr>
+            <tr>
+              <td>Address</td>
+              <td>
+                <input class="field" id="supplierAddress2" readonly>
+                <div id="supplierAddressText2" class="pdf-only"></div>
+              </td>
+            </tr>
+            <tr><td>Website</td><td id="infoWebsite2">www.indiareisen.com</td></tr>
+            <tr><td>Phone</td><td id="infoPhone2">+91 98108 27785</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Customer Details</h3>
+          <table class="info">
+            <tr><td>Name</td><td><input class="field" id="customerName2" value="Rajesh Kumar"></td></tr>
+            <tr><td>Contact</td><td><input class="field" id="customerPhone2" value="9876543210"></td></tr>
+            <tr><td>Email</td><td><input class="field" id="customerEmail2" value="rajesh@example.com"></td></tr>
+            <tr><td>Address</td><td><input class="field" id="customerAddress2" value="123 Main Street, New Delhi, 110001"></td></tr>
+            <tr><td>GSTIN</td><td><input class="field" id="customerGSTIN2" value="07AABCU9603R1ZT"></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid" style="padding-top:4px;">
+        <div class="card">
+          <h3>Tour Details</h3>
+          <table class="info">
+            <tr><td>Tour Package</td><td><input class="field" id="tourPackage2" value="Kashmir Paradise Tour" readonly></td></tr>
+            <tr><td>Package SAC</td><td><select class="field" id="packageSAC2" disabled><option value="998552" selected>998552</option><option value="998551">998551</option><option value="998555">998555</option><option value="998599">998599</option></select></td></tr>
+            <tr><td>Taxable Value</td><td><input class="field" id="taxableValue2" type="number" readonly value="42750"></td></tr>
+            <tr><td>GST Rate (%)</td><td>
+              <select class="field rate-preset-select" id="gstRate2Sel" onchange="handleGstRatePreset(2)" style="margin-bottom:4px;">
+                <option value="0">0%</option>
+                <option value="5">5%</option>
+                <option value="12">12%</option>
+                <option value="18" selected>18%</option>
+                <option value="28">28%</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input class="field" id="gstRate2" type="number" value="18" oninput="calculateTotals()" style="display:none;">
+            </td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Payment Details</h3>
+          <table class="info">
+            <tr><td>Status</td><td><input class="field" id="paymentStatus2" value="Paid" readonly></td></tr>
+            <tr><td>Date</td><td><input class="field" id="paymentDate2" value="08-06-2026" readonly></td></tr>
+            <tr><td>Mode</td><td><input class="field" id="paymentMode2" value="Online" readonly></td></tr>
+            <tr><td>Remarks</td><td><input class="field" id="remarks2" value="Service charges related to main invoice"></td></tr>
+            <tr><td>Due Date</td><td><input class="field" id="dueDate2" type="date" onchange="calculateTotals()"></td></tr>
+            <tr><td>GST Split</td><td>
+              <select class="field split-mode-select" id="gstSplitMode2" onchange="calculateTotals()">
+                <option value="auto" selected>Auto (from Place of Supply)</option>
+                <option value="intra">Force Intra-State (CGST+SGST)</option>
+                <option value="inter">Force Inter-State (IGST)</option>
+              </select>
+              <div style="font-size:9.5px;color:var(--muted);margin-top:2px;">Currently: <span id="gstSplitResolved2">—</span></div>
+            </td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="bank-grid">
+        <div class="card compact-card">
+          <h3>Bank Details</h3>
+          <div style="margin-bottom:6px;">
+            <label style="font-size:10px;color:var(--muted);">Select Bank: </label>
+            <select class="field compact" id="bankSelect2" onchange="applyBankSelection('2')" style="max-width:220px;display:inline-block;"></select>
+          </div>
+          <table class="info compact-info">
+            <tr><td>Bank</td><td><input class="field compact" id="bankName2" value="HDFC Bank" readonly></td></tr>
+            <tr><td>Account</td><td><input class="field compact" id="accountName2" value="India Reisen" readonly></td></tr>
+            <tr><td>A/C No.</td><td><input class="field compact" id="accountNumber2" value="XXXXXXXXXXXX" readonly></td></tr>
+            <tr><td>IFSC</td><td><input class="field compact" id="ifscCode2" value="HDFC000XXXX" readonly></td></tr>
+            <tr><td>UPI</td><td><input class="field compact" id="upiId2" value="indiareisen@upi" readonly></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="table-scroll">
+        <table class="items">
+          <thead>
+            <tr>
+              <th style="width:4%;">#</th>
+              <th>Description</th>
+              <th style="width:8%;">SAC</th>
+              <th style="width:6%;" class="right">Qty</th>
+              <th style="width:9%;" class="right">Rate</th>
+              <th style="width:11%;" class="right">Taxable</th>
+              <th style="width:9%;" class="right">GST</th>
+              <th style="width:11%;" class="right">Total</th>
+              <th style="width:10%;" class="col-remove"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="center row-num">1</td>
+              <td><input class="field item-desc" id="line2Desc2" value="Service Charges"></td>
+              <td class="center"><input class="field item-sac" id="line2SAC2" value="998555"></td>
+              <td class="center"><input class="field item-qty" id="line2Qty2" type="number" value="1" oninput="calculateTotals()"></td>
+              <td class="right"><input class="field item-rate" id="line2Rate2" type="number" value="2500" oninput="calculateTotals()"></td>
+              <td class="right"><input class="field item-taxable" id="line2Taxable2" type="number" readonly></td>
+              <td class="right"><input class="field item-gst" id="line2GST2" type="number" readonly></td>
+              <td class="right"><input class="field item-total" id="line2Total2" type="number" readonly></td>
+              <td class="center col-remove">
+                <div class="row-actions">
+                  <button type="button" class="row-move-btn" onclick="moveItemRow(this,-1)" title="Move up">▲</button>
+                  <button type="button" class="row-move-btn" onclick="moveItemRow(this,1)" title="Move down">▼</button>
+                  <button type="button" class="row-dup-btn" onclick="duplicateItemRow(this)" title="Duplicate row">⧉</button>
+                  <button type="button" class="row-remove-btn" onclick="removeItemRow(this)" title="Remove row">×</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <button type="button" class="btn-add-row" onclick="addItemRow(2)">+ Add Row</button>
+      </div>
+
+      <div class="summary-wrap">
+        <table class="summary">
+          <tr><td>Discount</td><td class="right discount-cell">
+            <select class="field" id="discountType2" onchange="calculateTotals()" style="width:54px;display:inline-block;">
+              <option value="flat" selected>₹</option>
+              <option value="pct">%</option>
+            </select>
+            <input class="field" id="discountValue2" type="number" value="0" oninput="calculateTotals()" style="width:calc(100% - 60px);display:inline-block;">
+          </td></tr>
+          <tr><td>Taxable Value</td><td class="right"><input class="field" id="sumTaxable2" readonly></td></tr>
+          <tr><td>CGST</td><td class="right"><input class="field" id="sumCGST2" readonly></td></tr>
+          <tr><td>SGST</td><td class="right"><input class="field" id="sumSGST2" readonly></td></tr>
+          <tr><td>IGST</td><td class="right"><input class="field" id="sumIGST2" readonly></td></tr>
+          <tr class="roundoff-row" id="roundOffRow2" style="display:none;"><td>Round Off</td><td class="right"><input class="field" id="roundOff2" readonly></td></tr>
+          <tr class="grand"><td>Grand Total</td><td class="right"><input class="field" id="sumGrand2" readonly></td></tr>
+        </table>
+      </div>
+
+      <div class="advance-block" id="advanceBlock2" style="display:none;">
+        <div class="advance-block-title">Advance Payments Received</div>
+        <table class="advance-table">
+          <thead><tr><th>Date</th><th>Mode</th><th class="right">Amount</th><th class="col-remove"></th></tr></thead>
+          <tbody id="advanceTbody2"></tbody>
+        </table>
+        <button type="button" class="btn-add-row" onclick="addAdvancePayment(2)">+ Add Payment</button>
+        <table class="summary" style="margin-top:8px;">
+          <tr><td>Total Advance Received</td><td class="right"><input class="field" id="advanceReceived2" readonly></td></tr>
+          <tr class="grand"><td>Balance Payable</td><td class="right"><input class="field" id="balancePayable2" readonly></td></tr>
+        </table>
+      </div>
+
+      <div class="amount-in-words">
+        <strong>Amount in Words:</strong> <span id="amountInWords2"></span>
+      </div>
+
+      <div class="signature-wrap">
+        <div class="signature-box">
+          <div class="sig-line"><img id="sigImage2" class="sig-image" style="display:none;"></div>
+          <div class="sig-label">Authorized Signatory</div>
+        </div>
+      </div>
+
+      <div class="stamp-box">
+        <div class="stamp-placeholder">Digital Stamp</div>
+      </div>
+
+      <div class="notes">
+        <strong>Terms:</strong> Rates are based on the current itinerary and may vary in case of changes requested by the guest. Any additional charges, taxes, or services not included in the package will be billed separately. The company is not responsible for delays, force majeure events, or service interruptions beyond its control.
+      </div>
+
+      <div class="footer">
+        <div><strong>Website:</strong> www.indiareisen.com</div>
+        <div><strong>Phone:</strong> +91 98108 27785</div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /panelInvoice -->
+
+  <!-- ===== ADMIN PANEL ===== -->
+  <div class="panel hidden" id="panelAdmin">
+
+    <div class="admin-gate" id="adminGate">
+      <h2>Admin Access</h2>
+      <p>Enter the admin password to manage settings and saved invoices.<br>
+      Note: this is a basic screen, not real security — anyone with this file and browser dev tools can bypass it.</p>
+      <input type="password" id="adminPasswordInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkAdminPassword()">
+      <button class="small-btn solid" onclick="checkAdminPassword()">Unlock</button>
+      <div id="adminGateError" style="color:#dc2626;font-size:11px;margin-top:8px;display:none;">Incorrect password.</div>
+      <div style="margin-top:10px;">
+        <a href="#" id="forgotPasswordLink" onclick="openForgotPassword(event)" style="font-size:11px;color:var(--brand);text-decoration:underline;">Forgot password?</a>
+      </div>
+
+      <div id="forgotPasswordPanel" class="hidden" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);text-align:left;">
+        <div id="forgotPasswordNoQuestion" class="hidden">
+          <p style="font-size:11px;color:var(--muted);margin:0 0 10px 0;">No recovery question has been set up for this tool yet. Someone with admin access needs to set one up in Admin → Password Recovery, or the password needs to be reset via browser developer tools.</p>
+        </div>
+        <div id="forgotPasswordWithQuestion" class="hidden">
+          <p style="font-size:11px;color:var(--ink);font-weight:700;margin:0 0 6px 0;" id="forgotPasswordQuestionText"></p>
+          <input type="text" id="forgotPasswordAnswerInput" placeholder="Your answer" onkeydown="if(event.key==='Enter')verifyRecoveryAnswer()">
+          <button class="small-btn solid" style="margin-top:8px;" onclick="verifyRecoveryAnswer()">Verify Answer</button>
+          <div id="forgotPasswordError" class="hidden" style="color:#dc2626;font-size:11px;margin-top:8px;">That answer doesn't match. Try again.</div>
+        </div>
+        <div id="forgotPasswordResetBlock" class="hidden" style="margin-top:10px;">
+          <p style="font-size:11px;color:#16a34a;font-weight:700;margin:0 0 6px 0;">Answer verified! Set a new password below.</p>
+          <input type="password" id="forgotPasswordNewPassword" placeholder="New password">
+          <button class="small-btn solid" style="margin-top:8px;" onclick="resetPasswordViaRecovery()">Set New Password</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="adminContent" class="hidden">
+      <div class="admin-warning" id="adminViewOnlyBanner" style="display:none;background:#fef3c7;border-color:#f59e0b;">
+        <strong>View-only mode:</strong> you're logged in with the view-only PIN. You can look at settings and saved invoices, but changes and deletions are disabled.
+      </div>
+      <div class="admin-warning">
+        <strong>Heads up:</strong> this is a static HTML tool. Settings and saved invoices are stored only in this browser's local storage on this device — they won't sync elsewhere and clearing browser data will erase them. Use Export below to back up regularly.
+      </div>
+
+      <div class="admin-wrap">
+        <div class="admin-section">
+          <h3>Admin Password</h3>
+          <div class="admin-row">
+            <label>Current Password</label>
+            <input type="text" id="settingPasswordDisplay" readonly>
+          </div>
+          <div class="admin-row">
+            <label>New Password</label>
+            <input type="text" id="settingNewPassword" placeholder="Leave blank to keep current">
+          </div>
+          <div class="admin-row">
+            <label>View-Only PIN (optional)</label>
+            <input type="text" id="settingViewOnlyPassword" placeholder="Leave blank to disable view-only access">
+          </div>
+          <p style="font-size:10px;color:var(--muted);margin:2px 0 0 0;">Anyone who enters this PIN on the Admin lock screen can view settings and saved invoices, but cannot change or delete anything.</p>
+        </div>
+
+        <div class="admin-section">
+          <h3>Password Recovery</h3>
+          <p style="font-size:10px;color:var(--muted);margin:0 0 8px 0;">Set up a security question so a "Forgot password?" option can appear on the Admin lock screen. Without this set up, a forgotten password can only be reset via browser developer tools.</p>
+          <div class="admin-row">
+            <label>Security Question</label>
+            <input type="text" id="settingSecurityQuestion" placeholder="e.g. What was the name of our first client?">
+          </div>
+          <div class="admin-row">
+            <label>Security Answer</label>
+            <input type="text" id="settingSecurityAnswer" placeholder="Answer (not case-sensitive)">
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Company Logo</h3>
+          <div class="admin-row">
+            <label>Upload Logo</label>
+            <input type="file" id="settingLogoFile" accept="image/*" onchange="handleLogoUpload(event)">
+          </div>
+          <div class="admin-row">
+            <label>Preview</label>
+            <img id="settingLogoPreview" src="" style="max-width:70px;max-height:70px;border:1px solid var(--line);border-radius:6px;display:none;">
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Authorized Signatory</h3>
+          <div class="admin-row">
+            <label>Upload Signature Image</label>
+            <input type="file" id="settingSignatureFile" accept="image/*" onchange="handleSignatureUpload(event)">
+          </div>
+          <div class="admin-row">
+            <label>Preview</label>
+            <img id="settingSignaturePreview" src="" style="max-width:120px;max-height:50px;border:1px solid var(--line);border-radius:6px;display:none;">
+            <button type="button" class="small-btn" id="settingSignatureRemoveBtn" style="margin-left:6px;display:none;" onclick="clearSignature()">Remove</button>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Company Info</h3>
+          <div class="admin-row"><label>Company Name</label><input id="settingCompanyName" value="India Reisen"></div>
+          <div class="admin-row"><label>Tagline</label><input id="settingTagline" value="explore. experience. enchant."></div>
+          <div class="admin-row"><label>Website</label><input id="settingWebsite" value="www.indiareisen.com"></div>
+          <div class="admin-row"><label>Phone</label><input id="settingPhone" value="+91 98108 27785"></div>
+        </div>
+
+        <div class="admin-section">
+          <h3>GSTIN / Supplier Addresses</h3>
+          <div id="gstinList"></div>
+          <button class="small-btn" onclick="addGstinEntry()">+ Add GSTIN</button>
+        </div>
+
+        <div class="admin-section">
+          <h3>Bank Accounts</h3>
+          <div id="bankList"></div>
+          <button class="small-btn" onclick="addBankEntry()">+ Add Bank</button>
+        </div>
+
+        <div class="admin-section">
+          <h3>Payment Options</h3>
+          <div class="admin-row">
+            <label><input type="checkbox" id="settingEnableAdvance" style="width:auto;margin-right:6px;vertical-align:middle;">Show "Advance Received" / "Balance Payable" on invoices</label>
+          </div>
+          <div class="admin-row">
+            <label><input type="checkbox" id="settingEnableRoundOff" style="width:auto;margin-right:6px;vertical-align:middle;">Round Grand Total to the nearest ₹1 (shows a "Round Off" line)</label>
+          </div>
+          <div class="admin-row">
+            <label><input type="checkbox" id="settingEnableStatusStamp" style="width:auto;margin-right:6px;vertical-align:middle;">Show a PAID / OVERDUE / UNPAID watermark stamp on invoices</label>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Terms & Notes (default)</h3>
+          <div class="admin-row">
+            <label>Terms Text</label>
+            <textarea id="settingTerms">Rates are based on the current itinerary and may vary in case of changes requested by the guest. Any additional charges, taxes, or services not included in the package will be billed separately. The company is not responsible for delays, force majeure events, or service interruptions beyond its control.</textarea>
+          </div>
+        </div>
+
+        <div class="admin-actions">
+          <button class="small-btn solid" onclick="saveAdminSettings()">Save Settings</button>
+          <button class="small-btn" onclick="exportAllData()">Export Backup (JSON)</button>
+          <button class="small-btn" onclick="document.getElementById('importFileInput').click()">Import Backup (JSON)</button>
+          <input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importAllData(event)">
+          <span class="save-msg" id="adminSaveMsg" style="display:none;">Saved ✓</span>
+        </div>
+      </div>
+
+      <div class="admin-wrap">
+        <div class="admin-section">
+          <h3>Storage</h3>
+          <div id="storageUsageInfo" style="font-size:11px;color:var(--muted);margin-bottom:6px;"></div>
+          <div style="background:#f3f4f6;border-radius:6px;overflow:hidden;height:8px;margin-bottom:10px;">
+            <div id="storageUsageBar" style="height:100%;width:0%;background:#16a34a;transition:width .3s;"></div>
+          </div>
+          <button class="small-btn" onclick="trimGeneratedInvoices()">Keep only 10 most recent generated PDFs</button>
+        </div>
+
+        <div class="admin-section">
+          <h3>Saved Clients</h3>
+          <p style="font-size:10px;color:var(--muted);margin:0 0 8px 0;">Clients saved from the Invoice tab (via "Save as Client" next to Customer Details) appear here. Click "Load into Invoice" to fill Part 1 customer fields for a new invoice.</p>
+          <div class="saved-list" id="savedClientsList">
+            <div class="empty-state">No saved clients yet. Use "Save as Client" on the Invoice tab.</div>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Saved Invoices</h3>
+          <div class="admin-row">
+            <input type="text" id="savedInvoicesSearch" placeholder="Search by invoice number or customer name..." oninput="renderSavedInvoicesList()">
+          </div>
+          <div class="admin-row" style="display:flex;align-items:center;gap:12px;">
+            <label style="display:flex;align-items:center;gap:5px;font-weight:600;font-size:11px;">
+              <input type="checkbox" id="savedInvoicesSelectAll" style="width:auto;" onchange="toggleSelectAllSavedInvoices(this)"> Select all
+            </label>
+            <button class="small-btn" onclick="bulkExportSavedInvoices()">Export Selected</button>
+            <button class="small-btn danger" onclick="bulkDeleteSavedInvoices()">Delete Selected</button>
+          </div>
+          <div class="saved-list" id="savedInvoicesList">
+            <div class="empty-state">No saved invoices yet. Use "Save Invoice" on the Invoice tab.</div>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Generated Invoices (PDF History)</h3>
+          <p style="font-size:10px;color:var(--muted);margin:0 0 8px 0;">Every time a PDF is produced (via "Convert to PDF" or "Share / Email PDF"), a copy is kept here with when it was generated and when it was last opened.</p>
+          <div class="admin-row">
+            <input type="text" id="generatedInvoicesSearch" placeholder="Search by invoice number..." oninput="renderGeneratedInvoicesList()">
+          </div>
+          <div class="saved-list" id="generatedInvoicesList">
+            <div class="empty-state">No PDFs generated yet. Use "Convert to PDF" or "Share / Email PDF" on the Invoice tab.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const supplierMap = {
+      "09AADFI3860R1ZQ": { address: "Noida, India, 201301", state: "Uttar Pradesh", stateCode: "09" },
+      "08AADFI3860R1ZS": { address: "Udaipur, Rajasthan, 313003", state: "Rajasthan", stateCode: "08" }
+    };
+
+    function syncInvoiceNumber() {
+      const invoiceNo1 = document.getElementById('invoiceNo1').value;
+      document.getElementById('invoiceNo2').value = invoiceNo1;
+    }
+
+    function updateSupplierAddress1() {
+      const gstin = document.getElementById('supplierGSTIN1').value;
+      const info = supplierMap[gstin] || {};
+      const address = info.address || '';
+      const state = info.state || '';
+      
+      document.getElementById('supplierAddress1').value = address;
+      document.getElementById('supplierGSTINText1').innerText = gstin;
+      document.getElementById('supplierGSTINAddressText1').innerText = address;
+      document.getElementById('supplierAddressText1').innerText = address;
+      document.getElementById('supplierStateText1').innerText = 'Supplier State: ' + state + ' (GSTIN Code: ' + info.stateCode + ')';
+      const logoImg1 = document.getElementById('logo-image-1');
+      if (logoImg1) logoImg1.src = info.logo || getAdminSettings().logo || logoImg1.src;
+    }
+
+    function updateSupplierAddress2() {
+      const gstin = document.getElementById('supplierGSTIN2').value;
+      const info = supplierMap[gstin] || {};
+      const address = info.address || '';
+      const state = info.state || '';
+      
+      document.getElementById('supplierAddress2').value = address;
+      document.getElementById('supplierGSTINText2').innerText = gstin;
+      document.getElementById('supplierGSTINAddressText2').innerText = address;
+      document.getElementById('supplierAddressText2').innerText = address;
+      document.getElementById('supplierStateText2').innerText = 'Supplier State: ' + state + ' (GSTIN Code: ' + info.stateCode + ')';
+      const logoImg2 = document.getElementById('logo-image-2');
+      if (logoImg2) logoImg2.src = info.logo || getAdminSettings().logo || logoImg2.src;
+    }
+
+    function moneyRaw(v){ return Number(v || 0).toFixed(2); }
+    function money(v){
+      const num = Number(v || 0);
+      const isNeg = num < 0;
+      const fixed = Math.abs(num).toFixed(2);
+      const dotIdx = fixed.indexOf('.');
+      const decPart = fixed.substring(dotIdx);
+      const intPart = fixed.substring(0, dotIdx);
+      let lastThree = intPart.substring(intPart.length - 3);
+      const otherNumbers = intPart.substring(0, intPart.length - 3);
+      if (otherNumbers !== '') lastThree = ',' + lastThree;
+      const grouped = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+      return (isNeg ? '-' : '') + grouped + decPart;
+    }
+
+    function convertNumberToWords(num) {
+      if (num === 0) return 'zero';
+      
+      const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+      const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+      const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+      
+      function convertHundreds(n) {
+        let result = '';
+        
+        if (n >= 100) {
+          result += ones[Math.floor(n / 100)] + ' hundred ';
+          n = n % 100;
+        }
+        
+        if (n >= 20) {
+          result += tens[Math.floor(n / 10)];
+          if (n % 10 > 0) {
+            result += ' ' + ones[n % 10];
+          }
+        } else if (n >= 10) {
+          result += teens[n - 10];
+        } else if (n > 0) {
+          result += ones[n];
+        }
+        
+        return result.trim();
+      }
+      
+      let result = '';
+      const places = [
+        { divisor: 1000000000, name: 'billion' },
+        { divisor: 1000000, name: 'million' },
+        { divisor: 1000, name: 'thousand' }
+      ];
+      
+      for (let i = 0; i < places.length; i++) {
+        const place = places[i];
+        if (num >= place.divisor) {
+          const chunk = Math.floor(num / place.divisor);
+          result += convertHundreds(chunk) + ' ' + place.name + ' ';
+          num = num % place.divisor;
+        }
+      }
+      
+      if (num > 0) {
+        result += convertHundreds(num);
+      }
+      
+      return result.trim();
+    }
+
+    function convertAmountToWords(amount, currency) {
+      const parts = amount.toString().split('.');
+      const whole = parseInt(parts[0]);
+      const decimal = parts[1] ? parseInt(parts[1].padEnd(2, '0').substring(0, 2)) : 0;
+
+      const currencyNames = {
+        'INR': { whole: 'Rupees', decimal: 'Paise' },
+        'USD': { whole: 'Dollars', decimal: 'Cents' },
+        'EUR': { whole: 'Euros', decimal: 'Cents' },
+        'GBP': { whole: 'Pounds', decimal: 'Pence' }
+      };
+
+      const names = currencyNames[currency] || currencyNames['INR'];
+      let result = convertNumberToWords(whole) + ' ' + names.whole;
+
+      if (decimal > 0) {
+        result += ' and ' + convertNumberToWords(decimal) + ' ' + names.decimal;
+      }
+
+      result += ' Only';
+      return result;
+    }
+
+    function calcPartItemTotals(partNum) {
+      const rate = parseFloat(document.getElementById('gstRate' + partNum).value || 0);
+      const rows = document.querySelectorAll('#invoicePart' + partNum + ' .items tbody tr');
+      let taxableSum = 0;
+      rows.forEach((row, idx) => {
+        const numCell = row.querySelector('.row-num');
+        if (numCell) numCell.innerText = idx + 1;
+        const qtyInput = row.querySelector('.item-qty');
+        const rateInput = row.querySelector('.item-rate');
+        const taxableInput = row.querySelector('.item-taxable');
+        const gstInput = row.querySelector('.item-gst');
+        const totalInput = row.querySelector('.item-total');
+        const qty = parseFloat((qtyInput && qtyInput.value) || 0);
+        const unitRate = parseFloat((rateInput && rateInput.value) || 0);
+        const t = qty * unitRate;
+        const g = t * rate / 100;
+        if (taxableInput) taxableInput.value = money(t);
+        if (gstInput) gstInput.value = money(g);
+        if (totalInput) totalInput.value = money(t + g);
+        taxableSum += t;
+      });
+      return { taxable: taxableSum, gst: taxableSum * rate / 100 };
+    }
+
+    function buildItemRow(values) {
+      values = values || {};
+      const desc = (values.desc || '').replace(/"/g, '&quot;');
+      const sac = (values.sac || '').replace(/"/g, '&quot;');
+      // Backward compatibility: older saved rows only stored a flat "taxable" amount.
+      let qty = values.qty;
+      let rate = values.rate;
+      if ((qty == null || qty === '') && (rate == null || rate === '')) {
+        qty = 1;
+        rate = values.taxable != null && values.taxable !== '' ? values.taxable : 0;
+      }
+      qty = qty != null && qty !== '' ? qty : 1;
+      rate = rate != null && rate !== '' ? rate : 0;
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="center row-num"></td>
+        <td><input class="field item-desc" value="${desc}"></td>
+        <td class="center"><input class="field item-sac" value="${sac}"></td>
+        <td class="center"><input class="field item-qty" type="number" value="${qty}" oninput="calculateTotals()"></td>
+        <td class="right"><input class="field item-rate" type="number" value="${rate}" oninput="calculateTotals()"></td>
+        <td class="right"><input class="field item-taxable" type="number" readonly></td>
+        <td class="right"><input class="field item-gst" type="number" readonly></td>
+        <td class="right"><input class="field item-total" type="number" readonly></td>
+        <td class="center col-remove">
+          <div class="row-actions">
+            <button type="button" class="row-move-btn" onclick="moveItemRow(this,-1)" title="Move up">▲</button>
+            <button type="button" class="row-move-btn" onclick="moveItemRow(this,1)" title="Move down">▼</button>
+            <button type="button" class="row-dup-btn" onclick="duplicateItemRow(this)" title="Duplicate row">⧉</button>
+            <button type="button" class="row-remove-btn" onclick="removeItemRow(this)" title="Remove row">×</button>
+          </div>
+        </td>
+      `;
+      return row;
+    }
+
+    function addItemRow(partNum) {
+      const tbody = document.querySelector('#invoicePart' + partNum + ' .items tbody');
+      tbody.appendChild(buildItemRow({ qty: 1, rate: 0 }));
+      calculateTotals();
+    }
+
+    function removeItemRow(btn) {
+      const tbody = btn.closest('tbody');
+      if (tbody.querySelectorAll('tr').length <= 1) {
+        alert('At least one item row is required.');
+        return;
+      }
+      btn.closest('tr').remove();
+      calculateTotals();
+    }
+
+    function readRowValues(row) {
+      return {
+        desc: row.querySelector('.item-desc') ? row.querySelector('.item-desc').value : '',
+        sac: row.querySelector('.item-sac') ? row.querySelector('.item-sac').value : '',
+        qty: row.querySelector('.item-qty') ? row.querySelector('.item-qty').value : '1',
+        rate: row.querySelector('.item-rate') ? row.querySelector('.item-rate').value : '0'
+      };
+    }
+
+    function moveItemRow(btn, direction) {
+      const row = btn.closest('tr');
+      const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+      if (!sibling) return;
+      if (direction < 0) {
+        row.parentNode.insertBefore(row, sibling);
+      } else {
+        row.parentNode.insertBefore(sibling, row);
+      }
+      calculateTotals();
+    }
+
+    function duplicateItemRow(btn) {
+      const row = btn.closest('tr');
+      const values = readRowValues(row);
+      const newRow = buildItemRow(values);
+      row.parentNode.insertBefore(newRow, row.nextSibling);
+      calculateTotals();
+    }
+
+    function getItemRows(partNum) {
+      const rows = document.querySelectorAll('#invoicePart' + partNum + ' .items tbody tr');
+      return Array.from(rows).map(row => readRowValues(row));
+    }
+
+    function setItemRows(partNum, items) {
+      const tbody = document.querySelector('#invoicePart' + partNum + ' .items tbody');
+      tbody.innerHTML = '';
+      (items && items.length ? items : [{}]).forEach(v => tbody.appendChild(buildItemRow(v)));
+    }
+
+    function handleGstRatePreset(partNum) {
+      const sel = document.getElementById('gstRate' + partNum + 'Sel');
+      const input = document.getElementById('gstRate' + partNum);
+      if (sel.value === 'custom') {
+        input.style.display = '';
+        input.focus();
+      } else {
+        input.style.display = 'none';
+        input.value = sel.value;
+      }
+      calculateTotals();
+    }
+
+    function syncGstRatePreset(partNum) {
+      const sel = document.getElementById('gstRate' + partNum + 'Sel');
+      const input = document.getElementById('gstRate' + partNum);
+      const v = String(parseFloat(input.value || 0));
+      const presetVals = ['0', '5', '12', '18', '28'];
+      if (presetVals.includes(v)) {
+        sel.value = v;
+        input.style.display = 'none';
+      } else {
+        sel.value = 'custom';
+        input.style.display = '';
+      }
+    }
+
+    function buildAdvancePaymentRow(values) {
+      values = values || {};
+      const date = values.date || '';
+      const mode = (values.mode || '').replace(/"/g, '&quot;');
+      const amount = values.amount != null && values.amount !== '' ? values.amount : 0;
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input class="field adv-date" type="date" value="${date}" oninput="calculateTotals()"></td>
+        <td><input class="field adv-mode" value="${mode}" placeholder="e.g. UPI" oninput="calculateTotals()"></td>
+        <td class="right"><input class="field adv-amount" type="number" value="${amount}" oninput="calculateTotals()"></td>
+        <td class="center col-remove"><button type="button" class="row-remove-btn" onclick="removeAdvancePayment(this)" title="Remove payment">×</button></td>
+      `;
+      return row;
+    }
+
+    function addAdvancePayment(partNum) {
+      const tbody = document.getElementById('advanceTbody' + partNum);
+      tbody.appendChild(buildAdvancePaymentRow({ amount: 0 }));
+      calculateTotals();
+    }
+
+    function removeAdvancePayment(btn) {
+      btn.closest('tr').remove();
+      calculateTotals();
+    }
+
+    function getAdvancePayments(partNum) {
+      const rows = document.querySelectorAll('#advanceTbody' + partNum + ' tr');
+      return Array.from(rows).map(row => ({
+        date: row.querySelector('.adv-date') ? row.querySelector('.adv-date').value : '',
+        mode: row.querySelector('.adv-mode') ? row.querySelector('.adv-mode').value : '',
+        amount: row.querySelector('.adv-amount') ? row.querySelector('.adv-amount').value : '0'
+      }));
+    }
+
+    function setAdvancePayments(partNum, payments) {
+      const tbody = document.getElementById('advanceTbody' + partNum);
+      tbody.innerHTML = '';
+      (payments || []).forEach(v => tbody.appendChild(buildAdvancePaymentRow(v)));
+    }
+
+    function sumAdvancePayments(partNum) {
+      const inputs = document.querySelectorAll('#advanceTbody' + partNum + ' .adv-amount');
+      let sum = 0;
+      inputs.forEach(inp => sum += parseFloat(inp.value || 0));
+      return sum;
+    }
+
+    function updateStatusStamp(partNum) {
+      const stamp = document.getElementById('statusStamp' + partNum);
+      if (!stamp) return;
+      if (!getAdminSettings().enableStatusStamp) {
+        stamp.style.display = 'none';
+        return;
+      }
+      const status = (document.getElementById('paymentStatus' + partNum).value || '').trim().toLowerCase();
+      const dueDateVal = document.getElementById('dueDate' + partNum).value;
+      let label = '';
+      let cls = '';
+      if (status === 'paid') {
+        label = 'PAID'; cls = 'stamp-paid';
+      } else if (dueDateVal && new Date(dueDateVal) < new Date(new Date().toDateString()) && status !== 'paid') {
+        label = 'OVERDUE'; cls = 'stamp-overdue';
+      } else if (status === 'unpaid' || status === 'pending' || status === 'partially paid' || status === 'partial') {
+        label = status.toUpperCase(); cls = 'stamp-unpaid';
+      }
+      stamp.innerText = label;
+      stamp.className = 'status-stamp ' + cls;
+      stamp.style.display = label ? '' : 'none';
+    }
+
+    function calculateTotals() {
+      // Sync invoice number from Part 1 to Part 2
+      syncInvoiceNumber();
+
+      const roundOffEnabled = !!getAdminSettings().enableRoundOff;
+
+      // === PART 1: Main Invoice ===
+      const gstin1 = document.getElementById('supplierGSTIN1').value;
+      const supplierInfo1 = supplierMap[gstin1] || {};
+      const supplierState1 = supplierInfo1.state || '';
+      const placeOfSupply1 = document.getElementById('placeOfSupply1').value.trim();
+      const splitMode1 = document.getElementById('gstSplitMode1').value;
+      const same1 = splitMode1 === 'intra' ? true : splitMode1 === 'inter' ? false : (placeOfSupply1 === supplierState1);
+
+      document.getElementById('gstSplitResolved1').innerText = same1 ? 'Intra-State (CGST+SGST)' : 'Inter-State (IGST)';
+
+      const items1Totals = calcPartItemTotals(1);
+      const grossTaxable1 = items1Totals.taxable;
+      const rate1 = parseFloat(document.getElementById('gstRate1').value || 0);
+
+      const discountType1 = document.getElementById('discountType1').value;
+      const discountValue1 = parseFloat(document.getElementById('discountValue1').value || 0);
+      const discountAmount1 = discountType1 === 'pct' ? grossTaxable1 * discountValue1 / 100 : discountValue1;
+
+      const taxable1 = Math.max(0, grossTaxable1 - discountAmount1);
+      const gst1 = taxable1 * rate1 / 100;
+      const cgst1 = same1 ? gst1 / 2 : 0;
+      const sgst1 = same1 ? gst1 / 2 : 0;
+      const igst1 = same1 ? 0 : gst1;
+      const preRoundGrand1 = taxable1 + gst1;
+      const roundedGrand1 = Math.round(preRoundGrand1);
+      const grand1 = roundOffEnabled ? roundedGrand1 : preRoundGrand1;
+
+      document.getElementById('sumTaxable1').value = money(taxable1);
+      document.getElementById('sumCGST1').value = money(cgst1);
+      document.getElementById('sumSGST1').value = money(sgst1);
+      document.getElementById('sumIGST1').value = money(igst1);
+      document.getElementById('roundOffRow1').style.display = roundOffEnabled ? '' : 'none';
+      if (roundOffEnabled) {
+        const delta1 = roundedGrand1 - preRoundGrand1;
+        document.getElementById('roundOff1').value = (delta1 >= 0 ? '+' : '') + money(delta1);
+      }
+      document.getElementById('sumGrand1').value = money(grand1);
+
+      const advance1 = sumAdvancePayments(1);
+      document.getElementById('advanceReceived1').value = money(advance1);
+      document.getElementById('balancePayable1').value = money(grand1 - advance1);
+
+      const currency1 = document.getElementById('currency1').value;
+      document.getElementById('amountInWords1').innerText = convertAmountToWords(grand1, currency1);
+
+      // === PART 2: Service Charges Invoice ===
+      const gstin2 = document.getElementById('supplierGSTIN2').value;
+      const supplierInfo2 = supplierMap[gstin2] || {};
+      const supplierState2 = supplierInfo2.state || '';
+      const placeOfSupply2 = document.getElementById('placeOfSupply2').value.trim();
+      const splitMode2 = document.getElementById('gstSplitMode2').value;
+      const same2 = splitMode2 === 'intra' ? true : splitMode2 === 'inter' ? false : (placeOfSupply2 === supplierState2);
+
+      document.getElementById('gstSplitResolved2').innerText = same2 ? 'Intra-State (CGST+SGST)' : 'Inter-State (IGST)';
+
+      const items2Totals = calcPartItemTotals(2);
+      const grossTaxable2 = items2Totals.taxable;
+      const rate2 = parseFloat(document.getElementById('gstRate2').value || 0);
+
+      const discountType2 = document.getElementById('discountType2').value;
+      const discountValue2 = parseFloat(document.getElementById('discountValue2').value || 0);
+      const discountAmount2 = discountType2 === 'pct' ? grossTaxable2 * discountValue2 / 100 : discountValue2;
+
+      const taxable2 = Math.max(0, grossTaxable2 - discountAmount2);
+      const gst2 = taxable2 * rate2 / 100;
+      const cgst2 = same2 ? gst2 / 2 : 0;
+      const sgst2 = same2 ? gst2 / 2 : 0;
+      const igst2 = same2 ? 0 : gst2;
+      const preRoundGrand2 = taxable2 + gst2;
+      const roundedGrand2 = Math.round(preRoundGrand2);
+      const grand2 = roundOffEnabled ? roundedGrand2 : preRoundGrand2;
+
+      document.getElementById('sumTaxable2').value = money(taxable2);
+      document.getElementById('sumCGST2').value = money(cgst2);
+      document.getElementById('sumSGST2').value = money(sgst2);
+      document.getElementById('sumIGST2').value = money(igst2);
+      document.getElementById('roundOffRow2').style.display = roundOffEnabled ? '' : 'none';
+      if (roundOffEnabled) {
+        const delta2 = roundedGrand2 - preRoundGrand2;
+        document.getElementById('roundOff2').value = (delta2 >= 0 ? '+' : '') + money(delta2);
+      }
+      document.getElementById('sumGrand2').value = money(grand2);
+
+      const advance2 = sumAdvancePayments(2);
+      document.getElementById('advanceReceived2').value = money(advance2);
+      document.getElementById('balancePayable2').value = money(grand2 - advance2);
+
+      const currency2 = document.getElementById('currency2').value;
+      document.getElementById('amountInWords2').innerText = convertAmountToWords(grand2, currency2);
+
+      updateStatusStamp(1);
+      updateStatusStamp(2);
+    }
+
+    function buildInvoiceCloneForExport() {
+      syncInvoiceNumber();
+      updateSupplierAddress1();
+      updateSupplierAddress2();
+      calculateTotals();
+
+      const source = document.getElementById('invoice');
+      const clone = source.cloneNode(true);
+
+      // The PDF should always render Part 1, and Part 2 only if the checkbox
+      // says to include it — regardless of which tab is currently open on screen.
+      const includeService = document.getElementById('includeServiceInvoice').checked;
+      const clonePart1 = clone.querySelector('#invoicePart1');
+      const clonePart2 = clone.querySelector('#invoicePart2');
+      if (clonePart1) clonePart1.style.display = '';
+      if (clonePart2) clonePart2.style.display = includeService ? '' : 'none';
+
+      clone.querySelectorAll('.btn-add-row, .row-remove-btn, .col-remove, .no-print').forEach(el => el.remove());
+      clone.querySelectorAll('.rate-preset-select, .split-mode-select').forEach(el => el.remove());
+
+      clone.querySelectorAll('select').forEach(el => {
+        const text = el.options[el.selectedIndex].text;
+        const span = document.createElement('div');
+        span.className = 'field print-text';
+        span.innerText = text;
+        el.parentNode.replaceChild(span, el);
+      });
+
+      clone.querySelectorAll('input').forEach(el => {
+        const span = document.createElement('div');
+        span.className = 'field print-text';
+        let displayVal = el.value;
+        if (el.type === 'date' && el.value) {
+          const d = new Date(el.value + 'T00:00:00');
+          if (!isNaN(d)) {
+            displayVal = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          }
+        }
+        span.innerText = displayVal;
+        el.parentNode.replaceChild(span, el);
+      });
+
+      clone.querySelectorAll('.pdf-only').forEach(el => {
+        el.style.display = 'block';
+      });
+
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(clone);
+      wrapper.style.position = 'fixed';
+      wrapper.style.left = '-10000px';
+      wrapper.style.top = '0';
+      wrapper.style.width = '794px';
+      document.body.appendChild(wrapper);
+
+      return { clone, wrapper };
+    }
+
+    const PDF_EXPORT_OPTS = {
+      margin: 0,
+      filename: 'India-Reisen-GST-Invoice-Split.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    async function generatePDF() {
+      const { clone, wrapper } = buildInvoiceCloneForExport();
+      let blob;
+      try {
+        blob = await html2pdf().set(PDF_EXPORT_OPTS).from(clone).toPdf().output('blob');
+      } catch (err) {
+        document.body.removeChild(wrapper);
+        alert('Could not generate the PDF. Please try again.');
+        return;
+      }
+      document.body.removeChild(wrapper);
+
+      const fileName = PDF_EXPORT_OPTS.filename;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      await recordGeneratedInvoice(blob, fileName);
+    }
+
+    async function sharePDF() {
+      const { clone, wrapper } = buildInvoiceCloneForExport();
+      let blob;
+      try {
+        blob = await html2pdf().set(PDF_EXPORT_OPTS).from(clone).toPdf().output('blob');
+      } catch (err) {
+        document.body.removeChild(wrapper);
+        alert('Could not generate the PDF for sharing. Please try "Convert to PDF" instead.');
+        return;
+      }
+      document.body.removeChild(wrapper);
+
+      const fileName = PDF_EXPORT_OPTS.filename;
+      await recordGeneratedInvoice(blob, fileName);
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Invoice', text: 'Please find the attached invoice.' });
+          return;
+        } catch (err) {
+          // User cancelled the share sheet, or sharing failed — fall through to the download+mailto fallback below.
+        }
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      const custEmail = document.getElementById('customerEmail1').value || '';
+      const subject = encodeURIComponent('Invoice ' + (document.getElementById('invoiceNo1').value || ''));
+      const body = encodeURIComponent('Please find the invoice attached. (The PDF has been downloaded to your device — browsers cannot auto-attach files to an email, so please attach it manually before sending.)');
+      window.location.href = `mailto:${custEmail}?subject=${subject}&body=${body}`;
+    }
+
+    /* ===========================================================
+       ADMIN / TABS / SETTINGS / SAVED INVOICES (localStorage)
+       =========================================================== */
+    const LS_KEYS = {
+      settings: 'indiaReisen_adminSettings',
+      password: 'indiaReisen_adminPassword',
+      viewPassword: 'indiaReisen_adminViewPassword',
+      invoices: 'indiaReisen_savedInvoices',
+      generatedInvoices: 'indiaReisen_generatedInvoices',
+      clients: 'indiaReisen_savedClients'
+    };
+    const DEFAULT_PASSWORD = 'admin123';
+
+    function getSavedClients() {
+      try {
+        return JSON.parse(localStorage.getItem(LS_KEYS.clients) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCurrentCustomerAsClient() {
+      const name = document.getElementById('customerName1').value.trim();
+      if (!name) {
+        alert('Enter a customer name in Part 1 before saving as a client.');
+        return;
+      }
+      const client = {
+        id: 'c_' + Date.now(),
+        name: name,
+        phone: document.getElementById('customerPhone1').value.trim(),
+        email: document.getElementById('customerEmail1').value.trim(),
+        address: document.getElementById('customerAddress1').value.trim(),
+        gstin: document.getElementById('customerGSTIN1').value.trim(),
+        savedAt: new Date().toISOString()
+      };
+      const list = getSavedClients();
+      list.unshift(client);
+      localStorage.setItem(LS_KEYS.clients, JSON.stringify(list));
+      renderClientsList();
+      alert('✓ Client "' + name + '" saved. Find them under Admin → Saved Clients.');
+    }
+
+    function loadClientIntoInvoice(id) {
+      const list = getSavedClients();
+      const client = list.find(c => c.id === id);
+      if (!client) return;
+      document.getElementById('customerName1').value = client.name || '';
+      document.getElementById('customerPhone1').value = client.phone || '';
+      document.getElementById('customerEmail1').value = client.email || '';
+      document.getElementById('customerAddress1').value = client.address || '';
+      document.getElementById('customerGSTIN1').value = client.gstin || '';
+      showTab('invoice');
+      showInvoicePart(1);
+      alert('Loaded ' + client.name + ' into Part 1 customer details.');
+    }
+
+    function deleteClient(id) {
+      if (guardViewOnly()) return;
+      if (!confirm('Delete this saved client?')) return;
+      let list = getSavedClients();
+      list = list.filter(c => c.id !== id);
+      localStorage.setItem(LS_KEYS.clients, JSON.stringify(list));
+      renderClientsList();
+    }
+
+    function renderClientsList() {
+      const wrap = document.getElementById('savedClientsList');
+      if (!wrap) return;
+      const list = getSavedClients();
+      if (list.length === 0) {
+        wrap.innerHTML = '<div class="empty-state">No saved clients yet. Use "Save as Client" on the Invoice tab.</div>';
+        return;
+      }
+      wrap.innerHTML = '';
+      list.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'saved-item';
+        div.innerHTML = `
+          <div class="meta">
+            <div class="inv-no">${c.name}</div>
+            <div class="sub">${c.phone || '—'} · ${c.email || '—'}</div>
+          </div>
+          <div class="actions">
+            <button class="small-btn solid" onclick="loadClientIntoInvoice('${c.id}')">Load into Invoice</button>
+            <button class="small-btn danger" onclick="deleteClient('${c.id}')">Delete</button>
+          </div>
+        `;
+        wrap.appendChild(div);
+      });
+    }
+
+    function showTab(tab) {
+      const isInvoice = tab === 'invoice';
+      document.getElementById('panelInvoice').classList.toggle('hidden', !isInvoice);
+      document.getElementById('panelAdmin').classList.toggle('hidden', isInvoice);
+      document.getElementById('invoiceToolbar').style.display = isInvoice ? 'flex' : 'none';
+      document.getElementById('tabBtnInvoice').classList.toggle('active', isInvoice);
+      document.getElementById('tabBtnAdmin').classList.toggle('active', !isInvoice);
+      if (!isInvoice) {
+        renderSavedInvoicesList();
+        renderGeneratedInvoicesList();
+      }
+    }
+
+    let isViewOnlyAdmin = false;
+
+    function checkAdminPassword() {
+      const entered = document.getElementById('adminPasswordInput').value;
+      const stored = localStorage.getItem(LS_KEYS.password) || DEFAULT_PASSWORD;
+      const viewStored = localStorage.getItem(LS_KEYS.viewPassword) || '';
+      if (entered === stored) {
+        isViewOnlyAdmin = false;
+        unlockAdmin();
+      } else if (viewStored && entered === viewStored) {
+        isViewOnlyAdmin = true;
+        unlockAdmin();
+      } else {
+        document.getElementById('adminGateError').style.display = 'block';
+      }
+    }
+
+    function unlockAdmin() {
+      document.getElementById('adminGate').classList.add('hidden');
+      document.getElementById('adminContent').classList.remove('hidden');
+      document.getElementById('adminGateError').style.display = 'none';
+      document.getElementById('adminViewOnlyBanner').style.display = isViewOnlyAdmin ? 'block' : 'none';
+      loadAdminSettingsIntoForm();
+      renderGstinList();
+      renderBankList();
+      renderSavedInvoicesList();
+      renderGeneratedInvoicesList();
+      renderClientsList();
+    }
+
+    function guardViewOnly() {
+      if (isViewOnlyAdmin) {
+        alert('You are logged in with the view-only PIN. This action needs the full admin password.');
+        return true;
+      }
+      return false;
+    }
+
+    function openForgotPassword(event) {
+      event.preventDefault();
+      const s = getAdminSettings();
+      document.getElementById('forgotPasswordPanel').classList.remove('hidden');
+      document.getElementById('forgotPasswordLink').style.display = 'none';
+      document.getElementById('forgotPasswordResetBlock').classList.add('hidden');
+      document.getElementById('forgotPasswordError').classList.add('hidden');
+      if (s.securityQuestion && s.securityAnswer) {
+        document.getElementById('forgotPasswordNoQuestion').classList.add('hidden');
+        document.getElementById('forgotPasswordWithQuestion').classList.remove('hidden');
+        document.getElementById('forgotPasswordQuestionText').innerText = s.securityQuestion;
+        document.getElementById('forgotPasswordAnswerInput').value = '';
+        document.getElementById('forgotPasswordAnswerInput').focus();
+      } else {
+        document.getElementById('forgotPasswordWithQuestion').classList.add('hidden');
+        document.getElementById('forgotPasswordNoQuestion').classList.remove('hidden');
+      }
+    }
+
+    function verifyRecoveryAnswer() {
+      const s = getAdminSettings();
+      const entered = document.getElementById('forgotPasswordAnswerInput').value.trim().toLowerCase();
+      const correct = (s.securityAnswer || '').trim().toLowerCase();
+      const errorEl = document.getElementById('forgotPasswordError');
+      if (entered && correct && entered === correct) {
+        errorEl.classList.add('hidden');
+        document.getElementById('forgotPasswordResetBlock').classList.remove('hidden');
+        document.getElementById('forgotPasswordNewPassword').value = '';
+        document.getElementById('forgotPasswordNewPassword').focus();
+      } else {
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function resetPasswordViaRecovery() {
+      const newPass = document.getElementById('forgotPasswordNewPassword').value.trim();
+      if (!newPass) {
+        alert('Please enter a new password.');
+        return;
+      }
+      localStorage.setItem(LS_KEYS.password, newPass);
+      alert('Password reset successfully. You can now log in with your new password.');
+      document.getElementById('forgotPasswordPanel').classList.add('hidden');
+      document.getElementById('forgotPasswordLink').style.display = '';
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('adminPasswordInput').focus();
+    }
+
+    function getAdminSettings() {
+      const raw = localStorage.getItem(LS_KEYS.settings);
+      if (raw) {
+        try {
+          const s = JSON.parse(raw);
+          // migrate old single-bank shape to banks array
+          if (!s.banks) {
+            if (s.bank) {
+              s.banks = [{ name: s.bank.bankName || 'HDFC Bank', ...s.bank }];
+              delete s.bank;
+            } else {
+              s.banks = [{
+                name: 'HDFC Bank', bankName: 'HDFC Bank', accountName: 'India Reisen',
+                accountNumber: 'XXXXXXXXXXXX', ifsc: 'HDFC000XXXX', upi: 'indiareisen@upi'
+              }];
+            }
+          }
+          if (s.enableStatusStamp === undefined) s.enableStatusStamp = true;
+          if (s.securityQuestion === undefined) s.securityQuestion = '';
+          if (s.securityAnswer === undefined) s.securityAnswer = '';
+          return s;
+        } catch (e) { /* fall through */ }
+      }
+      return {
+        companyName: 'India Reisen',
+        tagline: 'explore. experience. enchant.',
+        website: 'www.indiareisen.com',
+        phone: '+91 98108 27785',
+        logo: '',
+        signature: '',
+        securityQuestion: '',
+        securityAnswer: '',
+        banks: [
+          { name: 'HDFC Bank', bankName: 'HDFC Bank', accountName: 'India Reisen', accountNumber: 'XXXXXXXXXXXX', ifsc: 'HDFC000XXXX', upi: 'indiareisen@upi' }
+        ],
+        terms: 'Rates are based on the current itinerary and may vary in case of changes requested by the guest. Any additional charges, taxes, or services not included in the package will be billed separately. The company is not responsible for delays, force majeure events, or service interruptions beyond its control.',
+        enableAdvanceReceived: false,
+        enableRoundOff: false,
+        enableStatusStamp: true,
+        gstins: [
+          { gstin: '09AADFI3860R1ZQ', address: 'Noida, India, 201301', state: 'Uttar Pradesh', stateCode: '09' },
+          { gstin: '08AADFI3860R1ZS', address: 'Udaipur, Rajasthan, 313003', state: 'Rajasthan', stateCode: '08' }
+        ]
+      };
+    }
+
+    let tempLogoData = '';
+    let tempSignatureData = '';
+
+    function loadAdminSettingsIntoForm() {
+      const s = getAdminSettings();
+      document.getElementById('settingPasswordDisplay').value = localStorage.getItem(LS_KEYS.password) || DEFAULT_PASSWORD;
+      document.getElementById('settingNewPassword').value = '';
+      document.getElementById('settingViewOnlyPassword').value = localStorage.getItem(LS_KEYS.viewPassword) || '';
+      document.getElementById('settingSecurityQuestion').value = s.securityQuestion || '';
+      document.getElementById('settingSecurityAnswer').value = s.securityAnswer || '';
+      document.getElementById('settingCompanyName').value = s.companyName;
+      document.getElementById('settingTagline').value = s.tagline;
+      document.getElementById('settingWebsite').value = s.website;
+      document.getElementById('settingPhone').value = s.phone;
+      document.getElementById('settingTerms').value = s.terms;
+      document.getElementById('settingEnableAdvance').checked = !!s.enableAdvanceReceived;
+      document.getElementById('settingEnableRoundOff').checked = !!s.enableRoundOff;
+      document.getElementById('settingEnableStatusStamp').checked = !!s.enableStatusStamp;
+      tempLogoData = s.logo || '';
+      if (tempLogoData) {
+        const preview = document.getElementById('settingLogoPreview');
+        preview.src = tempLogoData;
+        preview.style.display = 'inline-block';
+      }
+      tempSignatureData = s.signature || '';
+      const sigPreview = document.getElementById('settingSignaturePreview');
+      const sigRemoveBtn = document.getElementById('settingSignatureRemoveBtn');
+      if (tempSignatureData) {
+        sigPreview.src = tempSignatureData;
+        sigPreview.style.display = 'inline-block';
+        sigRemoveBtn.style.display = 'inline-block';
+      } else {
+        sigPreview.style.display = 'none';
+        sigRemoveBtn.style.display = 'none';
+      }
+    }
+
+    function handleLogoUpload(event) {
+      if (guardViewOnly()) return;
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        tempLogoData = e.target.result;
+        const preview = document.getElementById('settingLogoPreview');
+        preview.src = tempLogoData;
+        preview.style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleSignatureUpload(event) {
+      if (guardViewOnly()) return;
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        tempSignatureData = e.target.result;
+        const preview = document.getElementById('settingSignaturePreview');
+        preview.src = tempSignatureData;
+        preview.style.display = 'inline-block';
+        document.getElementById('settingSignatureRemoveBtn').style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearSignature() {
+      if (guardViewOnly()) return;
+      tempSignatureData = '';
+      document.getElementById('settingSignaturePreview').style.display = 'none';
+      document.getElementById('settingSignatureRemoveBtn').style.display = 'none';
+      document.getElementById('settingSignatureFile').value = '';
+    }
+
+    function renderGstinList() {
+      const s = getAdminSettings();
+      const wrap = document.getElementById('gstinList');
+      wrap.innerHTML = '';
+      s.gstins.forEach((g, idx) => {
+        const div = document.createElement('div');
+        div.className = 'gstin-entry';
+        div.innerHTML = `
+          <button class="remove-btn" onclick="removeGstinEntry(${idx})">Remove</button>
+          <div class="admin-row"><label>GSTIN</label><input class="gstin-field" data-field="gstin" value="${g.gstin}"></div>
+          <div class="admin-row"><label>State</label><input class="gstin-field" data-field="state" value="${g.state}"></div>
+          <div class="admin-row"><label>State Code</label><input class="gstin-field" data-field="stateCode" value="${g.stateCode}"></div>
+          <div class="admin-row"><label>Address</label><input class="gstin-field" data-field="address" value="${g.address}"></div>
+          <div class="admin-row">
+            <label>Logo (optional — overrides default logo for this GSTIN)</label>
+            <input type="file" accept="image/*" onchange="handleGstinLogoUpload(event, ${idx})">
+            <input type="hidden" class="gstin-field" data-field="logo" value="${g.logo || ''}">
+            <div>
+              <img src="${g.logo || ''}" style="max-width:70px;max-height:44px;border:1px solid var(--line);border-radius:6px;margin-top:4px;display:${g.logo ? 'inline-block' : 'none'};">
+              ${g.logo ? `<button type="button" class="small-btn" style="margin-left:6px;" onclick="clearGstinLogo(${idx})">Remove Logo</button>` : ''}
+            </div>
+          </div>
+        `;
+        wrap.appendChild(div);
+      });
+    }
+
+    function handleGstinLogoUpload(event, idx) {
+      if (guardViewOnly()) return;
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const s = getAdminSettings();
+        s.gstins = collectGstinsFromForm();
+        if (s.gstins[idx]) s.gstins[idx].logo = e.target.result;
+        localStorage.setItem(LS_KEYS.settings, JSON.stringify(s));
+        renderGstinList();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearGstinLogo(idx) {
+      if (guardViewOnly()) return;
+      const s = getAdminSettings();
+      s.gstins = collectGstinsFromForm();
+      if (s.gstins[idx]) s.gstins[idx].logo = '';
+      localStorage.setItem(LS_KEYS.settings, JSON.stringify(s));
+      renderGstinList();
+    }
+
+    function addGstinEntry() {
+      if (guardViewOnly()) return;
+      const s = getAdminSettings();
+      s.gstins.push({ gstin: '', state: '', stateCode: '', address: '', logo: '' });
+      localStorage.setItem(LS_KEYS.settings, JSON.stringify(s));
+      renderGstinList();
+    }
+
+    function removeGstinEntry(idx) {
+      if (guardViewOnly()) return;
+      const s = getAdminSettings();
+      s.gstins.splice(idx, 1);
+      localStorage.setItem(LS_KEYS.settings, JSON.stringify(s));
+      renderGstinList();
+    }
+
+    function collectGstinsFromForm() {
+      const entries = document.querySelectorAll('#gstinList .gstin-entry');
+      const result = [];
+      entries.forEach(div => {
+        const fields = div.querySelectorAll('.gstin-field');
+        const obj = { gstin: '', state: '', stateCode: '', address: '', logo: '' };
+        fields.forEach(f => { obj[f.dataset.field] = f.value; });
+        result.push(obj);
+      });
+      return result;
+    }
+
+    function renderBankList() {
+      const s = getAdminSettings();
+      const wrap = document.getElementById('bankList');
+      wrap.innerHTML = '';
+      s.banks.forEach((b, idx) => {
+        const div = document.createElement('div');
+        div.className = 'gstin-entry';
+        div.innerHTML = `
+          <button class="remove-btn" onclick="removeBankEntry(${idx})">Remove</button>
+          <div class="admin-row"><label>Label / Bank Name</label><input class="bank-field" data-field="name" value="${b.name || ''}"></div>
+          <div class="admin-row"><label>Account Name</label><input class="bank-field" data-field="accountName" value="${b.accountName || ''}"></div>
+          <div class="admin-row"><label>A/C No.</label><input class="bank-field" data-field="accountNumber" value="${b.accountNumber || ''}"></div>
+          <div class="admin-row"><label>IFSC</label><input class="bank-field" data-field="ifsc" value="${b.ifsc || ''}"></div>
+          <div class="admin-row"><label>UPI ID</label><input class="bank-field" data-field="upi" value="${b.upi || ''}"></div>
+        `;
+        wrap.appendChild(div);
+      });
+    }
+
+    function addBankEntry() {
+      if (guardViewOnly()) return;
+      const s = getAdminSettings();
+      s.banks.push({ name: '', accountName: '', accountNumber: '', ifsc: '', upi: '' });
+      localStorage.setItem(LS_KEYS.settings, JSON.stringify(s));
+      renderBankList();
+    }
+
+    function removeBankEntry(idx) {
+      if (guardViewOnly()) return;
+      const s = getAdminSettings();
+      if (s.banks.length <= 1) {
+        alert('At least one bank is required.');
+        return;
+      }
+      s.banks.splice(idx, 1);
+      localStorage.setItem(LS_KEYS.settings, JSON.stringify(s));
+      renderBankList();
+    }
+
+    function collectBanksFromForm() {
+      const entries = document.querySelectorAll('#bankList .gstin-entry');
+      const result = [];
+      entries.forEach(div => {
+        const fields = div.querySelectorAll('.bank-field');
+        const obj = { name: '', accountName: '', accountNumber: '', ifsc: '', upi: '' };
+        fields.forEach(f => { obj[f.dataset.field] = f.value; });
+        result.push(obj);
+      });
+      return result.length ? result : getAdminSettings().banks;
+    }
+
+    function saveAdminSettings() {
+      if (guardViewOnly()) return;
+      const newPassword = document.getElementById('settingNewPassword').value.trim();
+      if (newPassword) {
+        localStorage.setItem(LS_KEYS.password, newPassword);
+      }
+      const viewOnlyPassword = document.getElementById('settingViewOnlyPassword').value.trim();
+      if (viewOnlyPassword) {
+        localStorage.setItem(LS_KEYS.viewPassword, viewOnlyPassword);
+      } else {
+        localStorage.removeItem(LS_KEYS.viewPassword);
+      }
+      const settings = {
+        companyName: document.getElementById('settingCompanyName').value,
+        tagline: document.getElementById('settingTagline').value,
+        website: document.getElementById('settingWebsite').value,
+        phone: document.getElementById('settingPhone').value,
+        logo: tempLogoData,
+        signature: tempSignatureData,
+        securityQuestion: document.getElementById('settingSecurityQuestion').value,
+        securityAnswer: document.getElementById('settingSecurityAnswer').value,
+        banks: collectBanksFromForm(),
+        terms: document.getElementById('settingTerms').value,
+        enableAdvanceReceived: document.getElementById('settingEnableAdvance').checked,
+        enableRoundOff: document.getElementById('settingEnableRoundOff').checked,
+        enableStatusStamp: document.getElementById('settingEnableStatusStamp').checked,
+        gstins: collectGstinsFromForm()
+      };
+      localStorage.setItem(LS_KEYS.settings, JSON.stringify(settings));
+      document.getElementById('settingPasswordDisplay').value = localStorage.getItem(LS_KEYS.password) || DEFAULT_PASSWORD;
+      document.getElementById('settingNewPassword').value = '';
+
+      applySettingsToInvoice();
+
+      const msg = document.getElementById('adminSaveMsg');
+      msg.style.display = 'inline';
+      setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+
+    function applyBankSelection(n) {
+      const s = getAdminSettings();
+      const sel = document.getElementById('bankSelect' + n);
+      const idx = parseInt(sel.value || '0', 10);
+      const b = s.banks[idx] || s.banks[0];
+      if (!b) return;
+      document.getElementById('bankName' + n).value = b.name || '';
+      document.getElementById('accountName' + n).value = b.accountName || '';
+      document.getElementById('accountNumber' + n).value = b.accountNumber || '';
+      document.getElementById('ifscCode' + n).value = b.ifsc || '';
+      document.getElementById('upiId' + n).value = b.upi || '';
+    }
+
+    function toggleServiceInvoice() {
+      // This checkbox now only controls whether Part 2 is included when the PDF
+      // is generated. On-screen visibility is controlled by the tabs above the invoice.
+      const include = document.getElementById('includeServiceInvoice').checked;
+      const btn2 = document.getElementById('subtabBtnPart2');
+      btn2.disabled = !include;
+      btn2.classList.toggle('disabled', !include);
+      if (!include) {
+        showInvoicePart(1);
+      }
+    }
+
+    function showInvoicePart(n) {
+      const include = document.getElementById('includeServiceInvoice').checked;
+      if (n === 2 && !include) return; // Part 2 excluded, can't view it
+      const isPart1 = n === 1;
+      document.getElementById('invoicePart1').style.display = isPart1 ? '' : 'none';
+      document.getElementById('invoicePart2').style.display = isPart1 ? 'none' : '';
+      document.getElementById('subtabBtnPart1').classList.toggle('active', isPart1);
+      document.getElementById('subtabBtnPart2').classList.toggle('active', !isPart1);
+    }
+
+    function applySettingsToInvoice() {
+      const s = getAdminSettings();
+
+      // Rebuild supplierMap from admin GSTIN entries
+      Object.keys(supplierMap).forEach(k => delete supplierMap[k]);
+      s.gstins.forEach(g => {
+        if (g.gstin) {
+          supplierMap[g.gstin] = { address: g.address, state: g.state, stateCode: g.stateCode, logo: g.logo || '' };
+        }
+      });
+
+      // Rebuild GSTIN dropdown options for both parts
+      ['supplierGSTIN1', 'supplierGSTIN2'].forEach(id => {
+        const sel = document.getElementById(id);
+        const current = sel.value;
+        sel.innerHTML = '';
+        s.gstins.forEach(g => {
+          if (!g.gstin) return;
+          const opt = document.createElement('option');
+          opt.value = g.gstin;
+          opt.text = `${g.gstin} (${g.state})`;
+          sel.appendChild(opt);
+        });
+        if ([...sel.options].some(o => o.value === current)) sel.value = current;
+      });
+
+      document.querySelectorAll('.brand h1').forEach(el => el.innerText = s.companyName);
+      document.querySelectorAll('.header .brand').forEach(brandEl => {
+        const subs = brandEl.querySelectorAll('.sub');
+        if (subs[0]) subs[0].innerText = s.tagline;
+      });
+
+      const showAdvance = !!s.enableAdvanceReceived;
+      ['1', '2'].forEach(n => {
+        document.getElementById('advanceBlock' + n).style.display = showAdvance ? '' : 'none';
+      });
+
+      document.querySelectorAll('.footer div:first-child').forEach(el => {
+        el.innerHTML = `<strong>Website:</strong> ${s.website}`;
+      });
+      document.querySelectorAll('.footer div:last-child').forEach(el => {
+        el.innerHTML = `<strong>Phone:</strong> ${s.phone}`;
+      });
+      ['1', '2'].forEach(n => {
+        const nameCell = document.getElementById('infoCompanyName' + n);
+        const webCell = document.getElementById('infoWebsite' + n);
+        const phoneCell = document.getElementById('infoPhone' + n);
+        if (nameCell) nameCell.innerText = s.companyName;
+        if (webCell) webCell.innerText = s.website;
+        if (phoneCell) phoneCell.innerText = s.phone;
+      });
+
+      if (s.logo) {
+        document.getElementById('logo-image-1').src = s.logo;
+        document.getElementById('logo-image-2').src = s.logo;
+      }
+
+      ['1', '2'].forEach(n => {
+        const sigImg = document.getElementById('sigImage' + n);
+        if (sigImg) {
+          if (s.signature) {
+            sigImg.src = s.signature;
+            sigImg.style.display = '';
+          } else {
+            sigImg.style.display = 'none';
+          }
+        }
+      });
+
+      // Re-apply supplier-specific overrides (e.g. a per-GSTIN logo) after the global logo is set.
+      updateSupplierAddress1();
+      updateSupplierAddress2();
+
+      // Bank dropdown population for both parts
+      ['1', '2'].forEach(n => {
+        const sel = document.getElementById('bankSelect' + n);
+        const current = sel.value;
+        sel.innerHTML = '';
+        s.banks.forEach((b, idx) => {
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.text = b.name || ('Bank ' + (idx + 1));
+          sel.appendChild(opt);
+        });
+        const validIdx = [...sel.options].some(o => o.value === current);
+        sel.value = validIdx ? current : '0';
+        applyBankSelection(n);
+      });
+
+      // Terms text in both notes blocks
+      document.querySelectorAll('.notes').forEach(el => {
+        el.innerHTML = `<strong>Terms:</strong> ${s.terms}`;
+      });
+
+      updateSupplierAddress1();
+      updateSupplierAddress2();
+      calculateTotals();
+    }
+
+    function exportAllData() {
+      const payload = {
+        settings: getAdminSettings(),
+        password: localStorage.getItem(LS_KEYS.password) || DEFAULT_PASSWORD,
+        invoices: JSON.parse(localStorage.getItem(LS_KEYS.invoices) || '[]'),
+        generatedInvoices: getGeneratedInvoices()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'india-reisen-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importAllData(event) {
+      if (guardViewOnly()) return;
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!confirm('Importing a backup will REPLACE your current settings, saved invoices, and generated-invoice history on this device. This cannot be undone. Continue?')) {
+        event.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const payload = JSON.parse(e.target.result);
+          if (payload.settings) localStorage.setItem(LS_KEYS.settings, JSON.stringify(payload.settings));
+          if (payload.password) localStorage.setItem(LS_KEYS.password, payload.password);
+          if (payload.invoices) localStorage.setItem(LS_KEYS.invoices, JSON.stringify(payload.invoices));
+          if (payload.generatedInvoices) localStorage.setItem(LS_KEYS.generatedInvoices, JSON.stringify(payload.generatedInvoices));
+          loadAdminSettingsIntoForm();
+          renderGstinList();
+          renderSavedInvoicesList();
+          renderGeneratedInvoicesList();
+          applySettingsToInvoice();
+          alert('Backup imported successfully.');
+        } catch (err) {
+          alert('Could not read this file. Make sure it is a valid backup JSON exported from this tool.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    /* ----- Saved Invoices ----- */
+    const SAVED_FIELD_IDS = [
+      'invoiceNo1','invoiceDate1','placeOfSupply1','currency1','supplierGSTIN1',
+      'customerName1','customerPhone1','customerEmail1','customerAddress1','customerGSTIN1',
+      'tourPackage1','packageSAC1','taxableValue1','gstRate1','gstSplitMode1',
+      'paymentStatus1','paymentDate1','paymentMode1','remarks1','dueDate1',
+      'discountType1','discountValue1',
+      'bankSelect1','bankName1','accountName1','accountNumber1','ifscCode1','upiId1',
+      'line1Desc1','line1SAC1','line1Taxable1',
+      'invoiceDate2','placeOfSupply2','currency2','supplierGSTIN2',
+      'customerName2','customerPhone2','customerEmail2','customerAddress2','customerGSTIN2',
+      'tourPackage2','packageSAC2','taxableValue2','gstRate2','gstSplitMode2',
+      'paymentStatus2','paymentDate2','paymentMode2','remarks2','dueDate2',
+      'discountType2','discountValue2',
+      'bankSelect2',
+      'line2Desc2','line2SAC2','line2Taxable2'
+    ];
+
+    function getSavedInvoices() {
+      try { return JSON.parse(localStorage.getItem(LS_KEYS.invoices) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    /* ----- Generated Invoices (PDF history) ----- */
+    const MAX_GENERATED_INVOICES = 30;
+
+    function getGeneratedInvoices() {
+      try { return JSON.parse(localStorage.getItem(LS_KEYS.generatedInvoices) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function recordGeneratedInvoice(blob, fileName) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const list = getGeneratedInvoices();
+          const now = new Date().toISOString();
+          const record = {
+            id: 'gen_' + Date.now(),
+            invoiceNo: document.getElementById('invoiceNo1').value || '(no number)',
+            customerName: document.getElementById('customerName1').value || '',
+            fileName: fileName,
+            generatedAt: now,
+            lastAccessedAt: now,
+            pdfData: e.target.result
+          };
+          list.unshift(record);
+          while (list.length > MAX_GENERATED_INVOICES) list.pop();
+
+          let stored = false;
+          while (!stored && list.length > 0) {
+            try {
+              localStorage.setItem(LS_KEYS.generatedInvoices, JSON.stringify(list));
+              stored = true;
+            } catch (err) {
+              // Likely a storage quota error — drop the oldest record and try again.
+              list.pop();
+            }
+          }
+          if (!stored) {
+            alert('Could not store a copy of this PDF in Admin (browser storage is full). The PDF itself was still generated/downloaded successfully.');
+          }
+          renderGeneratedInvoicesList();
+          resolve();
+        };
+        reader.onerror = function () { resolve(); };
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function viewGeneratedInvoice(id) {
+      const list = getGeneratedInvoices();
+      const record = list.find(r => r.id === id);
+      if (!record) return;
+      record.lastAccessedAt = new Date().toISOString();
+      try { localStorage.setItem(LS_KEYS.generatedInvoices, JSON.stringify(list)); } catch (err) { /* ignore */ }
+      renderGeneratedInvoicesList();
+      const a = document.createElement('a');
+      a.href = record.pdfData;
+      a.download = record.fileName || (record.invoiceNo + '.pdf');
+      a.target = '_blank';
+      a.click();
+    }
+
+    function deleteGeneratedInvoice(id) {
+      if (guardViewOnly()) return;
+      if (!confirm('Delete this stored PDF copy? This cannot be undone.')) return;
+      let list = getGeneratedInvoices();
+      list = list.filter(r => r.id !== id);
+      localStorage.setItem(LS_KEYS.generatedInvoices, JSON.stringify(list));
+      renderGeneratedInvoicesList();
+    }
+
+    function renderGeneratedInvoicesList() {
+      const wrap = document.getElementById('generatedInvoicesList');
+      if (!wrap) return;
+      let list = getGeneratedInvoices();
+      const searchBox = document.getElementById('generatedInvoicesSearch');
+      const query = searchBox ? searchBox.value.trim().toLowerCase() : '';
+      if (query) {
+        list = list.filter(r =>
+          (r.invoiceNo || '').toLowerCase().includes(query) ||
+          (r.customerName || '').toLowerCase().includes(query)
+        );
+      }
+      if (list.length === 0) {
+        wrap.innerHTML = query
+          ? '<div class="empty-state">No generated PDFs match your search.</div>'
+          : '<div class="empty-state">No PDFs generated yet. Use "Convert to PDF" or "Share / Email PDF" on the Invoice tab.</div>';
+        renderStorageUsage();
+        return;
+      }
+      wrap.innerHTML = '';
+      list.forEach(r => {
+        const genStr = new Date(r.generatedAt).toLocaleString();
+        const accessStr = new Date(r.lastAccessedAt).toLocaleString();
+        const div = document.createElement('div');
+        div.className = 'saved-item';
+        div.innerHTML = `
+          <div class="meta">
+            <div class="inv-no">${r.invoiceNo}${r.customerName ? ' — ' + r.customerName : ''}</div>
+            <div class="sub">Generated: ${genStr}<br>Last accessed: ${accessStr}</div>
+          </div>
+          <div class="actions">
+            <button class="small-btn solid" onclick="viewGeneratedInvoice('${r.id}')">View / Download</button>
+            <button class="small-btn danger" onclick="deleteGeneratedInvoice('${r.id}')">Delete</button>
+          </div>
+        `;
+        wrap.appendChild(div);
+      });
+      renderStorageUsage();
+    }
+
+    function saveCurrentInvoice() {
+      calculateTotals();
+      const data = {};
+      SAVED_FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data[id] = el.value;
+      });
+      data.includeServiceInvoice = document.getElementById('includeServiceInvoice').checked;
+      data.items1 = getItemRows(1);
+      data.items2 = getItemRows(2);
+      data.advancePayments1 = getAdvancePayments(1);
+      data.advancePayments2 = getAdvancePayments(2);
+      const list = getSavedInvoices();
+      const record = {
+        id: 'inv_' + Date.now(),
+        savedAt: new Date().toISOString(),
+        invoiceNo: data.invoiceNo1 || '(no number)',
+        customerName: data.customerName1 || '',
+        grandTotal1: document.getElementById('sumGrand1').value,
+        grandTotal2: document.getElementById('sumGrand2').value,
+        data: data
+      };
+      list.unshift(record);
+      localStorage.setItem(LS_KEYS.invoices, JSON.stringify(list));
+      alert('Invoice "' + record.invoiceNo + '" saved. View it anytime in Admin → Saved Invoices.');
+    }
+
+    function loadSavedInvoice(id) {
+      const list = getSavedInvoices();
+      const record = list.find(r => r.id === id);
+      if (!record) return;
+      let migrated = false;
+
+      Object.keys(record.data).forEach(fieldId => {
+        if (fieldId === 'includeServiceInvoice' || fieldId === 'items1' || fieldId === 'items2' ||
+            fieldId === 'advancePayments1' || fieldId === 'advancePayments2') return;
+        const el = document.getElementById(fieldId);
+        if (el) el.value = record.data[fieldId];
+      });
+      if (Array.isArray(record.data.items1) && record.data.items1.length) {
+        setItemRows(1, record.data.items1);
+      } else {
+        migrated = true; // Old record predating the Qty/Rate item rows — will be upgraded below.
+      }
+      if (Array.isArray(record.data.items2) && record.data.items2.length) {
+        setItemRows(2, record.data.items2);
+      } else {
+        migrated = true;
+      }
+      // Advance payments: use the new log if present, else migrate an old flat amount.
+      if (Array.isArray(record.data.advancePayments1) && record.data.advancePayments1.length) {
+        setAdvancePayments(1, record.data.advancePayments1);
+      } else if (parseFloat(record.data.advanceReceived1 || 0) > 0) {
+        setAdvancePayments(1, [{ date: '', mode: 'Migrated', amount: record.data.advanceReceived1 }]);
+        migrated = true;
+      } else {
+        setAdvancePayments(1, []);
+      }
+      if (Array.isArray(record.data.advancePayments2) && record.data.advancePayments2.length) {
+        setAdvancePayments(2, record.data.advancePayments2);
+      } else if (parseFloat(record.data.advanceReceived2 || 0) > 0) {
+        setAdvancePayments(2, [{ date: '', mode: 'Migrated', amount: record.data.advanceReceived2 }]);
+        migrated = true;
+      } else {
+        setAdvancePayments(2, []);
+      }
+      syncGstRatePreset(1);
+      syncGstRatePreset(2);
+      if (typeof record.data.includeServiceInvoice === 'boolean') {
+        document.getElementById('includeServiceInvoice').checked = record.data.includeServiceInvoice;
+      } else {
+        document.getElementById('includeServiceInvoice').checked = true;
+      }
+      toggleServiceInvoice();
+      showInvoicePart(1);
+      applyBankSelection('1');
+      applyBankSelection('2');
+      syncInvoiceNumber();
+      updateSupplierAddress1();
+      updateSupplierAddress2();
+      calculateTotals();
+      showTab('invoice');
+
+      // If this record was in an older format, write the upgraded shape back to storage
+      // now, so it loads cleanly (without relying on this migration path) next time.
+      if (migrated && !isViewOnlyAdmin) {
+        record.data.items1 = getItemRows(1);
+        record.data.items2 = getItemRows(2);
+        record.data.advancePayments1 = getAdvancePayments(1);
+        record.data.advancePayments2 = getAdvancePayments(2);
+        try { localStorage.setItem(LS_KEYS.invoices, JSON.stringify(list)); } catch (err) { /* storage full — non-fatal, the in-memory form is still correct */ }
+      }
+    }
+
+    function deleteSavedInvoice(id) {
+      if (guardViewOnly()) return;
+      if (!confirm('Delete this saved invoice? This cannot be undone.')) return;
+      let list = getSavedInvoices();
+      list = list.filter(r => r.id !== id);
+      localStorage.setItem(LS_KEYS.invoices, JSON.stringify(list));
+      renderSavedInvoicesList();
+    }
+
+    function renderSavedInvoicesList() {
+      const wrap = document.getElementById('savedInvoicesList');
+      if (!wrap) return;
+      let list = getSavedInvoices();
+      const searchBox = document.getElementById('savedInvoicesSearch');
+      const query = searchBox ? searchBox.value.trim().toLowerCase() : '';
+      if (query) {
+        list = list.filter(r =>
+          (r.invoiceNo || '').toLowerCase().includes(query) ||
+          (r.customerName || '').toLowerCase().includes(query)
+        );
+      }
+      const selectAllBox = document.getElementById('savedInvoicesSelectAll');
+      if (selectAllBox) selectAllBox.checked = false;
+      if (list.length === 0) {
+        wrap.innerHTML = query
+          ? '<div class="empty-state">No saved invoices match your search.</div>'
+          : '<div class="empty-state">No saved invoices yet. Use "Save Invoice" on the Invoice tab.</div>';
+        renderStorageUsage();
+        return;
+      }
+      wrap.innerHTML = '';
+      list.forEach(r => {
+        const dateStr = new Date(r.savedAt).toLocaleString();
+        const div = document.createElement('div');
+        div.className = 'saved-item';
+        div.innerHTML = `
+          <input type="checkbox" class="saved-invoice-checkbox" value="${r.id}" style="width:auto;margin-right:8px;align-self:center;">
+          <div class="meta">
+            <div class="inv-no">${r.invoiceNo} — ${r.customerName}</div>
+            <div class="sub">Saved ${dateStr} · Total ₹${r.grandTotal1} + ₹${r.grandTotal2}</div>
+          </div>
+          <div class="actions">
+            <button class="small-btn solid" onclick="loadSavedInvoice('${r.id}')">Load</button>
+            <button class="small-btn" onclick="duplicateSavedInvoice('${r.id}')">Duplicate</button>
+            <button class="small-btn danger" onclick="deleteSavedInvoice('${r.id}')">Delete</button>
+          </div>
+        `;
+        wrap.appendChild(div);
+      });
+      renderStorageUsage();
+    }
+
+    function toggleSelectAllSavedInvoices(checkbox) {
+      document.querySelectorAll('.saved-invoice-checkbox').forEach(cb => { cb.checked = checkbox.checked; });
+    }
+
+    function getSelectedSavedInvoiceIds() {
+      return Array.from(document.querySelectorAll('.saved-invoice-checkbox:checked')).map(cb => cb.value);
+    }
+
+    function bulkDeleteSavedInvoices() {
+      if (guardViewOnly()) return;
+      const ids = getSelectedSavedInvoiceIds();
+      if (ids.length === 0) {
+        alert('No saved invoices selected. Tick the checkboxes next to the ones you want to delete.');
+        return;
+      }
+      if (!confirm(`Delete ${ids.length} selected saved invoice(s)? This cannot be undone.`)) return;
+      let list = getSavedInvoices();
+      list = list.filter(r => !ids.includes(r.id));
+      localStorage.setItem(LS_KEYS.invoices, JSON.stringify(list));
+      renderSavedInvoicesList();
+    }
+
+    function bulkExportSavedInvoices() {
+      const ids = getSelectedSavedInvoiceIds();
+      if (ids.length === 0) {
+        alert('No saved invoices selected. Tick the checkboxes next to the ones you want to export.');
+        return;
+      }
+      const list = getSavedInvoices().filter(r => ids.includes(r.id));
+      const blob = new Blob([JSON.stringify({ invoices: list }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'india-reisen-selected-invoices.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /* ----- Storage usage ----- */
+    function getStorageUsageBytes() {
+      let total = 0;
+      Object.values(LS_KEYS).forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val) total += val.length * 2; // rough UTF-16 byte estimate
+      });
+      return total;
+    }
+
+    function renderStorageUsage() {
+      const info = document.getElementById('storageUsageInfo');
+      const bar = document.getElementById('storageUsageBar');
+      if (!info || !bar) return;
+      const bytes = getStorageUsageBytes();
+      const mb = bytes / (1024 * 1024);
+      const label = mb >= 1 ? mb.toFixed(2) + ' MB' : Math.round(bytes / 1024) + ' KB';
+      info.innerText = label + ' used in this browser\'s storage (browsers typically allow ~5–10 MB per site — export a backup regularly, especially if you use logos, signatures, or keep lots of generated PDFs).';
+      const budgetMb = 8; // conservative assumed budget for the progress bar
+      const pct = Math.max(2, Math.min(100, (mb / budgetMb) * 100));
+      bar.style.width = pct + '%';
+      bar.style.background = pct > 80 ? '#dc2626' : pct > 50 ? '#d97706' : '#16a34a';
+    }
+
+    function trimGeneratedInvoices() {
+      if (guardViewOnly()) return;
+      let list = getGeneratedInvoices();
+      if (list.length <= 10) {
+        alert('You already have 10 or fewer stored PDFs.');
+        return;
+      }
+      if (!confirm(`This will permanently delete ${list.length - 10} older stored PDF copies, keeping only the 10 most recent. Continue?`)) return;
+      list = list.slice(0, 10);
+      localStorage.setItem(LS_KEYS.generatedInvoices, JSON.stringify(list));
+      renderGeneratedInvoicesList();
+    }
+
+    function duplicateSavedInvoice(id) {
+      // Loads the saved invoice into the form as a starting point for a new one,
+      // with a suggested next invoice number. Nothing is saved until "Save Invoice" is clicked.
+      loadSavedInvoice(id);
+      document.getElementById('invoiceNo1').value = suggestNextInvoiceNumber(document.getElementById('invoiceNo1').value);
+      syncInvoiceNumber();
+      alert('Loaded a copy into the form with a suggested new invoice number. Review the details, then click "Save Invoice" to store it separately.');
+    }
+
+    function suggestNextInvoiceNumber(currentNo) {
+      const list = getSavedInvoices();
+      // Try to find the highest trailing number across all saved invoice numbers
+      // sharing the same prefix as currentNo, and increment it.
+      const match = String(currentNo || '').match(/^(.*?)(\d+)(\D*)$/);
+      if (match) {
+        const prefix = match[1];
+        const digits = match[2];
+        const suffix = match[3];
+        let maxNum = parseInt(digits, 10);
+        list.forEach(r => {
+          const m2 = String(r.invoiceNo || '').match(/^(.*?)(\d+)(\D*)$/);
+          if (m2 && m2[1] === prefix && m2[3] === suffix) {
+            const n = parseInt(m2[2], 10);
+            if (n > maxNum) maxNum = n;
+          }
+        });
+        const nextNum = maxNum + 1;
+        const padded = String(nextNum).padStart(digits.length, '0');
+        return prefix + padded + suffix;
+      }
+      return currentNo;
+    }
+
+    function suggestNewInvoiceNumber() {
+      const field = document.getElementById('invoiceNo1');
+      field.value = suggestNextInvoiceNumber(field.value);
+      syncInvoiceNumber();
+    }
+
+    syncInvoiceNumber();
+    updateSupplierAddress1();
+    updateSupplierAddress2();
+    syncGstRatePreset(1);
+    syncGstRatePreset(2);
+    calculateTotals();
+    applySettingsToInvoice();
+    toggleServiceInvoice();
+    showInvoicePart(1);
+  </script>
+</body>
+</html>
