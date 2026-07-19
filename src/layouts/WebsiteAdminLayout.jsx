@@ -104,14 +104,6 @@ export default function WebsiteAdminLayout() {
           <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
 
           {/* Business */}
-          <Link to="/ir-team-8x2k/clients" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>👤</span>
-            {expanded && <span>Clients</span>}
-          </Link>
-          <Link to="/ir-team-8x2k/invoices" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>📄</span>
-            {expanded && <span>Invoices</span>}
-          </Link>
           <Link to="/ir-team-8x2k/financial" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>💰</span>
             {expanded && <span>Financials</span>}
@@ -123,10 +115,6 @@ export default function WebsiteAdminLayout() {
           <Link to="/ir-team-8x2k/activity" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>📋</span>
             {expanded && <span>Activity Log</span>}
-          </Link>
-          <Link to="/ir-team-8x2k/social" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>📱</span>
-            {expanded && <span>Social</span>}
           </Link>
           <Link to="/ir-team-8x2k/settings" style={{ color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span>⚙️</span>

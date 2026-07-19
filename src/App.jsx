@@ -24,9 +24,6 @@ import MediaGallery from './pages/website-admin/MediaGallery'
 import TeamManager from './pages/website-admin/TeamManager'
 import ReviewsManager from './pages/website-admin/ReviewsManager'
 import ContactMessages from './pages/website-admin/ContactMessages'
-import ClientManager from './pages/website-admin/ClientManager'
-import InvoiceMaker from './pages/website-admin/InvoiceMaker'
-import SocialMediaCreator from './pages/website-admin/SocialMediaCreator'
 import WebsiteSettings from './pages/website-admin/WebsiteSettings'
 import NewsletterManager from './pages/website-admin/NewsletterManager'
 import FinancialReports from './pages/website-admin/FinancialReports'
@@ -69,14 +66,11 @@ export default function App() {
             <Route path={`/${ADMIN_PATH}/reviews`} element={<ReviewsManager />} />
             <Route path={`/${ADMIN_PATH}/messages`} element={<ContactMessages />} />
             <Route path={`/${ADMIN_PATH}/newsletter`} element={<NewsletterManager />} />
-            <Route path={`/${ADMIN_PATH}/clients`} element={<ClientManager />} />
-            <Route path={`/${ADMIN_PATH}/invoices`} element={<InvoiceMaker />} />
             <Route path={`/${ADMIN_PATH}/financial`} element={<FinancialReports />} />
             <Route path={`/${ADMIN_PATH}/activity`} element={<ActivityLog />} />
             <Route path={`/${ADMIN_PATH}/email-templates`} element={<EmailTemplates />} />
             <Route path={`/${ADMIN_PATH}/faqs`} element={<FAQManager />} />
             <Route path={`/${ADMIN_PATH}/documentation`} element={<Documentation />} />
-            <Route path={`/${ADMIN_PATH}/social`} element={<SocialMediaCreator />} />
             <Route path={`/${ADMIN_PATH}/settings`} element={<WebsiteSettings />} />
           </Route>
 
