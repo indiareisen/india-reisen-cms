@@ -17,6 +17,12 @@ export default function Documentation() {
       description: 'AI-assisted caption writer and image watermarking studio — punchline overlays, brand presets, multi-platform captions, and bulk image export.',
       icon: '✨',
       href: '/docs/social-media-studio.html'
+    },
+    {
+      title: 'Itinerary Studio',
+      description: 'Build client itineraries from a library of real reference trips — maps, weather charts, Instagram flyer export, and standalone downloadable itinerary pages.',
+      icon: '🗺️',
+      href: '/docs/itinerary-studio.html'
     }
   ]
 
