@@ -220,12 +220,13 @@ export default function WebsiteSettings() {
   }
 
   const handleSocialMediaChange = (platform, field, value) => {
+    const current = settings.socialMedia[platform] || { enabled: true, handle: '', url: '' }
     setSettings({
       ...settings,
       socialMedia: {
         ...settings.socialMedia,
         [platform]: {
-          ...settings.socialMedia[platform],
+          ...current,
           [field]: value
         }
       }
@@ -233,13 +234,14 @@ export default function WebsiteSettings() {
   }
 
   const toggleSocialMedia = (platform) => {
+    const current = settings.socialMedia[platform] || { enabled: false, handle: '', url: '' }
     setSettings({
       ...settings,
       socialMedia: {
         ...settings.socialMedia,
         [platform]: {
-          ...settings.socialMedia[platform],
-          enabled: !settings.socialMedia[platform].enabled
+          ...current,
+          enabled: !current.enabled
         }
       }
     })
@@ -647,31 +649,34 @@ export default function WebsiteSettings() {
             <h2>Social Media</h2>
             <p style={{ color: '#666', marginBottom: '20px' }}>Add or edit your social media handles.</p>
             <div style={{ display: 'grid', gap: '20px' }}>
-              {settings.socialMedia && Object.entries(settings.socialMedia).map(([platform, data]) => (
-                <div key={platform} style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h3 style={{ margin: 0, textTransform: 'capitalize' }}>
-                      {platform === 'whatsapp' ? 'WhatsApp' : platform.charAt(0).toUpperCase() + platform.slice(1)}
-                    </h3>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={data.enabled} onChange={() => toggleSocialMedia(platform)} style={{ width: '20px', height: '20px' }} />
-                      <span>{data.enabled ? 'Enabled' : 'Disabled'}</span>
-                    </label>
+              {['facebook', 'instagram', 'twitter', 'youtube', 'whatsapp', 'linkedin'].map((platform) => {
+                const data = settings.socialMedia[platform] || { enabled: false, handle: '', url: '' }
+                return (
+                  <div key={platform} style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '6px', background: '#f9f9f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h3 style={{ margin: 0, textTransform: 'capitalize' }}>
+                        {platform === 'whatsapp' ? 'WhatsApp' : platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      </h3>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={data.enabled} onChange={() => toggleSocialMedia(platform)} style={{ width: '20px', height: '20px' }} />
+                        <span>{data.enabled ? 'Enabled' : 'Disabled'}</span>
+                      </label>
+                    </div>
+                    {data.enabled && (
+                      <>
+                        <div style={{ marginBottom: '15px' }}>
+                          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Handle</label>
+                          <input type="text" value={data.handle || ''} onChange={(e) => handleSocialMediaChange(platform, 'handle', e.target.value)} style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Full URL</label>
+                          <input type="url" value={data.url || ''} onChange={(e) => handleSocialMediaChange(platform, 'url', e.target.value)} style={inputStyle} />
+                        </div>
+                      </>
+                    )}
                   </div>
-                  {data.enabled && (
-                    <>
-                      <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Handle</label>
-                        <input type="text" value={data.handle} onChange={(e) => handleSocialMediaChange(platform, 'handle', e.target.value)} style={inputStyle} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Full URL</label>
-                        <input type="url" value={data.url} onChange={(e) => handleSocialMediaChange(platform, 'url', e.target.value)} style={inputStyle} />
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
