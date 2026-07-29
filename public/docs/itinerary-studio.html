@@ -442,8 +442,23 @@
     </label>
     <button class="btn ghost" id="btnPrint" title="If you've translated the document above, print now — it prints whatever language is currently on screen">🖨 Print / PDF</button>
     <button class="btn primary" id="btnDownload" title="If you've translated the document above and let it finish, the downloaded file keeps that translated text baked in">Download standalone HTML</button>
+    <span style="display:inline-flex; gap:6px; align-items:center; margin-left:8px; padding-left:8px; border-left:1px solid rgba(0,0,0,0.12);">
+      <select id="pubDifficulty" title="Journey difficulty" style="font-size:0.76rem; padding:4px 6px;">
+        <option value="Easy">Easy</option>
+        <option value="Moderate" selected>Moderate</option>
+        <option value="Challenging">Challenging</option>
+      </select>
+      <input type="number" id="pubPrice" placeholder="Price" title="Price per person" style="width:80px; font-size:0.76rem; padding:4px 6px;">
+      <select id="pubCurrency" title="Currency" style="font-size:0.76rem; padding:4px 6px;">
+        <option value="INR" selected>INR</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+      </select>
+      <button class="btn primary" id="btnPublish" title="Creates a live Journey card on reisenindia.com from this itinerary" style="background:#1a7a4c;">🌐 Publish to website</button>
+    </span>
   </div>
 </div>
+<div id="publishStatus" style="display:none; margin:0 0 10px; padding:8px 12px; border-radius:6px; font-size:0.85rem;"></div>
 
 <div class="layout">
   <div class="panel-form" id="formRoot"></div>
@@ -453,6 +468,27 @@
     </div>
   </div>
 </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC-2-orXSJg3xdq646v2VWpCyDFy5jkeAg",
+  authDomain: "india-reisen-cms.firebaseapp.com",
+  projectId: "india-reisen-cms",
+  storageBucket: "india-reisen-cms.appspot.com",
+  messagingSenderId: "862055227943",
+  appId: "1:862055227943:web:a4b82cf5df5e9f4e526ab4"
+};
+const __fbApp = initializeApp(firebaseConfig);
+const __db = getFirestore(__fbApp);
+
+// Exposed for the non-module script below to call.
+window.__publishJourneyToFirestore = async function(journeyData){
+  return addDoc(collection(__db, 'journeys'), { ...journeyData, createdAt: Timestamp.now() });
+};
+</script>
 
 <script>
 /* ============================= STATE ============================= */
@@ -16209,6 +16245,68 @@ document.getElementById("chkIncludeEditControls").addEventListener("change", (e)
   saveTripDebounced();
 });
 
+
+document.getElementById("btnPublish").addEventListener("click", async ()=>{
+  const statusEl = document.getElementById("publishStatus");
+  const showStatus = (msg, kind)=>{
+    statusEl.style.display = "block";
+    statusEl.textContent = msg;
+    statusEl.style.background = kind === "error" ? "#fdecea" : (kind === "ok" ? "#e8f5e9" : "#eef2f6");
+    statusEl.style.color = kind === "error" ? "#7A2A2E" : (kind === "ok" ? "#1a7a4c" : "#333");
+  };
+
+  if(!state.title || !state.title.trim()){
+    showStatus("⚠ Add a trip title before publishing.", "error");
+    return;
+  }
+  if(!state.stops || state.stops.length === 0){
+    showStatus("⚠ Add at least one stop before publishing.", "error");
+    return;
+  }
+
+  const btn = document.getElementById("btnPublish");
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = "Publishing…";
+  showStatus("Publishing to reisenindia.com…", "info");
+
+  try{
+    const destination = state.stops.map(s => (s.city||"").trim()).filter(Boolean).join(", ");
+    const totalNights = state.stops.reduce((sum, s) => sum + (Number(s.nights)||0), 0);
+    const durationLabel = `${totalNights + 1} Days`;
+    const featuredImage = (state.stops.find(s => s.photoUrl && s.photoUrl.trim()) || {}).photoUrl || "";
+
+    if(!featuredImage){
+      const proceed = confirm("No stop has a photo URL set, so this Journey card will publish without a featured image. Publish anyway?");
+      if(!proceed){
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+        showStatus("Publish cancelled — add a photoUrl on a stop to include a featured image.", "error");
+        return;
+      }
+    }
+
+    const journeyData = {
+      title: state.title.trim(),
+      description: (state.thesis || "").trim(),
+      destination,
+      duration: durationLabel,
+      difficulty: document.getElementById("pubDifficulty").value,
+      price: Number(document.getElementById("pubPrice").value) || 0,
+      currency: document.getElementById("pubCurrency").value,
+      featuredImage
+    };
+
+    await window.__publishJourneyToFirestore(journeyData);
+    showStatus(`✓ Published "${journeyData.title}" — it'll appear on the Journeys page now.`, "ok");
+  }catch(err){
+    console.error("Publish failed:", err);
+    showStatus("⚠ Publish failed — check the browser console for details.", "error");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+});
 
 document.getElementById("btnDownload").addEventListener("click", ()=>{
   const docCss = document.getElementById("docStyles").textContent;
