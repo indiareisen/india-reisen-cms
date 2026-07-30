@@ -472,6 +472,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC-2-orXSJg3xdq646v2VWpCyDFy5jkeAg",
@@ -483,9 +484,21 @@ const firebaseConfig = {
 };
 const __fbApp = initializeApp(firebaseConfig);
 const __db = getFirestore(__fbApp);
+const __auth = getAuth(__fbApp);
+
+function __ensureAuthed(){
+  return new Promise((resolve, reject) => {
+    const unsub = onAuthStateChanged(__auth, (user) => {
+      unsub();
+      if (user) { resolve(user); return; }
+      signInAnonymously(__auth).then(cred => resolve(cred.user)).catch(reject);
+    });
+  });
+}
 
 // Exposed for the non-module script below to call.
 window.__publishJourneyToFirestore = async function(journeyData){
+  await __ensureAuthed();
   return addDoc(collection(__db, 'journeys'), { ...journeyData, createdAt: Timestamp.now() });
 };
 </script>
