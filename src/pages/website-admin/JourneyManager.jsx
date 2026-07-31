@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, addDoc, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 
+const PINK = '#d1356f'
+const GOLD = '#D4A574'
+const INK = '#2b2320'
+const BORDER = '#e8dfd7'
+const CANVAS = '#faf6f2'
+
 const emptyForm = {
   title: '',
   description: '',
@@ -10,20 +16,280 @@ const emptyForm = {
   difficulty: 'Easy',
   price: 0,
   currency: 'USD',
-  featuredImage: ''
+  featuredImage: '',
+  gallery: [],
+  highlights: [],
+  itineraryDays: [],
+  inclusions: [],
+  exclusions: []
 }
+
+const TABS = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'itinerary', label: 'Itinerary' },
+  { key: 'gallery', label: 'Gallery' },
+  { key: 'details', label: 'Highlights & Inclusions' }
+]
+
+async function uploadToCloudinary(file) {
+  const cloudForm = new FormData()
+  cloudForm.append('file', file)
+  cloudForm.append('upload_preset', 'india_reisen')
+  const response = await fetch('https://api.cloudinary.com/v1_1/dl1q4dw72/image/upload', {
+    method: 'POST',
+    body: cloudForm
+  })
+  const data = await response.json()
+  if (!data.secure_url) throw new Error('Upload failed')
+  return data.secure_url
+}
+
+/* ---------- shared field primitives, styled once ---------- */
+
+function Field({ label, children, span }) {
+  return (
+    <div style={{ gridColumn: span ? '1 / -1' : 'auto' }}>
+      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#8a7a6d', marginBottom: '6px' }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+const inputStyle = {
+  width: '100%',
+  padding: '11px 13px',
+  border: `1px solid ${BORDER}`,
+  borderRadius: '7px',
+  fontSize: '14.5px',
+  color: INK,
+  boxSizing: 'border-box',
+  fontFamily: 'inherit',
+  background: '#fff'
+}
+
+function TextInput(props) {
+  return <input {...props} style={{ ...inputStyle, ...(props.style || {}) }} />
+}
+function TextArea(props) {
+  return <textarea {...props} style={{ ...inputStyle, resize: 'vertical', ...(props.style || {}) }} />
+}
+function Select(props) {
+  return <select {...props} style={{ ...inputStyle, ...(props.style || {}) }} />
+}
+
+function PillButton({ children, onClick, tone = 'ghost', type = 'button', disabled }) {
+  const tones = {
+    ghost: { background: '#fff', color: PINK, border: `1.5px solid ${PINK}` },
+    solid: { background: PINK, color: '#fff', border: `1.5px solid ${PINK}` },
+    gold: { background: GOLD, color: '#fff', border: `1.5px solid ${GOLD}` },
+    danger: { background: '#fff', color: '#b3423f', border: '1.5px solid #b3423f' }
+  }
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...tones[tone],
+        padding: '8px 14px',
+        borderRadius: '999px',
+        fontSize: '13px',
+        fontWeight: 700,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'transform 0.15s ease'
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+/* ---------- repeatable-list editor (highlights / inclusions / exclusions) ---------- */
+
+function ChipListEditor({ items, onChange, placeholder }) {
+  const [draft, setDraft] = useState('')
+
+  const add = () => {
+    const v = draft.trim()
+    if (!v) return
+    onChange([...items, v])
+    setDraft('')
+  }
+
+  const remove = (idx) => onChange(items.filter((_, i) => i !== idx))
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+        <TextInput
+          value={draft}
+          placeholder={placeholder}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
+        />
+        <PillButton onClick={add} tone="solid">+ Add</PillButton>
+      </div>
+      {items.length === 0 ? (
+        <p style={{ color: '#a89a8d', fontSize: '13px', fontStyle: 'italic', margin: 0 }}>Nothing added yet.</p>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {items.map((item, idx) => (
+            <span key={idx} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '999px',
+              padding: '6px 8px 6px 14px', fontSize: '13px', color: INK
+            }}>
+              {item}
+              <button
+                onClick={() => remove(idx)}
+                style={{ border: 'none', background: 'transparent', color: '#b3423f', cursor: 'pointer', fontSize: '15px', lineHeight: 1, padding: '2px' }}
+                title="Remove"
+              >×</button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---------- day-by-day itinerary builder ---------- */
+
+function ItineraryDaysEditor({ days, onChange }) {
+  const addDay = () => {
+    onChange([...days, { day: days.length + 1, title: '', description: '' }])
+  }
+  const updateDay = (idx, field, value) => {
+    const next = days.map((d, i) => i === idx ? { ...d, [field]: value } : d)
+    onChange(next)
+  }
+  const removeDay = (idx) => {
+    const next = days.filter((_, i) => i !== idx).map((d, i) => ({ ...d, day: i + 1 }))
+    onChange(next)
+  }
+  const moveDay = (idx, dir) => {
+    const target = idx + dir
+    if (target < 0 || target >= days.length) return
+    const next = [...days]
+    ;[next[idx], next[target]] = [next[target], next[idx]]
+    onChange(next.map((d, i) => ({ ...d, day: i + 1 })))
+  }
+
+  return (
+    <div>
+      {days.length === 0 && (
+        <p style={{ color: '#a89a8d', fontSize: '13px', fontStyle: 'italic', margin: '0 0 14px 0' }}>
+          No days added yet. Build the trip day by day, or leave blank to show the default summary on the site.
+        </p>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '14px' }}>
+        {days.map((d, idx) => (
+          <div key={idx} style={{ border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '14px', background: CANVAS, position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <span style={{
+                width: '30px', height: '30px', borderRadius: '50%', background: PINK, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '13px', flexShrink: 0
+              }}>{d.day}</span>
+              <TextInput
+                value={d.title}
+                placeholder="Day title — e.g. Arrival in Jaipur"
+                onChange={(e) => updateDay(idx, 'title', e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button onClick={() => moveDay(idx, -1)} disabled={idx === 0} title="Move up"
+                  style={{ border: `1px solid ${BORDER}`, background: '#fff', borderRadius: '6px', width: '28px', height: '28px', cursor: idx === 0 ? 'default' : 'pointer', opacity: idx === 0 ? 0.4 : 1 }}>↑</button>
+                <button onClick={() => moveDay(idx, 1)} disabled={idx === days.length - 1} title="Move down"
+                  style={{ border: `1px solid ${BORDER}`, background: '#fff', borderRadius: '6px', width: '28px', height: '28px', cursor: idx === days.length - 1 ? 'default' : 'pointer', opacity: idx === days.length - 1 ? 0.4 : 1 }}>↓</button>
+                <button onClick={() => removeDay(idx)} title="Remove day"
+                  style={{ border: '1px solid #b3423f', color: '#b3423f', background: '#fff', borderRadius: '6px', width: '28px', height: '28px', cursor: 'pointer' }}>×</button>
+              </div>
+            </div>
+            <TextArea
+              value={d.description}
+              placeholder="What happens this day — activities, meals, transfers..."
+              onChange={(e) => updateDay(idx, 'description', e.target.value)}
+              rows={2}
+            />
+          </div>
+        ))}
+      </div>
+      <PillButton onClick={addDay} tone="gold">+ Add day {days.length + 1}</PillButton>
+    </div>
+  )
+}
+
+/* ---------- gallery uploader ---------- */
+
+function GalleryEditor({ images, onChange }) {
+  const [uploading, setUploading] = useState(false)
+
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setUploading(true)
+    try {
+      const urls = await Promise.all(files.map(uploadToCloudinary))
+      onChange([...images, ...urls])
+    } catch {
+      alert('Some images failed to upload. Please try again.')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const remove = (idx) => onChange(images.filter((_, i) => i !== idx))
+
+  return (
+    <div>
+      <label style={{
+        display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: uploading ? 'not-allowed' : 'pointer',
+        border: `1.5px dashed ${GOLD}`, borderRadius: '8px', padding: '12px 18px', background: '#fffaf3', marginBottom: '16px'
+      }}>
+        <input type="file" accept="image/*" multiple onChange={handleFiles} disabled={uploading} style={{ display: 'none' }} />
+        <span style={{ fontSize: '13px', fontWeight: 700, color: '#8a6a2f' }}>
+          {uploading ? '⏳ Uploading…' : '🖼️ Add gallery photos (multiple allowed)'}
+        </span>
+      </label>
+
+      {images.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px' }}>
+          {images.map((url, idx) => (
+            <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', height: '90px', border: `1px solid ${BORDER}` }}>
+              <img src={url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <button
+                onClick={() => remove(idx)}
+                title="Remove"
+                style={{
+                  position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%',
+                  border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', cursor: 'pointer', fontSize: '13px', lineHeight: 1
+                }}
+              >×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ================================= MAIN ================================= */
 
 export default function JourneyManager() {
   const [journeys, setJourneys] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [uploading, setUploading] = useState(false)
+  const [uploadingHero, setUploadingHero] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState(emptyForm)
+  const [activeTab, setActiveTab] = useState('overview')
 
-  useEffect(() => {
-    fetchJourneys()
-  }, [])
+  useEffect(() => { fetchJourneys() }, [])
 
   const fetchJourneys = async () => {
     try {
@@ -37,54 +303,36 @@ export default function JourneyManager() {
     }
   }
 
-  const handleImageChange = async (e) => {
+  const handleHeroChange = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-
-    setUploading(true)
+    setUploadingHero(true)
     try {
-      const cloudForm = new FormData()
-      cloudForm.append('file', file)
-      cloudForm.append('upload_preset', 'india_reisen')
-
-      const response = await fetch('https://api.cloudinary.com/v1_1/dl1q4dw72/image/upload', {
-        method: 'POST',
-        body: cloudForm
-      })
-      const data = await response.json()
-
-      if (data.secure_url) {
-        setFormData(prev => ({ ...prev, featuredImage: data.secure_url }))
-      } else {
-        alert('Image upload failed. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      alert('Error uploading image.')
+      const url = await uploadToCloudinary(file)
+      setFormData(prev => ({ ...prev, featuredImage: url }))
+    } catch {
+      alert('Image upload failed. Please try again.')
     } finally {
-      setUploading(false)
+      setUploadingHero(false)
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       if (editingId) {
-        await updateDoc(doc(db, 'journeys', editingId), {
-          ...formData,
-          updatedAt: Timestamp.now()
-        })
+        await updateDoc(doc(db, 'journeys', editingId), { ...formData, updatedAt: Timestamp.now() })
       } else {
-        await addDoc(collection(db, 'journeys'), {
-          ...formData,
-          createdAt: Timestamp.now()
-        })
+        await addDoc(collection(db, 'journeys'), { ...formData, createdAt: Timestamp.now() })
       }
       resetForm()
       fetchJourneys()
     } catch (error) {
       console.error('Error saving journey:', error)
       alert('Error saving journey.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -92,6 +340,7 @@ export default function JourneyManager() {
     setFormData({ ...emptyForm, ...journey })
     setEditingId(journey.id)
     setShowForm(true)
+    setActiveTab('overview')
   }
 
   const handleDeleteJourney = async (id) => {
@@ -109,85 +358,159 @@ export default function JourneyManager() {
     setFormData(emptyForm)
     setEditingId(null)
     setShowForm(false)
+    setActiveTab('overview')
   }
 
-  if (loading) return <div>Loading journeys...</div>
+  if (loading) return <div style={{ padding: '30px', fontFamily: 'inherit' }}>Loading journeys...</div>
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>Journey Management</h1>
-        <button
-          onClick={() => { if (showForm) { resetForm() } else { setShowForm(true) } }}
-          style={{ padding: '10px 20px', background: '#d1356f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
+    <div style={{ fontFamily: "'Georgia', 'Playfair Display', serif" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 style={{ margin: 0, color: INK }}>Journey Management</h1>
+        <PillButton tone={showForm ? 'danger' : 'solid'} onClick={() => { showForm ? resetForm() : setShowForm(true) }}>
           {showForm ? '✕ Cancel' : '+ Add Journey'}
-        </button>
+        </PillButton>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} style={{ background: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-          <h2 style={{ marginTop: 0 }}>{editingId ? 'Edit Journey' : 'Add New Journey'}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-            <input type="text" placeholder="Title" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
-            <input type="text" placeholder="Destination" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} required style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
-            <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} required style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px', gridColumn: '1 / -1' }} />
-            <input type="number" placeholder="Duration (days)" value={formData.duration} onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value)})} required style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
-            <select value={formData.difficulty} onChange={(e) => setFormData({...formData, difficulty: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}>
-              <option>Easy</option>
-              <option>Moderate</option>
-              <option>Challenging</option>
-            </select>
-            <input type="number" placeholder="Price" value={formData.price} onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})} required style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
+        <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 14px rgba(0,0,0,0.06)', overflow: 'hidden', border: `1px solid ${BORDER}` }}>
+          {/* header */}
+          <div style={{ padding: '22px 26px 0 26px' }}>
+            <h2 style={{ margin: '0 0 4px 0', color: INK, fontSize: '22px' }}>{editingId ? 'Edit Journey' : 'Add New Journey'}</h2>
+            <p style={{ margin: '0 0 18px 0', color: '#8a7a6d', fontSize: '13px', fontFamily: 'sans-serif' }}>
+              Fill in each tab — only Overview is required to publish.
+            </p>
           </div>
 
-          <div style={{ marginBottom: '15px', border: '2px solid #d1356f', borderRadius: '6px', padding: '15px', background: '#fff5f9' }}>
-            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>📸 Featured Image</label>
-            <input type="file" accept="image/*" onChange={handleImageChange} disabled={uploading} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
-            {uploading && <p style={{ color: '#666', fontSize: '12px', marginTop: '8px' }}>⏳ Uploading...</p>}
-            {formData.featuredImage && (
-              <div style={{ marginTop: '10px' }}>
-                <p style={{ color: '#666', fontSize: '12px', margin: '0 0 8px 0' }}>✅ Current image:</p>
-                <img src={formData.featuredImage} alt="Preview" style={{ maxWidth: '250px', borderRadius: '6px', display: 'block' }} />
+          {/* tabs */}
+          <div style={{ display: 'flex', gap: '4px', padding: '0 26px', borderBottom: `1px solid ${BORDER}`, fontFamily: 'sans-serif' }}>
+            {TABS.map(tab => (
+              <button
+                type="button"
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '12px 16px',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  color: activeTab === tab.key ? PINK : '#a89a8d',
+                  borderBottom: activeTab === tab.key ? `2.5px solid ${PINK}` : '2.5px solid transparent',
+                  marginBottom: '-1px'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* tab content */}
+          <div style={{ padding: '24px 26px', fontFamily: 'sans-serif' }}>
+            {activeTab === 'overview' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <Field label="Title"><TextInput value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Golden Triangle Explorer" required /></Field>
+                <Field label="Destination"><TextInput value={formData.destination} onChange={e => setFormData({ ...formData, destination: e.target.value })} placeholder="Delhi, Agra, Jaipur" required /></Field>
+                <Field label="Description" span>
+                  <TextArea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="A short, compelling summary shown on the journey card and hero." rows={3} required />
+                </Field>
+                <Field label="Duration (days)"><TextInput type="number" min="1" value={formData.duration} onChange={e => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })} required /></Field>
+                <Field label="Difficulty">
+                  <Select value={formData.difficulty} onChange={e => setFormData({ ...formData, difficulty: e.target.value })}>
+                    <option>Easy</option><option>Moderate</option><option>Challenging</option>
+                  </Select>
+                </Field>
+                <Field label="Price"><TextInput type="number" min="0" value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })} required /></Field>
+                <Field label="Currency">
+                  <Select value={formData.currency} onChange={e => setFormData({ ...formData, currency: e.target.value })}>
+                    <option value="USD">USD</option><option value="INR">INR</option><option value="EUR">EUR</option>
+                  </Select>
+                </Field>
+
+                <div style={{ gridColumn: '1 / -1', border: `1.5px solid ${PINK}`, borderRadius: '8px', padding: '16px', background: '#fff5f9', marginTop: '4px' }}>
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '10px', color: INK, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>📸 Featured Image</label>
+                  <input type="file" accept="image/*" onChange={handleHeroChange} disabled={uploadingHero} style={{ width: '100%' }} />
+                  {uploadingHero && <p style={{ color: '#666', fontSize: '12px', marginTop: '8px' }}>⏳ Uploading...</p>}
+                  {formData.featuredImage && (
+                    <img src={formData.featuredImage} alt="Preview" style={{ marginTop: '12px', maxWidth: '260px', borderRadius: '8px', display: 'block' }} />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'itinerary' && (
+              <ItineraryDaysEditor days={formData.itineraryDays} onChange={(days) => setFormData({ ...formData, itineraryDays: days })} />
+            )}
+
+            {activeTab === 'gallery' && (
+              <GalleryEditor images={formData.gallery} onChange={(gallery) => setFormData({ ...formData, gallery })} />
+            )}
+
+            {activeTab === 'details' && (
+              <div style={{ display: 'grid', gap: '24px' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 10px 0', color: INK }}>✨ Highlights</h4>
+                  <ChipListEditor items={formData.highlights} onChange={(v) => setFormData({ ...formData, highlights: v })} placeholder="e.g. Private sunrise visit to the Taj Mahal" />
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 10px 0', color: INK }}>✓ What's Included</h4>
+                  <ChipListEditor items={formData.inclusions} onChange={(v) => setFormData({ ...formData, inclusions: v })} placeholder="e.g. Airport transfers" />
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 10px 0', color: INK }}>✕ Not Included</h4>
+                  <ChipListEditor items={formData.exclusions} onChange={(v) => setFormData({ ...formData, exclusions: v })} placeholder="e.g. International flights" />
+                </div>
               </div>
             )}
           </div>
 
-          <button type="submit" disabled={uploading} style={{ padding: '10px 20px', background: uploading ? '#ccc' : '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: uploading ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-            {editingId ? 'Update Journey' : 'Save Journey'}
-          </button>
+          {/* footer */}
+          <div style={{ padding: '18px 26px', borderTop: `1px solid ${BORDER}`, background: CANVAS, display: 'flex', gap: '12px', fontFamily: 'sans-serif' }}>
+            <button
+              type="submit"
+              disabled={saving || uploadingHero}
+              style={{
+                padding: '12px 24px', background: saving ? '#ccc' : '#1a7a4c', color: '#fff', border: 'none',
+                borderRadius: '7px', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '14px'
+              }}
+            >
+              {saving ? 'Saving…' : (editingId ? 'Update Journey' : 'Save Journey')}
+            </button>
+            <PillButton tone="ghost" onClick={resetForm}>Cancel</PillButton>
+          </div>
         </form>
       )}
 
-      <div style={{ padding: '20px', background: 'white', borderRadius: '8px' }}>
-        <h2>Active Journeys ({journeys.length})</h2>
+      <div style={{ padding: '24px', background: '#fff', borderRadius: '12px', border: `1px solid ${BORDER}` }}>
+        <h2 style={{ color: INK, marginTop: 0 }}>Active Journeys ({journeys.length})</h2>
         {journeys.length === 0 ? (
-          <p>No journeys yet. Add one to get started!</p>
+          <p style={{ fontFamily: 'sans-serif', color: '#8a7a6d' }}>No journeys yet. Add one to get started!</p>
         ) : (
           <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
             {journeys.map(journey => (
-              <div key={journey.id} style={{ border: '1px solid #ddd', borderRadius: '6px', background: '#f9f9f9', overflow: 'hidden' }}>
+              <div key={journey.id} style={{ border: `1px solid ${BORDER}`, borderRadius: '10px', background: '#fff', overflow: 'hidden', fontFamily: 'sans-serif' }}>
                 {journey.featuredImage ? (
                   <img src={journey.featuredImage} alt={journey.title} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: '100%', height: '160px', background: 'linear-gradient(135deg, #d1356f, #D4A574)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '13px' }}>
+                  <div style={{ width: '100%', height: '160px', background: `linear-gradient(135deg, ${PINK}, ${GOLD})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '13px' }}>
                     No Image Yet
                   </div>
                 )}
-                <div style={{ padding: '15px' }}>
-                  <h3 style={{ margin: '0 0 8px 0' }}>{journey.title}</h3>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>{journey.description}</p>
-                  <p style={{ margin: '4px 0' }}><strong>📍 Destination:</strong> {journey.destination}</p>
-                  <p style={{ margin: '4px 0' }}><strong>⏱️ Duration:</strong> {journey.duration} days</p>
-                  <p style={{ margin: '4px 0' }}><strong>📈 Difficulty:</strong> {journey.difficulty}</p>
-                  <p style={{ margin: '4px 0' }}><strong>💰 Price:</strong> ${journey.price}</p>
-                  <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                    <button style={{ padding: '8px 12px', background: '#D4A574', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleEdit(journey)}>
-                      ✏️ Edit
-                    </button>
-                    <button style={{ padding: '8px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleDeleteJourney(journey.id)}>
-                      🗑️ Delete
-                    </button>
+                <div style={{ padding: '16px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: INK }}>{journey.title}</h3>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '13.5px', color: '#7a6c60' }}>{journey.description}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', fontSize: '12px', color: '#7a6c60', marginBottom: '10px' }}>
+                    <span>📍 {journey.destination}</span>
+                    <span>· ⏱️ {journey.duration}d</span>
+                    <span>· 📈 {journey.difficulty}</span>
+                    <span>· 💰 {journey.currency} {journey.price}</span>
+                    {journey.itineraryDays?.length > 0 && <span>· 🗓️ {journey.itineraryDays.length}-day plan</span>}
+                    {journey.gallery?.length > 0 && <span>· 🖼️ {journey.gallery.length} photos</span>}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <PillButton tone="gold" onClick={() => handleEdit(journey)}>✏️ Edit</PillButton>
+                    <PillButton tone="danger" onClick={() => handleDeleteJourney(journey.id)}>🗑️ Delete</PillButton>
                   </div>
                 </div>
               </div>
