@@ -54,23 +54,7 @@ function useGoogleTranslate() {
 // Drives the hidden Google Translate <select> so switching our language pills
 // also translates every other section of the page (highlights, itinerary,
 // inclusions, sidebar, etc.), not just the manually-translated hero copy.
-// Reads the current Google Translate target language from its cookie, if any.
-function getGoogleTranslateLang() {
-  const match = document.cookie.match(/googtrans=\/en\/([a-zA-Z-]+)/)
-  return match ? match[1] : 'en'
-}
 
-// Switching language via a cookie + reload is far more reliable than driving
-// Google's hidden <select> in-place, especially for dynamically-rendered
-// React content that the widget's live DOM scan can miss.
-function setGoogleTranslateLang(langCode) {
-  if (langCode === 'en') {
-    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-  } else {
-    document.cookie = `googtrans=/en/${langCode}; path=/`
-  }
-  window.location.reload()
-}
 
 // Google injects a top banner iframe and shifts <body> down when translation
 // activates. This keeps forcing it closed so the layout never jumps.
@@ -97,7 +81,7 @@ export default function JourneyDetail() {
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
   const [lightboxImg, setLightboxImg] = useState(null)
-  const [lang, setLang] = useState(() => getGoogleTranslateLang())
+  const [lang, setLang] = useState('en')
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
 
   useGoogleTranslate()
@@ -127,18 +111,28 @@ export default function JourneyDetail() {
 
   const primaryColor = settings?.primaryColor || '#d1356f'
   const secondaryColor = settings?.secondaryColor || '#D4A574'
-  const days = journey.itineraryDays || []
-  const gallery = journey.gallery || []
-  const highlights = journey.highlights || []
-  const inclusions = journey.inclusions?.length ? journey.inclusions : DEFAULT_INCLUSIONS
-  const exclusions = journey.exclusions || []
 
   const t = journey.translations?.[lang]
   const displayTitle = (lang !== 'en' && t?.title) ? t.title : journey.title
   const displayDescription = (lang !== 'en' && t?.description) ? t.description : journey.description
+  const highlights = (lang !== 'en' && t?.highlights?.length) ? t.highlights : (journey.highlights || [])
+  const inclusions = (lang !== 'en' && t?.inclusions?.length) ? t.inclusions
+    : (journey.inclusions?.length ? journey.inclusions : DEFAULT_INCLUSIONS)
+  const exclusions = (lang !== 'en' && t?.exclusions?.length) ? t.exclusions : (journey.exclusions || [])
+  // Itinerary days: translate title/description per day where available, falling
+  // back to the English day for anything not translated.
+  const days = (journey.itineraryDays || []).map((d, idx) => {
+    const trDay = (lang !== 'en') ? t?.itineraryDays?.[idx] : null
+    return {
+      day: d.day,
+      title: trDay?.title || d.title,
+      description: trDay?.description || d.description
+    }
+  })
+  const gallery = journey.gallery || []
 
   return (
-    <div style={{ fontFamily: SANS, color: INK, background: '#fff' }} className="notranslate-shield">
+    <div style={{ fontFamily: SANS, color: INK, background: '#fff' }}>
 
       {/* Utility bar: back link + translation controls */}
       <div style={{
@@ -159,7 +153,7 @@ export default function JourneyDetail() {
               {LANGUAGES.filter(l => l.code === 'en' || journey.translations[l.code]).map(l => (
                 <button
                   key={l.code}
-                  onClick={() => setGoogleTranslateLang(l.code)}
+                  onClick={() => setLang(l.code)}
                   style={{
                     border: 'none', borderRadius: '999px', padding: '5px 11px', fontSize: '12px', fontWeight: 700,
                     cursor: 'pointer', background: lang === l.code ? primaryColor : 'transparent',

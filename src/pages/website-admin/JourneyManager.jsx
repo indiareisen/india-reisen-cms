@@ -90,23 +90,78 @@ const SAMPLE_JOURNEY = {
   translations: {
     hi: {
       title: 'राजस्थान शाही विरासत यात्रा',
-      description: 'जयपुर, उदयपुर, जोधपुर और जैसलमेर के किलों, महलों और रेगिस्तानी परिदृश्यों से होकर सात दिन की यात्रा।'
+      description: 'जयपुर, उदयपुर, जोधपुर और जैसलमेर के किलों, महलों और रेगिस्तानी परिदृश्यों से होकर सात दिन की यात्रा।',
+      highlights: [
+        'भीड़ आने से पहले आमेर किले की निजी सूर्योदय यात्रा',
+        'उदयपुर में बुटीक हेरिटेज हवेली में ठहराव',
+        'सूर्यास्त के समय थार रेगिस्तान में ऊंट सफारी'
+      ],
+      inclusions: ['निजी वातानुकूलित वाहन', 'हेरिटेज होटल आवास', 'दैनिक नाश्ता'],
+      exclusions: ['अंतरराष्ट्रीय उड़ानें', 'व्यक्तिगत खर्च'],
+      itineraryDays: [
+        { title: 'जयपुर में आगमन', description: 'जयपुर पहुंचें और अपने हेरिटेज होटल में स्थानांतरित हों।' },
+        { title: 'आमेर किला और सिटी पैलेस', description: 'आमेर किले की निजी सूर्योदय यात्रा।' }
+      ]
     },
     fr: {
       title: 'Circuit du Patrimoine Royal du Rajasthan',
-      description: 'Un voyage de sept jours à travers les forts, palais et paysages désertiques du Rajasthan, de Jaipur à Jaisalmer.'
+      description: 'Un voyage de sept jours à travers les forts, palais et paysages désertiques du Rajasthan, de Jaipur à Jaisalmer.',
+      highlights: [
+        'Visite privée au lever du soleil du fort d\'Amber',
+        'Séjours en havelis patrimoniaux à Udaipur',
+        'Safari à dos de chameau dans le désert du Thar au coucher du soleil'
+      ],
+      inclusions: ['Véhicule privé climatisé', 'Hébergement en hôtels patrimoniaux', 'Petit-déjeuner quotidien'],
+      exclusions: ['Vols internationaux', 'Dépenses personnelles'],
+      itineraryDays: [
+        { title: 'Arrivée à Jaipur', description: 'Atterrissage à Jaipur, transfert vers votre hôtel patrimonial.' },
+        { title: 'Fort d\'Amber et City Palace', description: 'Visite privée au lever du soleil du fort d\'Amber.' }
+      ]
     },
     es: {
       title: 'Ruta del Patrimonio Real de Rajastán',
-      description: 'Un viaje de siete días por los fuertes, palacios y paisajes desérticos de Rajastán, desde Jaipur hasta Jaisalmer.'
+      description: 'Un viaje de siete días por los fuertes, palacios y paisajes desérticos de Rajastán, desde Jaipur hasta Jaisalmer.',
+      highlights: [
+        'Visita privada al amanecer al Fuerte Amber',
+        'Estancias en havelis históricos en Udaipur',
+        'Safari en camello por el desierto de Thar al atardecer'
+      ],
+      inclusions: ['Vehículo privado con aire acondicionado', 'Alojamiento en hoteles históricos', 'Desayuno diario'],
+      exclusions: ['Vuelos internacionales', 'Gastos personales'],
+      itineraryDays: [
+        { title: 'Llegada a Jaipur', description: 'Aterrizaje en Jaipur, traslado a su hotel histórico.' },
+        { title: 'Fuerte Amber y Palacio de la Ciudad', description: 'Visita privada al amanecer al Fuerte Amber.' }
+      ]
     },
     de: {
       title: 'Rajasthans Königlicher Erbepfad',
-      description: 'Eine siebentägige Reise durch die Festungen, Paläste und Wüstenlandschaften Rajasthans, von Jaipur bis Jaisalmer.'
+      description: 'Eine siebentägige Reise durch die Festungen, Paläste und Wüstenlandschaften Rajasthans, von Jaipur bis Jaisalmer.',
+      highlights: [
+        'Privater Sonnenaufgangsbesuch im Amber Fort',
+        'Aufenthalte in historischen Boutique-Havelis in Udaipur',
+        'Kamelsafari durch die Thar-Wüste bei Sonnenuntergang'
+      ],
+      inclusions: ['Privates klimatisiertes Fahrzeug', 'Unterkunft in historischen Hotels', 'Tägliches Frühstück'],
+      exclusions: ['Internationale Flüge', 'Persönliche Ausgaben'],
+      itineraryDays: [
+        { title: 'Ankunft in Jaipur', description: 'Landung in Jaipur, Transfer zu Ihrem historischen Hotel.' },
+        { title: 'Amber Fort & City Palace', description: 'Privater Sonnenaufgangsbesuch im Amber Fort.' }
+      ]
     },
     pt: {
       title: 'Rota do Patrimônio Real do Rajastão',
-      description: 'Uma jornada de sete dias pelos fortes, palácios e paisagens desérticas do Rajastão, de Jaipur a Jaisalmer.'
+      description: 'Uma jornada de sete dias pelos fortes, palácios e paisagens desérticas do Rajastão, de Jaipur a Jaisalmer.',
+      highlights: [
+        'Visita privada ao nascer do sol no Forte Amber',
+        'Estadias em havelis históricos em Udaipur',
+        'Safári de camelo pelo deserto de Thar ao pôr do sol'
+      ],
+      inclusions: ['Veículo privado com ar-condicionado', 'Hospedagem em hotéis históricos', 'Café da manhã diário'],
+      exclusions: ['Voos internacionais', 'Despesas pessoais'],
+      itineraryDays: [
+        { title: 'Chegada em Jaipur', description: 'Pouso em Jaipur, transporte até seu hotel histórico.' },
+        { title: 'Forte Amber e City Palace', description: 'Visita privada ao nascer do sol no Forte Amber.' }
+      ]
     }
   }
 }
@@ -559,34 +614,96 @@ export default function JourneyManager() {
             {activeTab === 'translations' && (
               <div>
                 <p style={{ color: '#8a7a6d', fontSize: '13px', margin: '0 0 18px 0' }}>
-                  Optional — add accurate title/description translations here. Visitors can switch to these manually on the journey page.
-                  Everything else on the site auto-translates via the Google Translate widget, so this is only needed for your key marketing copy.
+                  Optional — translate this journey's full content per language. Visitors switch between these manually on the journey page; nothing here depends on machine translation, so leave any field blank to fall back to the English version.
                 </p>
-                <div style={{ display: 'grid', gap: '20px' }}>
-                  {TAB_LANGUAGES.map(({ code, label }) => (
-                    <div key={code} style={{ border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '16px', background: CANVAS }}>
-                      <h4 style={{ margin: '0 0 12px 0', color: INK, fontSize: '14px' }}>{label}</h4>
-                      <div style={{ display: 'grid', gap: '10px' }}>
-                        <TextInput
-                          placeholder={`Title in ${label}`}
-                          value={formData.translations?.[code]?.title || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            translations: { ...formData.translations, [code]: { ...formData.translations?.[code], title: e.target.value } }
-                          })}
-                        />
-                        <TextArea
-                          placeholder={`Description in ${label}`}
-                          rows={2}
-                          value={formData.translations?.[code]?.description || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            translations: { ...formData.translations, [code]: { ...formData.translations?.[code], description: e.target.value } }
-                          })}
-                        />
+                <div style={{ display: 'grid', gap: '28px' }}>
+                  {TAB_LANGUAGES.map(({ code, label }) => {
+                    const tr = formData.translations?.[code] || {}
+                    const updateTr = (patch) => setFormData({
+                      ...formData,
+                      translations: { ...formData.translations, [code]: { ...tr, ...patch } }
+                    })
+                    return (
+                      <div key={code} style={{ border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '18px', background: CANVAS }}>
+                        <h4 style={{ margin: '0 0 14px 0', color: INK, fontSize: '15px' }}>{label}</h4>
+
+                        <div style={{ display: 'grid', gap: '10px', marginBottom: '18px' }}>
+                          <TextInput
+                            placeholder={`Title in ${label}`}
+                            value={tr.title || ''}
+                            onChange={(e) => updateTr({ title: e.target.value })}
+                          />
+                          <TextArea
+                            placeholder={`Description in ${label}`}
+                            rows={2}
+                            value={tr.description || ''}
+                            onChange={(e) => updateTr({ description: e.target.value })}
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#8a7a6d', marginBottom: '8px' }}>Highlights</label>
+                          <ChipListEditor
+                            items={tr.highlights || []}
+                            onChange={(v) => updateTr({ highlights: v })}
+                            placeholder={`Highlight in ${label}`}
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#8a7a6d', marginBottom: '8px' }}>What's Included</label>
+                          <ChipListEditor
+                            items={tr.inclusions || []}
+                            onChange={(v) => updateTr({ inclusions: v })}
+                            placeholder={`Inclusion in ${label}`}
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: formData.itineraryDays.length ? '16px' : 0 }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#8a7a6d', marginBottom: '8px' }}>Not Included</label>
+                          <ChipListEditor
+                            items={tr.exclusions || []}
+                            onChange={(v) => updateTr({ exclusions: v })}
+                            placeholder={`Exclusion in ${label}`}
+                          />
+                        </div>
+
+                        {formData.itineraryDays.length > 0 && (
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#8a7a6d', marginBottom: '8px' }}>Itinerary Days</label>
+                            <div style={{ display: 'grid', gap: '10px' }}>
+                              {formData.itineraryDays.map((day, idx) => {
+                                const trDays = tr.itineraryDays || []
+                                const trDay = trDays[idx] || {}
+                                const updateDay = (field, value) => {
+                                  const nextDays = formData.itineraryDays.map((_, i) => trDays[i] || {})
+                                  nextDays[idx] = { ...nextDays[idx], [field]: value }
+                                  updateTr({ itineraryDays: nextDays })
+                                }
+                                return (
+                                  <div key={idx} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '7px', padding: '10px' }}>
+                                    <p style={{ margin: '0 0 6px 0', fontSize: '11.5px', color: '#a89a8d' }}>Day {day.day} — {day.title || '(untitled)'}</p>
+                                    <TextInput
+                                      placeholder={`Day ${day.day} title in ${label}`}
+                                      value={trDay.title || ''}
+                                      onChange={(e) => updateDay('title', e.target.value)}
+                                      style={{ marginBottom: '6px' }}
+                                    />
+                                    <TextArea
+                                      placeholder={`Day ${day.day} description in ${label}`}
+                                      rows={2}
+                                      value={trDay.description || ''}
+                                      onChange={(e) => updateDay('description', e.target.value)}
+                                    />
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
