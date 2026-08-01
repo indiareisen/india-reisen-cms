@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 import useWishlist from '../../hooks/useWishlist'
 
 const INK = '#2b2320'
+const MUTE = '#8a7a6d'
 const BORDER = '#e8dfd7'
 const CANVAS = '#faf6f2'
+const SERIF = "'Playfair Display', Georgia, 'Times New Roman', serif"
+const SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 const DEFAULT_INCLUSIONS = [
   'Professional local guides',
@@ -17,6 +20,36 @@ const DEFAULT_INCLUSIONS = [
   'Travel insurance included'
 ]
 
+const LANGUAGES = [
+  { code: 'en', label: 'EN' },
+  { code: 'hi', label: 'HI' },
+  { code: 'fr', label: 'FR' },
+  { code: 'es', label: 'ES' },
+  { code: 'de', label: 'DE' }
+]
+
+/* ---------- Google Translate widget, loaded once, styled to sit quietly in the header ---------- */
+
+function useGoogleTranslate() {
+  const loaded = useRef(false)
+  useEffect(() => {
+    if (loaded.current || window.google?.translate) return
+    loaded.current = true
+
+    window.googleTranslateElementInit = function () {
+      // eslint-disable-next-line no-new
+      new window.google.translate.TranslateElement(
+        { pageLanguage: 'en', autoDisplay: false, layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE },
+        'google_translate_element'
+      )
+    }
+    const script = document.createElement('script')
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
+}
+
 export default function JourneyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -24,16 +57,17 @@ export default function JourneyDetail() {
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
   const [lightboxImg, setLightboxImg] = useState(null)
+  const [lang, setLang] = useState('en')
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
+
+  useGoogleTranslate()
 
   useEffect(() => { fetchData() }, [id])
 
   const fetchData = async () => {
     try {
       const journeyDoc = await getDoc(doc(db, 'journeys', id))
-      if (journeyDoc.exists()) {
-        setJourney({ id: journeyDoc.id, ...journeyDoc.data() })
-      }
+      if (journeyDoc.exists()) setJourney({ id: journeyDoc.id, ...journeyDoc.data() })
       const settingsDoc = await getDoc(doc(db, 'settings', 'general'))
       if (settingsDoc.exists()) setSettings(settingsDoc.data())
     } catch (error) {
@@ -43,8 +77,12 @@ export default function JourneyDetail() {
     }
   }
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
-  if (!journey) return <div style={{ padding: '40px', textAlign: 'center' }}>Journey not found</div>
+  if (loading) return (
+    <div style={{ padding: '80px 20px', textAlign: 'center', fontFamily: SANS, color: MUTE }}>Loading journey…</div>
+  )
+  if (!journey) return (
+    <div style={{ padding: '80px 20px', textAlign: 'center', fontFamily: SANS, color: MUTE }}>Journey not found</div>
+  )
 
   const primaryColor = settings?.primaryColor || '#d1356f'
   const secondaryColor = settings?.secondaryColor || '#D4A574'
@@ -54,207 +92,276 @@ export default function JourneyDetail() {
   const inclusions = journey.inclusions?.length ? journey.inclusions : DEFAULT_INCLUSIONS
   const exclusions = journey.exclusions || []
 
+  const t = journey.translations?.[lang]
+  const displayTitle = (lang !== 'en' && t?.title) ? t.title : journey.title
+  const displayDescription = (lang !== 'en' && t?.description) ? t.description : journey.description
+
   return (
-    <div>
-      {/* Back Button */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', display: 'flex', gap: '10px' }}>
+    <div style={{ fontFamily: SANS, color: INK, background: '#fff' }} className="notranslate-shield">
+
+      {/* Utility bar: back link + translation controls */}
+      <div style={{
+        maxWidth: '1180px', margin: '0 auto', padding: '18px 24px 0 24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px'
+      }}>
         <button
           onClick={() => navigate('/journeys')}
-          style={{ background: primaryColor, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ background: 'none', border: 'none', color: MUTE, fontSize: '13.5px', fontWeight: 600, cursor: 'pointer', padding: '6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          ← Back to Journeys
+          ← All Journeys
         </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Manual translation for title/description, only shown if the journey has any */}
+          {journey.translations && Object.keys(journey.translations).length > 0 && (
+            <div style={{ display: 'flex', gap: '4px', background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '999px', padding: '3px' }}>
+              {LANGUAGES.filter(l => l.code === 'en' || journey.translations[l.code]).map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  style={{
+                    border: 'none', borderRadius: '999px', padding: '5px 11px', fontSize: '12px', fontWeight: 700,
+                    cursor: 'pointer', background: lang === l.code ? primaryColor : 'transparent',
+                    color: lang === l.code ? '#fff' : MUTE
+                  }}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Google auto-translate widget for full-page coverage */}
+          <div id="google_translate_element" style={{ fontSize: '12px' }}></div>
+        </div>
       </div>
 
-      {/* Hero Section */}
-      <section style={{ position: 'relative', color: 'white', padding: '80px 20px', textAlign: 'center', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Hero */}
+      <section style={{ position: 'relative', color: 'white', padding: '90px 24px 70px 24px', textAlign: 'center', minHeight: '420px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', overflow: 'hidden', marginTop: '8px' }}>
         <div className="journey-hero-bg" style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          position: 'absolute', inset: 0,
           backgroundImage: journey.featuredImage ? `url('${journey.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
           backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 1
         }}></div>
-        {journey.featuredImage && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(135deg, rgba(209,53,111,0.55), rgba(212,165,116,0.55))`, zIndex: 2 }}></div>
-        )}
-        <div style={{ position: 'relative', zIndex: 3 }}>
-          <h1 style={{ fontSize: '48px', margin: '0 0 20px 0', textShadow: '2px 2px 8px rgba(0,0,0,0.4)' }}>{journey.title}</h1>
-          <p style={{ fontSize: '18px', maxWidth: '600px', margin: '0 auto 30px auto', textShadow: '1px 1px 4px rgba(0,0,0,0.4)' }}>{journey.description}</p>
-          <div style={{ fontSize: '24px', textShadow: '1px 1px 4px rgba(0,0,0,0.4)' }}>🌍 {journey.destination}</div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(20,14,12,0.35) 0%, rgba(20,14,12,0.65) 100%)', zIndex: 2 }}></div>
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '780px' }}>
+          <p style={{ margin: '0 0 14px 0', fontSize: '13px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, color: secondaryColor }}>
+            {journey.destination}
+          </p>
+          <h1 style={{ fontFamily: SERIF, fontSize: 'clamp(34px, 5vw, 54px)', margin: '0 0 18px 0', lineHeight: 1.1, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+            {displayTitle}
+          </h1>
+          <div style={{ width: '48px', height: '2px', background: secondaryColor, margin: '0 auto 22px auto' }}></div>
+          <p style={{ fontSize: '17px', lineHeight: 1.65, margin: 0, opacity: 0.95 }}>{displayDescription}</p>
         </div>
       </section>
 
-      {/* Quick Facts */}
-      <section style={{ maxWidth: '1200px', margin: '-40px auto 60px auto', padding: '0 20px', position: 'relative', zIndex: 10 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
+      {/* Quick facts */}
+      <section style={{ maxWidth: '1180px', margin: '-46px auto 0 auto', padding: '0 24px', position: 'relative', zIndex: 10 }}>
+        <div style={{ background: '#fff', borderRadius: '14px', boxShadow: '0 12px 36px rgba(43,35,32,0.12)', display: 'flex', flexWrap: 'wrap' }}>
           {[
-            [`⏱️ ${journey.duration}`, 'Days'],
-            [`📈 ${journey.difficulty}`, 'Level'],
-            [`💰 ${journey.currency || '$'} ${journey.price}`, 'Per Person'],
-            [`📍 ${journey.destination}`, 'Destination']
-          ].map(([big, small], i) => (
-            <div key={i} style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-              <p style={{ margin: '0 0 10px 0', fontSize: '26px', fontWeight: 'bold', color: primaryColor }}>{big}</p>
-              <p style={{ margin: 0, color: '#666' }}>{small}</p>
+            ['Duration', `${journey.duration} days`],
+            ['Difficulty', journey.difficulty],
+            ['From', `${journey.currency || '$'} ${journey.price}`],
+            ['Destination', journey.destination]
+          ].map(([label, value], i, arr) => (
+            <div key={i} style={{
+              flex: '1 1 200px', padding: '22px 24px', textAlign: 'center',
+              borderRight: i === arr.length - 1 ? 'none' : `1px solid ${BORDER}`
+            }}>
+              <p style={{ margin: '0 0 6px 0', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>{label}</p>
+              <p style={{ margin: 0, fontFamily: SERIF, fontSize: '21px', color: INK, fontWeight: 700 }}>{value}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Highlights strip */}
+      {/* Highlights */}
       {highlights.length > 0 && (
-        <section style={{ maxWidth: '1200px', margin: '0 auto 20px auto', padding: '0 20px' }}>
-          <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '22px 26px' }}>
-            <h3 style={{ margin: '0 0 14px 0', color: primaryColor, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>✨ Highlights</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
-              {highlights.map((h, i) => (
-                <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', color: INK, fontSize: '14.5px', lineHeight: '1.5' }}>
-                  <span style={{ color: secondaryColor, fontWeight: 'bold' }}>✦</span>{h}
-                </div>
-              ))}
-            </div>
+        <section style={{ maxWidth: '1180px', margin: '48px auto 0 auto', padding: '0 24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+            {highlights.map((h, i) => (
+              <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '16px 18px', background: CANVAS, borderRadius: '10px', border: `1px solid ${BORDER}` }}>
+                <span style={{ color: primaryColor, fontSize: '17px', lineHeight: 1, marginTop: '2px' }}>✦</span>
+                <span style={{ fontSize: '14.5px', lineHeight: 1.55, color: INK }}>{h}</span>
+              </div>
+            ))}
           </div>
         </section>
       )}
 
-      {/* Main Content */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '40px' }}>
-          {/* Left Column */}
-          <div>
-            <h2 style={{ color: primaryColor, marginBottom: '20px' }}>About This Journey</h2>
-            <p style={{ lineHeight: '1.8', color: '#666', marginBottom: '30px' }}>{journey.description}</p>
+      {/* Main content */}
+      <section style={{ maxWidth: '1180px', margin: '0 auto', padding: '56px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(280px, 1fr)', gap: '56px' }}>
 
+          {/* Left */}
+          <div>
             {/* Gallery */}
             {gallery.length > 0 && (
-              <>
-                <h2 style={{ color: primaryColor, marginBottom: '16px' }}>Gallery</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', marginBottom: '30px' }}>
+              <div style={{ marginBottom: '52px' }}>
+                <SectionEyebrow color={primaryColor}>Gallery</SectionEyebrow>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px' }}>
                   {gallery.map((url, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setLightboxImg(url)}
-                      style={{ height: '110px', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', border: `1px solid ${BORDER}` }}
-                    >
-                      <img src={url} alt={`${journey.title} ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }}
-                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                    <div key={i} onClick={() => setLightboxImg(url)} style={{ height: '130px', borderRadius: '10px', overflow: 'hidden', cursor: 'zoom-in' }}>
+                      <img src={url} alt={`${journey.title} ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
+                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.06)'}
                         onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
             )}
 
-            <h2 style={{ color: primaryColor, marginBottom: '20px' }}>What's Included</h2>
-            <ul style={{ color: '#666', lineHeight: '2', paddingLeft: '20px', marginBottom: exclusions.length ? '20px' : '30px' }}>
-              {inclusions.map((item, i) => <li key={i}>✓ {item}</li>)}
-            </ul>
+            {/* Itinerary — signature element */}
+            <div style={{ marginBottom: '52px' }}>
+              <SectionEyebrow color={primaryColor}>{days.length > 0 ? `${days.length}-Day Itinerary` : 'Itinerary'}</SectionEyebrow>
+              {days.length > 0 ? (
+                <div>
+                  {days.map((d, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '22px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: '44px' }}>
+                        <span style={{
+                          width: '44px', height: '44px', borderRadius: '50%', background: '#fff', border: `2px solid ${primaryColor}`, color: primaryColor,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '15px', fontFamily: SERIF, flexShrink: 0
+                        }}>{d.day}</span>
+                        {i !== days.length - 1 && <div style={{ flex: 1, width: '1px', background: BORDER, margin: '6px 0' }}></div>}
+                      </div>
+                      <div style={{ paddingBottom: i === days.length - 1 ? 0 : '32px' }}>
+                        <h4 style={{ fontFamily: SERIF, margin: '8px 0 8px 0', color: INK, fontSize: '19px' }}>{d.title || `Day ${d.day}`}</h4>
+                        <p style={{ margin: 0, color: '#5c5148', lineHeight: 1.75, fontSize: '14.5px' }}>{d.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '22px' }}>
+                  <p style={{ color: '#5c5148', lineHeight: 1.8, margin: 0, fontSize: '14.5px' }}>
+                    Day 1: Arrival & city orientation<br />
+                    Day 2–{Math.max(journey.duration - 2, 2)}: Explore major attractions & local experiences<br />
+                    Day {journey.duration}: Departure
+                  </p>
+                </div>
+              )}
+            </div>
 
-            {exclusions.length > 0 && (
-              <>
-                <h3 style={{ color: primaryColor, marginBottom: '14px', fontSize: '18px' }}>Not Included</h3>
-                <ul style={{ color: '#666', lineHeight: '2', paddingLeft: '20px', marginBottom: '30px' }}>
-                  {exclusions.map((item, i) => <li key={i}>✕ {item}</li>)}
+            {/* About */}
+            <div style={{ marginBottom: '52px' }}>
+              <SectionEyebrow color={primaryColor}>About This Journey</SectionEyebrow>
+              <p style={{ lineHeight: 1.85, color: '#5c5148', fontSize: '15px', margin: 0 }}>{displayDescription}</p>
+            </div>
+
+            {/* Inclusions / exclusions */}
+            <div style={{ display: 'grid', gridTemplateColumns: exclusions.length ? '1fr 1fr' : '1fr', gap: '32px' }}>
+              <div>
+                <SectionEyebrow color={primaryColor}>What's Included</SectionEyebrow>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {inclusions.map((item, i) => (
+                    <li key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', fontSize: '14px', color: '#5c5148', lineHeight: 1.5 }}>
+                      <span style={{ color: '#1a7a4c', fontWeight: 700, flexShrink: 0 }}>✓</span>{item}
+                    </li>
+                  ))}
                 </ul>
-              </>
-            )}
-
-            <h2 style={{ color: primaryColor, marginBottom: '20px', marginTop: '10px' }}>Itinerary</h2>
-            {days.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                {days.map((d, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '18px', paddingBottom: i === days.length - 1 ? 0 : '22px', position: 'relative' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                      <span style={{
-                        width: '36px', height: '36px', borderRadius: '50%', background: primaryColor, color: '#fff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px', zIndex: 1
-                      }}>{d.day}</span>
-                      {i !== days.length - 1 && <div style={{ flex: 1, width: '2px', background: BORDER, marginTop: '4px' }}></div>}
-                    </div>
-                    <div style={{ paddingBottom: '4px' }}>
-                      <h4 style={{ margin: '4px 0 6px 0', color: INK }}>{d.title || `Day ${d.day}`}</h4>
-                      <p style={{ margin: 0, color: '#666', lineHeight: '1.7', fontSize: '14.5px' }}>{d.description}</p>
-                    </div>
-                  </div>
-                ))}
               </div>
-            ) : (
-              <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px' }}>
-                <p style={{ color: '#666', lineHeight: '1.8', margin: 0 }}>
-                  Day 1: Arrival & city orientation<br />
-                  Day 2-{Math.max(journey.duration - 2, 2)}: Explore major attractions & local experiences<br />
-                  Day {journey.duration}: Departure
-                </p>
-              </div>
-            )}
+              {exclusions.length > 0 && (
+                <div>
+                  <SectionEyebrow color={primaryColor}>Not Included</SectionEyebrow>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {exclusions.map((item, i) => (
+                      <li key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', fontSize: '14px', color: '#5c5148', lineHeight: 1.5 }}>
+                        <span style={{ color: '#b3423f', fontWeight: 700, flexShrink: 0 }}>✕</span>{item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right Column - Sidebar */}
+          {/* Sidebar */}
           <div>
-            <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '8px', position: 'sticky', top: '20px' }}>
-              <h3 style={{ color: primaryColor, marginTop: 0 }}>Book This Journey</h3>
-              <div style={{ background: 'white', padding: '15px', borderRadius: '6px', marginBottom: '20px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 10px 0', color: '#999', fontSize: '12px' }}>Starting from</p>
-                <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', color: primaryColor }}>{journey.currency || '$'} {journey.price}</p>
-              </div>
+            <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '28px', position: 'sticky', top: '24px' }}>
+              <p style={{ margin: '0 0 4px 0', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>Starting from</p>
+              <p style={{ margin: '0 0 20px 0', fontFamily: SERIF, fontSize: '34px', color: primaryColor, fontWeight: 700 }}>
+                {journey.currency || '$'} {journey.price}
+                <span style={{ fontSize: '13px', color: MUTE, fontWeight: 400, marginLeft: '6px', fontFamily: SANS }}>/ person</span>
+              </p>
+
               <button
                 onClick={() => alert('Booking system coming soon!')}
-                style={{ width: '100%', padding: '15px', background: primaryColor, color: 'white', border: 'none', borderRadius: '6px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', transition: 'background 0.3s' }}
+                style={{ width: '100%', padding: '15px', background: primaryColor, color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', marginBottom: '10px', transition: 'background 0.25s' }}
                 onMouseOver={e => e.target.style.background = secondaryColor}
                 onMouseOut={e => e.target.style.background = primaryColor}
               >
-                🛫 Book Now
+                Enquire About This Journey
               </button>
               <button
                 onClick={() => toggleWishlist(journey.id, journey)}
                 style={{
-                  width: '100%', padding: '15px', background: checkWishlisted(journey.id) ? primaryColor : 'white',
-                  color: checkWishlisted(journey.id) ? 'white' : primaryColor, border: `2px solid ${primaryColor}`,
-                  borderRadius: '6px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'
+                  width: '100%', padding: '15px', background: checkWishlisted(journey.id) ? primaryColor : '#fff',
+                  color: checkWishlisted(journey.id) ? 'white' : primaryColor, border: `1.5px solid ${primaryColor}`,
+                  borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                {checkWishlisted(journey.id) ? '❤️ Remove from Wishlist' : '🤍 Add to Wishlist'}
+                {checkWishlisted(journey.id) ? '♥ Saved to Wishlist' : '♡ Save to Wishlist'}
               </button>
-              <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
-                <h4 style={{ color: primaryColor, marginBottom: '15px' }}>Need Help?</h4>
-                <p style={{ color: '#666', fontSize: '14px', marginBottom: '10px' }}>📞 Call us: {settings?.phone}</p>
-                <p style={{ color: '#666', fontSize: '14px' }}>📧 Email: {settings?.email}</p>
+
+              <div style={{ marginTop: '26px', paddingTop: '22px', borderTop: `1px solid ${BORDER}` }}>
+                <p style={{ margin: '0 0 10px 0', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>Need Help?</p>
+                {settings?.phone && <p style={{ margin: '0 0 6px 0', color: '#5c5148', fontSize: '13.5px' }}>{settings.phone}</p>}
+                {settings?.email && <p style={{ margin: 0, color: '#5c5148', fontSize: '13.5px' }}>{settings.email}</p>}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: 'white', padding: '60px 20px', textAlign: 'center' }}>
-        <h2 style={{ margin: '0 0 20px 0', fontSize: '32px' }}>Ready for Your Adventure?</h2>
-        <p style={{ margin: '0 0 30px 0', fontSize: '16px' }}>Don't miss out on this incredible journey. Limited spots available!</p>
+      {/* CTA */}
+      <section style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: 'white', padding: '64px 24px', textAlign: 'center' }}>
+        <h2 style={{ fontFamily: SERIF, margin: '0 0 14px 0', fontSize: '30px' }}>Ready for Your Adventure?</h2>
+        <p style={{ margin: '0 0 28px 0', fontSize: '15px', opacity: 0.95 }}>Limited spots available for this journey.</p>
         <button
           onClick={() => alert('Booking system coming soon!')}
-          style={{ background: 'white', color: primaryColor, padding: '15px 40px', borderRadius: '50px', border: 'none', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
+          style={{ background: 'white', color: primaryColor, padding: '14px 36px', borderRadius: '999px', border: 'none', fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 6px 20px rgba(0,0,0,0.18)' }}
         >
-          Book This Journey Now →
+          Enquire Now →
         </button>
       </section>
 
       {/* Lightbox */}
       {lightboxImg && (
-        <div
-          onClick={() => setLightboxImg(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', padding: '30px' }}
-        >
-          <img src={lightboxImg} alt="Gallery enlarged" style={{ maxWidth: '90%', maxHeight: '90%', borderRadius: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }} />
+        <div onClick={() => setLightboxImg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,14,12,0.9)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', padding: '30px' }}>
+          <img src={lightboxImg} alt="Gallery enlarged" style={{ maxWidth: '90%', maxHeight: '90%', borderRadius: '10px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} />
         </div>
       )}
 
       <style>{`
+        #google_translate_element .goog-te-gadget { font-family: ${SANS}; font-size: 0 !important; }
+        #google_translate_element .goog-te-gadget-simple {
+          background: ${CANVAS}; border: 1px solid ${BORDER} !important; border-radius: 999px !important;
+          padding: 6px 12px !important; display: inline-flex; align-items: center;
+        }
+        #google_translate_element .goog-te-gadget-simple span { font-size: 12px !important; color: ${INK} !important; }
+        #google_translate_element img { display: none !important; }
+        body > .skiptranslate { display: none !important; }
+        body { top: 0 !important; }
+
+        @media (max-width: 860px) {
+          section[style*="grid-template-columns: minmax(0px, 2fr) minmax(280px, 1fr)"] { grid-template-columns: 1fr !important; }
+        }
         @media (max-width: 768px) {
-          .journey-hero-bg {
-            background-attachment: scroll !important;
-            background-size: cover !important;
-            background-position: center !important;
-          }
+          .journey-hero-bg { background-attachment: scroll !important; background-size: cover !important; background-position: center !important; }
         }
       `}</style>
     </div>
+  )
+}
+
+function SectionEyebrow({ children, color }) {
+  return (
+    <h3 style={{
+      fontFamily: SERIF, fontSize: '22px', color: INK, margin: '0 0 20px 0',
+      paddingBottom: '10px', borderBottom: `2px solid ${color}`, display: 'inline-block'
+    }}>
+      {children}
+    </h3>
   )
 }

@@ -21,14 +21,23 @@ const emptyForm = {
   highlights: [],
   itineraryDays: [],
   inclusions: [],
-  exclusions: []
+  exclusions: [],
+  translations: {}
 }
+
+const TAB_LANGUAGES = [
+  { code: 'hi', label: 'Hindi' },
+  { code: 'fr', label: 'French' },
+  { code: 'es', label: 'Spanish' },
+  { code: 'de', label: 'German' }
+]
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'itinerary', label: 'Itinerary' },
   { key: 'gallery', label: 'Gallery' },
-  { key: 'details', label: 'Highlights & Inclusions' }
+  { key: 'details', label: 'Highlights & Inclusions' },
+  { key: 'translations', label: 'Translations' }
 ]
 
 async function uploadToCloudinary(file) {
@@ -460,6 +469,41 @@ export default function JourneyManager() {
                 <div>
                   <h4 style={{ margin: '0 0 10px 0', color: INK }}>✕ Not Included</h4>
                   <ChipListEditor items={formData.exclusions} onChange={(v) => setFormData({ ...formData, exclusions: v })} placeholder="e.g. International flights" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'translations' && (
+              <div>
+                <p style={{ color: '#8a7a6d', fontSize: '13px', margin: '0 0 18px 0' }}>
+                  Optional — add accurate title/description translations here. Visitors can switch to these manually on the journey page.
+                  Everything else on the site auto-translates via the Google Translate widget, so this is only needed for your key marketing copy.
+                </p>
+                <div style={{ display: 'grid', gap: '20px' }}>
+                  {TAB_LANGUAGES.map(({ code, label }) => (
+                    <div key={code} style={{ border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '16px', background: CANVAS }}>
+                      <h4 style={{ margin: '0 0 12px 0', color: INK, fontSize: '14px' }}>{label}</h4>
+                      <div style={{ display: 'grid', gap: '10px' }}>
+                        <TextInput
+                          placeholder={`Title in ${label}`}
+                          value={formData.translations?.[code]?.title || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            translations: { ...formData.translations, [code]: { ...formData.translations?.[code], title: e.target.value } }
+                          })}
+                        />
+                        <TextArea
+                          placeholder={`Description in ${label}`}
+                          rows={2}
+                          value={formData.translations?.[code]?.description || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            translations: { ...formData.translations, [code]: { ...formData.translations?.[code], description: e.target.value } }
+                          })}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
