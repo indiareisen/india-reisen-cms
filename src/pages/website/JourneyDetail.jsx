@@ -25,7 +25,8 @@ const LANGUAGES = [
   { code: 'hi', label: 'HI' },
   { code: 'fr', label: 'FR' },
   { code: 'es', label: 'ES' },
-  { code: 'de', label: 'DE' }
+  { code: 'de', label: 'DE' },
+  { code: 'pt', label: 'PT' }
 ]
 
 /* ---------- Google Translate widget, loaded once, styled to sit quietly in the header ---------- */
@@ -56,11 +57,29 @@ function useGoogleTranslate() {
 function triggerGoogleTranslate(langCode, attempt = 0) {
   const combo = document.querySelector('.goog-te-combo')
   if (!combo) {
-    if (attempt < 10) setTimeout(() => triggerGoogleTranslate(langCode, attempt + 1), 300)
+    if (attempt < 15) setTimeout(() => triggerGoogleTranslate(langCode, attempt + 1), 300)
     return
   }
   combo.value = langCode
-  combo.dispatchEvent(new Event('change'))
+  combo.dispatchEvent(new Event('change', { bubbles: true }))
+}
+
+// Google injects a top banner iframe and shifts <body> down when translation
+// activates. This keeps forcing it closed so the layout never jumps.
+function useHideGoogleBanner() {
+  useEffect(() => {
+    const hide = () => {
+      document.body.style.top = '0px'
+      document.querySelectorAll('.goog-te-banner-frame, iframe.skiptranslate').forEach(el => {
+        el.style.display = 'none'
+        el.style.visibility = 'hidden'
+        el.style.height = '0'
+      })
+    }
+    hide()
+    const interval = setInterval(hide, 400)
+    return () => clearInterval(interval)
+  }, [])
 }
 
 export default function JourneyDetail() {
@@ -74,6 +93,7 @@ export default function JourneyDetail() {
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
 
   useGoogleTranslate()
+  useHideGoogleBanner()
 
   useEffect(() => { fetchData() }, [id])
 
@@ -355,7 +375,10 @@ export default function JourneyDetail() {
         #google_translate_element .goog-te-gadget-simple span { font-size: 12px !important; color: ${INK} !important; }
         #google_translate_element img { display: none !important; }
         body > .skiptranslate { display: none !important; }
-        body { top: 0 !important; }
+        .goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe.skiptranslate {
+          display: none !important; visibility: hidden !important; height: 0 !important;
+        }
+        body { top: 0px !important; position: static !important; }
 
         @media (max-width: 860px) {
           section[style*="grid-template-columns: minmax(0px, 2fr) minmax(280px, 1fr)"] { grid-template-columns: 1fr !important; }

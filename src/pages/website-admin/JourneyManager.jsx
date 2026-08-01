@@ -29,7 +29,8 @@ const TAB_LANGUAGES = [
   { code: 'hi', label: 'Hindi' },
   { code: 'fr', label: 'French' },
   { code: 'es', label: 'Spanish' },
-  { code: 'de', label: 'German' }
+  { code: 'de', label: 'German' },
+  { code: 'pt', label: 'Portuguese (BR)' }
 ]
 
 const TABS = [
@@ -98,6 +99,14 @@ const SAMPLE_JOURNEY = {
     es: {
       title: 'Ruta del Patrimonio Real de Rajastán',
       description: 'Un viaje de siete días por los fuertes, palacios y paisajes desérticos de Rajastán, desde Jaipur hasta Jaisalmer.'
+    },
+    de: {
+      title: 'Rajasthans Königlicher Erbepfad',
+      description: 'Eine siebentägige Reise durch die Festungen, Paläste und Wüstenlandschaften Rajasthans, von Jaipur bis Jaisalmer.'
+    },
+    pt: {
+      title: 'Rota do Patrimônio Real do Rajastão',
+      description: 'Uma jornada de sete dias pelos fortes, palácios e paisagens desérticas do Rajastão, de Jaipur a Jaisalmer.'
     }
   }
 }
