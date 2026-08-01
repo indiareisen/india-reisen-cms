@@ -50,6 +50,19 @@ function useGoogleTranslate() {
   }, [])
 }
 
+// Drives the hidden Google Translate <select> so switching our language pills
+// also translates every other section of the page (highlights, itinerary,
+// inclusions, sidebar, etc.), not just the manually-translated hero copy.
+function triggerGoogleTranslate(langCode, attempt = 0) {
+  const combo = document.querySelector('.goog-te-combo')
+  if (!combo) {
+    if (attempt < 10) setTimeout(() => triggerGoogleTranslate(langCode, attempt + 1), 300)
+    return
+  }
+  combo.value = langCode
+  combo.dispatchEvent(new Event('change'))
+}
+
 export default function JourneyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -118,7 +131,7 @@ export default function JourneyDetail() {
               {LANGUAGES.filter(l => l.code === 'en' || journey.translations[l.code]).map(l => (
                 <button
                   key={l.code}
-                  onClick={() => setLang(l.code)}
+                  onClick={() => { setLang(l.code); triggerGoogleTranslate(l.code) }}
                   style={{
                     border: 'none', borderRadius: '999px', padding: '5px 11px', fontSize: '12px', fontWeight: 700,
                     cursor: 'pointer', background: lang === l.code ? primaryColor : 'transparent',
