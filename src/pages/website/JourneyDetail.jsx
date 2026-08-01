@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
@@ -29,51 +29,6 @@ const LANGUAGES = [
   { code: 'pt', label: 'PT' }
 ]
 
-/* ---------- Google Translate widget, loaded once, styled to sit quietly in the header ---------- */
-
-function useGoogleTranslate() {
-  const loaded = useRef(false)
-  useEffect(() => {
-    if (loaded.current || window.google?.translate) return
-    loaded.current = true
-
-    window.googleTranslateElementInit = function () {
-      // eslint-disable-next-line no-new
-      new window.google.translate.TranslateElement(
-        { pageLanguage: 'en', autoDisplay: false, layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE },
-        'google_translate_element'
-      )
-    }
-    const script = document.createElement('script')
-    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-    script.async = true
-    document.body.appendChild(script)
-  }, [])
-}
-
-// Drives the hidden Google Translate <select> so switching our language pills
-// also translates every other section of the page (highlights, itinerary,
-// inclusions, sidebar, etc.), not just the manually-translated hero copy.
-
-
-// Google injects a top banner iframe and shifts <body> down when translation
-// activates. This keeps forcing it closed so the layout never jumps.
-function useHideGoogleBanner() {
-  useEffect(() => {
-    const hide = () => {
-      document.body.style.top = '0px'
-      document.querySelectorAll('.goog-te-banner-frame, iframe.skiptranslate').forEach(el => {
-        el.style.display = 'none'
-        el.style.visibility = 'hidden'
-        el.style.height = '0'
-      })
-    }
-    hide()
-    const interval = setInterval(hide, 400)
-    return () => clearInterval(interval)
-  }, [])
-}
-
 export default function JourneyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -83,9 +38,6 @@ export default function JourneyDetail() {
   const [lightboxImg, setLightboxImg] = useState(null)
   const [lang, setLang] = useState('en')
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
-
-  useGoogleTranslate()
-  useHideGoogleBanner()
 
   useEffect(() => { fetchData() }, [id])
 
@@ -165,8 +117,6 @@ export default function JourneyDetail() {
               ))}
             </div>
           )}
-          {/* Google auto-translate widget for full-page coverage */}
-          <div id="google_translate_element" style={{ fontSize: '12px' }}></div>
         </div>
       </div>
 
@@ -369,19 +319,6 @@ export default function JourneyDetail() {
       )}
 
       <style>{`
-        #google_translate_element .goog-te-gadget { font-family: ${SANS}; font-size: 0 !important; }
-        #google_translate_element .goog-te-gadget-simple {
-          background: ${CANVAS}; border: 1px solid ${BORDER} !important; border-radius: 999px !important;
-          padding: 6px 12px !important; display: inline-flex; align-items: center;
-        }
-        #google_translate_element .goog-te-gadget-simple span { font-size: 12px !important; color: ${INK} !important; }
-        #google_translate_element img { display: none !important; }
-        body > .skiptranslate { display: none !important; }
-        .goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe.skiptranslate {
-          display: none !important; visibility: hidden !important; height: 0 !important;
-        }
-        body { top: 0px !important; position: static !important; }
-
         @media (max-width: 860px) {
           section[style*="grid-template-columns: minmax(0px, 2fr) minmax(280px, 1fr)"] { grid-template-columns: 1fr !important; }
         }

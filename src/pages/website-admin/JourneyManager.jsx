@@ -100,7 +100,12 @@ const SAMPLE_JOURNEY = {
       exclusions: ['अंतरराष्ट्रीय उड़ानें', 'व्यक्तिगत खर्च'],
       itineraryDays: [
         { title: 'जयपुर में आगमन', description: 'जयपुर पहुंचें और अपने हेरिटेज होटल में स्थानांतरित हों।' },
-        { title: 'आमेर किला और सिटी पैलेस', description: 'आमेर किले की निजी सूर्योदय यात्रा।' }
+        { title: 'आमेर किला और सिटी पैलेस', description: 'आमेर किले की निजी सूर्योदय यात्रा।' },
+        { title: 'जयपुर से उदयपुर', description: 'उदयपुर की सुरम्य यात्रा, झील किनारे एक हवेली में ठहराव। पिछोला झील पर शाम की नाव यात्रा।' },
+        { title: 'झीलों का शहर', description: 'सिटी पैलेस परिसर, जगदीश मंदिर और पुराने शहर के कारीगर बाजारों की सैर।' },
+        { title: 'उदयपुर से जोधपुर', description: 'ब्लू सिटी जोधपुर की यात्रा। मेहरानगढ़ किले की दोपहर की सैर, रेगिस्तान के मनोरम दृश्यों के साथ।' },
+        { title: 'जोधपुर से जैसलमेर', description: 'थार रेगिस्तान होते हुए जैसलमेर की यात्रा। शाम को ऊंट सफारी और टीलों के बीच तारों तले रात्रिभोज।' },
+        { title: 'जैसलमेर किला और प्रस्थान', description: 'जीवंत जैसलमेर किले और पटवों की हवेली में सुबह, फिर प्रस्थान के लिए स्थानांतरण।' }
       ]
     },
     fr: {
@@ -115,7 +120,12 @@ const SAMPLE_JOURNEY = {
       exclusions: ['Vols internationaux', 'Dépenses personnelles'],
       itineraryDays: [
         { title: 'Arrivée à Jaipur', description: 'Atterrissage à Jaipur, transfert vers votre hôtel patrimonial.' },
-        { title: 'Fort d\'Amber et City Palace', description: 'Visite privée au lever du soleil du fort d\'Amber.' }
+        { title: 'Fort d\'Amber et City Palace', description: 'Visite privée au lever du soleil du fort d\'Amber.' },
+        { title: 'Jaipur à Udaipur', description: 'Trajet pittoresque vers Udaipur, installation dans une haveli au bord du lac. Promenade en bateau au coucher du soleil sur le lac Pichola.' },
+        { title: 'Cité des Lacs', description: 'Découverte du complexe du City Palace, du temple de Jagdish et des marchés d\'artisans de la vieille ville.' },
+        { title: 'Udaipur à Jodhpur', description: 'Route vers Jodhpur, la Ville Bleue. Exploration l\'après-midi du fort de Mehrangarh avec vue panoramique sur le désert.' },
+        { title: 'Jodhpur à Jaisalmer', description: 'Voyage dans le désert du Thar jusqu\'à Jaisalmer. Safari à dos de chameau en soirée et dîner sous les étoiles parmi les dunes.' },
+        { title: 'Fort de Jaisalmer & Départ', description: 'Matinée au fort vivant de Jaisalmer et à la Patwon Ki Haveli, puis transfert pour le départ.' }
       ]
     },
     es: {
@@ -130,7 +140,12 @@ const SAMPLE_JOURNEY = {
       exclusions: ['Vuelos internacionales', 'Gastos personales'],
       itineraryDays: [
         { title: 'Llegada a Jaipur', description: 'Aterrizaje en Jaipur, traslado a su hotel histórico.' },
-        { title: 'Fuerte Amber y Palacio de la Ciudad', description: 'Visita privada al amanecer al Fuerte Amber.' }
+        { title: 'Fuerte Amber y Palacio de la Ciudad', description: 'Visita privada al amanecer al Fuerte Amber.' },
+        { title: 'Jaipur a Udaipur', description: 'Trayecto escénico hasta Udaipur, alojamiento en una haveli junto al lago. Paseo en barco al atardecer por el lago Pichola.' },
+        { title: 'Ciudad de los Lagos', description: 'Recorrido por el complejo del Palacio de la Ciudad, el templo de Jagdish y los mercados de artesanos del casco antiguo.' },
+        { title: 'Udaipur a Jodhpur', description: 'Viaje a Jodhpur, la Ciudad Azul. Exploración por la tarde del fuerte de Mehrangarh con vistas panorámicas del desierto.' },
+        { title: 'Jodhpur a Jaisalmer', description: 'Viaje al desierto de Thar hasta Jaisalmer. Safari en camello al atardecer y cena bajo las estrellas entre las dunas.' },
+        { title: 'Fuerte de Jaisalmer y salida', description: 'Mañana en el fuerte viviente de Jaisalmer y en Patwon Ki Haveli, luego traslado para la salida.' }
       ]
     },
     de: {
@@ -145,7 +160,12 @@ const SAMPLE_JOURNEY = {
       exclusions: ['Internationale Flüge', 'Persönliche Ausgaben'],
       itineraryDays: [
         { title: 'Ankunft in Jaipur', description: 'Landung in Jaipur, Transfer zu Ihrem historischen Hotel.' },
-        { title: 'Amber Fort & City Palace', description: 'Privater Sonnenaufgangsbesuch im Amber Fort.' }
+        { title: 'Amber Fort & City Palace', description: 'Privater Sonnenaufgangsbesuch im Amber Fort.' },
+        { title: 'Jaipur nach Udaipur', description: 'Landschaftlich reizvolle Fahrt nach Udaipur, Einzug in eine Haveli am See. Abendliche Bootsfahrt auf dem Pichola-See.' },
+        { title: 'Stadt der Seen', description: 'Erkundung des City-Palace-Komplexes, des Jagdish-Tempels und der Kunsthandwerksmärkte der Altstadt.' },
+        { title: 'Udaipur nach Jodhpur', description: 'Fahrt nach Jodhpur, der Blauen Stadt. Nachmittägliche Erkundung des Mehrangarh-Forts mit Panoramablick auf die Wüste.' },
+        { title: 'Jodhpur nach Jaisalmer', description: 'Fahrt in die Thar-Wüste nach Jaisalmer. Abendliche Kamelsafari und Abendessen unter den Sternen inmitten der Dünen.' },
+        { title: 'Jaisalmer Fort & Abreise', description: 'Vormittag im lebendigen Jaisalmer Fort und in der Patwon Ki Haveli, anschließend Transfer zur Abreise.' }
       ]
     },
     pt: {
@@ -160,7 +180,12 @@ const SAMPLE_JOURNEY = {
       exclusions: ['Voos internacionais', 'Despesas pessoais'],
       itineraryDays: [
         { title: 'Chegada em Jaipur', description: 'Pouso em Jaipur, transporte até seu hotel histórico.' },
-        { title: 'Forte Amber e City Palace', description: 'Visita privada ao nascer do sol no Forte Amber.' }
+        { title: 'Forte Amber e City Palace', description: 'Visita privada ao nascer do sol no Forte Amber.' },
+        { title: 'Jaipur a Udaipur', description: 'Trajeto cênico até Udaipur, hospedagem em uma haveli à beira do lago. Passeio de barco ao entardecer no Lago Pichola.' },
+        { title: 'Cidade dos Lagos', description: 'Explore o complexo do City Palace, o Templo Jagdish e os mercados de artesãos da cidade antiga.' },
+        { title: 'Udaipur a Jodhpur', description: 'Viagem até Jodhpur, a Cidade Azul. Exploração à tarde do Forte Mehrangarh com vistas panorâmicas do deserto.' },
+        { title: 'Jodhpur a Jaisalmer', description: 'Jornada pelo deserto de Thar até Jaisalmer. Safári de camelo ao entardecer e jantar sob as estrelas entre as dunas.' },
+        { title: 'Forte de Jaisalmer e Partida', description: 'Manhã no vivo Forte de Jaisalmer e na Patwon Ki Haveli, depois transporte para a partida.' }
       ]
     }
   }
