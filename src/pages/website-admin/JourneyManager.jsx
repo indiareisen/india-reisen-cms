@@ -40,6 +40,68 @@ const TABS = [
   { key: 'translations', label: 'Translations' }
 ]
 
+const SAMPLE_JOURNEY = {
+  title: 'Rajasthan Royal Heritage Trail',
+  description: 'A seven-day journey through the forts, palaces, and desert landscapes of Rajasthan — from the Pink City of Jaipur to the golden dunes of Jaisalmer, with private access to heritage sites along the way.',
+  destination: 'Jaipur, Udaipur, Jodhpur, Jaisalmer',
+  duration: 7,
+  difficulty: 'Moderate',
+  price: 2400,
+  currency: 'USD',
+  featuredImage: 'https://picsum.photos/1200/800?random=101',
+  gallery: [
+    'https://picsum.photos/600/450?random=102',
+    'https://picsum.photos/600/450?random=103',
+    'https://picsum.photos/600/450?random=104',
+    'https://picsum.photos/600/450?random=105',
+    'https://picsum.photos/600/450?random=106',
+    'https://picsum.photos/600/450?random=107'
+  ],
+  highlights: [
+    'Private sunrise visit to Amber Fort before the crowds arrive',
+    'Boutique heritage haveli stays in Udaipur',
+    'Camel safari through the Thar Desert at sunset',
+    'Guided walk through Jodhpur\'s Blue City lanes'
+  ],
+  itineraryDays: [
+    { day: 1, title: 'Arrival in Jaipur', description: 'Land in Jaipur, transfer to your heritage hotel, and unwind with an evening welcome dinner featuring Rajasthani cuisine.' },
+    { day: 2, title: 'Amber Fort & City Palace', description: 'Private sunrise visit to Amber Fort, followed by the City Palace and Jantar Mantar observatory in the afternoon.' },
+    { day: 3, title: 'Jaipur to Udaipur', description: 'Scenic drive to Udaipur, checking into a lakeside haveli. Evening boat ride on Lake Pichola.' },
+    { day: 4, title: 'City of Lakes', description: 'Explore the City Palace complex, Jagdish Temple, and the old town\'s artisan markets.' },
+    { day: 5, title: 'Udaipur to Jodhpur', description: 'Drive to Jodhpur, the Blue City. Afternoon exploration of Mehrangarh Fort with panoramic desert views.' },
+    { day: 6, title: 'Jodhpur to Jaisalmer', description: 'Journey into the Thar Desert to Jaisalmer. Evening camel safari and dinner under the stars among the dunes.' },
+    { day: 7, title: 'Jaisalmer Fort & Departure', description: 'Morning at the living Jaisalmer Fort and Patwon Ki Haveli, then transfer for departure.' }
+  ],
+  inclusions: [
+    'Private air-conditioned vehicle throughout',
+    'Heritage hotel accommodation',
+    'Daily breakfast and select dinners',
+    'English-speaking local guides at each city',
+    'All monument entry fees',
+    'Camel safari and desert camp experience'
+  ],
+  exclusions: [
+    'International and domestic flights',
+    'Lunches (unless specified)',
+    'Personal expenses and tips',
+    'Travel insurance'
+  ],
+  translations: {
+    hi: {
+      title: 'राजस्थान शाही विरासत यात्रा',
+      description: 'जयपुर, उदयपुर, जोधपुर और जैसलमेर के किलों, महलों और रेगिस्तानी परिदृश्यों से होकर सात दिन की यात्रा।'
+    },
+    fr: {
+      title: 'Circuit du Patrimoine Royal du Rajasthan',
+      description: 'Un voyage de sept jours à travers les forts, palais et paysages désertiques du Rajasthan, de Jaipur à Jaisalmer.'
+    },
+    es: {
+      title: 'Ruta del Patrimonio Real de Rajastán',
+      description: 'Un viaje de siete días por los fuertes, palacios y paisajes desérticos de Rajastán, desde Jaipur hasta Jaisalmer.'
+    }
+  }
+}
+
 async function uploadToCloudinary(file) {
   const cloudForm = new FormData()
   cloudForm.append('file', file)
@@ -376,9 +438,21 @@ export default function JourneyManager() {
     <div style={{ fontFamily: "'Georgia', 'Playfair Display', serif" }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1 style={{ margin: 0, color: INK }}>Journey Management</h1>
-        <PillButton tone={showForm ? 'danger' : 'solid'} onClick={() => { showForm ? resetForm() : setShowForm(true) }}>
-          {showForm ? '✕ Cancel' : '+ Add Journey'}
-        </PillButton>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {!showForm && (
+            <PillButton tone="gold" onClick={() => {
+              setFormData({ ...emptyForm, ...SAMPLE_JOURNEY })
+              setEditingId(null)
+              setShowForm(true)
+              setActiveTab('overview')
+            }}>
+              🎲 Load Sample
+            </PillButton>
+          )}
+          <PillButton tone={showForm ? 'danger' : 'solid'} onClick={() => { showForm ? resetForm() : setShowForm(true) }}>
+            {showForm ? '✕ Cancel' : '+ Add Journey'}
+          </PillButton>
+        </div>
       </div>
 
       {showForm && (
