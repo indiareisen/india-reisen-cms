@@ -54,14 +54,22 @@ function useGoogleTranslate() {
 // Drives the hidden Google Translate <select> so switching our language pills
 // also translates every other section of the page (highlights, itinerary,
 // inclusions, sidebar, etc.), not just the manually-translated hero copy.
-function triggerGoogleTranslate(langCode, attempt = 0) {
-  const combo = document.querySelector('.goog-te-combo')
-  if (!combo) {
-    if (attempt < 15) setTimeout(() => triggerGoogleTranslate(langCode, attempt + 1), 300)
-    return
+// Reads the current Google Translate target language from its cookie, if any.
+function getGoogleTranslateLang() {
+  const match = document.cookie.match(/googtrans=\/en\/([a-zA-Z-]+)/)
+  return match ? match[1] : 'en'
+}
+
+// Switching language via a cookie + reload is far more reliable than driving
+// Google's hidden <select> in-place, especially for dynamically-rendered
+// React content that the widget's live DOM scan can miss.
+function setGoogleTranslateLang(langCode) {
+  if (langCode === 'en') {
+    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  } else {
+    document.cookie = `googtrans=/en/${langCode}; path=/`
   }
-  combo.value = langCode
-  combo.dispatchEvent(new Event('change', { bubbles: true }))
+  window.location.reload()
 }
 
 // Google injects a top banner iframe and shifts <body> down when translation
@@ -89,7 +97,7 @@ export default function JourneyDetail() {
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
   const [lightboxImg, setLightboxImg] = useState(null)
-  const [lang, setLang] = useState('en')
+  const [lang, setLang] = useState(() => getGoogleTranslateLang())
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
 
   useGoogleTranslate()
@@ -151,7 +159,7 @@ export default function JourneyDetail() {
               {LANGUAGES.filter(l => l.code === 'en' || journey.translations[l.code]).map(l => (
                 <button
                   key={l.code}
-                  onClick={() => { setLang(l.code); triggerGoogleTranslate(l.code) }}
+                  onClick={() => setGoogleTranslateLang(l.code)}
                   style={{
                     border: 'none', borderRadius: '999px', padding: '5px 11px', fontSize: '12px', fontWeight: 700,
                     cursor: 'pointer', background: lang === l.code ? primaryColor : 'transparent',
