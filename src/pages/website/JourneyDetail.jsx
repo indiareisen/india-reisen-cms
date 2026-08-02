@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
@@ -199,6 +199,7 @@ export default function JourneyDetail() {
             {/* Itinerary — signature element */}
             <div style={{ marginBottom: '52px' }}>
               <SectionEyebrow color={primaryColor}>{days.length > 0 ? `${days.length}-Day Itinerary` : 'Itinerary'}</SectionEyebrow>
+              {days.length > 0 && <RouteMap days={days} color={primaryColor} />}
               {days.length > 0 ? (
                 <div>
                   {days.map((d, i) => (
@@ -338,5 +339,113 @@ function SectionEyebrow({ children, color }) {
     }}>
       {children}
     </h3>
+  )
+}
+
+// Loads Leaflet from CDN once per page (no npm install needed) and geocodes
+// each day's location name via OpenStreetMap's free Nominatim API, then
+// plots numbered pins connected by a route line in itinerary order.
+function loadLeaflet() {
+  return new Promise((resolve) => {
+    if (window.L) { resolve(window.L); return }
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+    document.head.appendChild(link)
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    script.onload = () => resolve(window.L)
+    document.body.appendChild(script)
+  })
+}
+
+const geocodeCache = {}
+async function geocode(place) {
+  if (geocodeCache[place]) return geocodeCache[place]
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(place)}`)
+    const data = await res.json()
+    if (data?.[0]) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+      geocodeCache[place] = coords
+      return coords
+    }
+  } catch (e) {
+    console.error('Geocoding failed for', place, e)
+  }
+  return null
+}
+
+function RouteMap({ days, color }) {
+  const mapRef = useRef(null)
+  const containerRef = useRef(null)
+  const [status, setStatus] = useState('loading') // loading | ready | empty
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function build() {
+      const daysWithLocation = days.filter(d => d.location && d.location.trim())
+      if (daysWithLocation.length === 0) { setStatus('empty'); return }
+
+      const L = await loadLeaflet()
+      if (cancelled) return
+
+      // Geocode sequentially with a short delay to stay within Nominatim's
+      // fair-use rate limit (max ~1 request/second).
+      const points = []
+      for (const d of daysWithLocation) {
+        const coords = await geocode(d.location)
+        if (coords) points.push({ ...coords, day: d.day, title: d.title, location: d.location })
+        await new Promise(r => setTimeout(r, 250))
+      }
+      if (cancelled || points.length === 0) { setStatus('empty'); return }
+
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
+      const map = L.map(containerRef.current, { scrollWheelZoom: false })
+      mapRef.current = map
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map)
+
+      const latlngs = points.map(p => [p.lat, p.lng])
+      points.forEach(p => {
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="background:${color};color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff;">${p.day}</div>`,
+          iconSize: [26, 26],
+          iconAnchor: [13, 13]
+        })
+        L.marker([p.lat, p.lng], { icon }).addTo(map).bindPopup(`<strong>Day ${p.day}: ${p.title || p.location}</strong><br/>${p.location}`)
+      })
+      if (latlngs.length > 1) {
+        L.polyline(latlngs, { color, weight: 3, opacity: 0.7, dashArray: '6, 8' }).addTo(map)
+      }
+      map.fitBounds(latlngs, { padding: [30, 30] })
+      setStatus('ready')
+    }
+
+    build()
+    return () => {
+      cancelled = true
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
+    }
+  }, [days, color])
+
+  if (status === 'empty') return null
+
+  return (
+    <div style={{ marginBottom: '32px' }}>
+      <div
+        ref={containerRef}
+        style={{ height: '340px', borderRadius: '10px', overflow: 'hidden', border: `1px solid ${BORDER}`, background: CANVAS }}
+      >
+        {status === 'loading' && (
+          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTE, fontSize: '13px' }}>
+            Loading route map…
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

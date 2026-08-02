@@ -65,13 +65,13 @@ const SAMPLE_JOURNEY = {
     'Guided walk through Jodhpur\'s Blue City lanes'
   ],
   itineraryDays: [
-    { day: 1, title: 'Arrival in Jaipur', description: 'Land in Jaipur, transfer to your heritage hotel, and unwind with an evening welcome dinner featuring Rajasthani cuisine.' },
-    { day: 2, title: 'Amber Fort & City Palace', description: 'Private sunrise visit to Amber Fort, followed by the City Palace and Jantar Mantar observatory in the afternoon.' },
-    { day: 3, title: 'Jaipur to Udaipur', description: 'Scenic drive to Udaipur, checking into a lakeside haveli. Evening boat ride on Lake Pichola.' },
-    { day: 4, title: 'City of Lakes', description: 'Explore the City Palace complex, Jagdish Temple, and the old town\'s artisan markets.' },
-    { day: 5, title: 'Udaipur to Jodhpur', description: 'Drive to Jodhpur, the Blue City. Afternoon exploration of Mehrangarh Fort with panoramic desert views.' },
-    { day: 6, title: 'Jodhpur to Jaisalmer', description: 'Journey into the Thar Desert to Jaisalmer. Evening camel safari and dinner under the stars among the dunes.' },
-    { day: 7, title: 'Jaisalmer Fort & Departure', description: 'Morning at the living Jaisalmer Fort and Patwon Ki Haveli, then transfer for departure.' }
+    { day: 1, title: 'Arrival in Jaipur', description: 'Land in Jaipur, transfer to your heritage hotel, and unwind with an evening welcome dinner featuring Rajasthani cuisine.', location: 'Jaipur, Rajasthan, India' },
+    { day: 2, title: 'Amber Fort & City Palace', description: 'Private sunrise visit to Amber Fort, followed by the City Palace and Jantar Mantar observatory in the afternoon.', location: 'Jaipur, Rajasthan, India' },
+    { day: 3, title: 'Jaipur to Udaipur', description: 'Scenic drive to Udaipur, checking into a lakeside haveli. Evening boat ride on Lake Pichola.', location: 'Udaipur, Rajasthan, India' },
+    { day: 4, title: 'City of Lakes', description: 'Explore the City Palace complex, Jagdish Temple, and the old town\'s artisan markets.', location: 'Udaipur, Rajasthan, India' },
+    { day: 5, title: 'Udaipur to Jodhpur', description: 'Drive to Jodhpur, the Blue City. Afternoon exploration of Mehrangarh Fort with panoramic desert views.', location: 'Jodhpur, Rajasthan, India' },
+    { day: 6, title: 'Jodhpur to Jaisalmer', description: 'Journey into the Thar Desert to Jaisalmer. Evening camel safari and dinner under the stars among the dunes.', location: 'Jaisalmer, Rajasthan, India' },
+    { day: 7, title: 'Jaisalmer Fort & Departure', description: 'Morning at the living Jaisalmer Fort and Patwon Ki Haveli, then transfer for departure.', location: 'Jaisalmer, Rajasthan, India' }
   ],
   inclusions: [
     'Private air-conditioned vehicle throughout',
@@ -320,7 +320,7 @@ function ChipListEditor({ items, onChange, placeholder }) {
 
 function ItineraryDaysEditor({ days, onChange }) {
   const addDay = () => {
-    onChange([...days, { day: days.length + 1, title: '', description: '' }])
+    onChange([...days, { day: days.length + 1, title: '', description: '', location: '' }])
   }
   const updateDay = (idx, field, value) => {
     const next = days.map((d, i) => i === idx ? { ...d, [field]: value } : d)
@@ -373,6 +373,13 @@ function ItineraryDaysEditor({ days, onChange }) {
               placeholder="What happens this day — activities, meals, transfers..."
               onChange={(e) => updateDay(idx, 'description', e.target.value)}
               rows={2}
+              style={{ marginBottom: '8px' }}
+            />
+            <TextInput
+              value={d.location || ''}
+              placeholder="📍 Location for map pin — e.g. Jaipur, Rajasthan, India (optional)"
+              onChange={(e) => updateDay(idx, 'location', e.target.value)}
+              style={{ fontSize: '13px' }}
             />
           </div>
         ))}
