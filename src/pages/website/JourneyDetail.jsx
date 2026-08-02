@@ -78,7 +78,8 @@ export default function JourneyDetail() {
     return {
       day: d.day,
       title: trDay?.title || d.title,
-      description: trDay?.description || d.description
+      description: trDay?.description || d.description,
+      location: d.location
     }
   })
   const gallery = journey.gallery || []
