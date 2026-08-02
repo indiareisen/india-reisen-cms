@@ -380,7 +380,9 @@ async function geocode(place) {
 function RouteMap({ days, color }) {
   const mapRef = useRef(null)
   const containerRef = useRef(null)
+  const markersRef = useRef([])
   const [status, setStatus] = useState('loading') // loading | ready | empty
+  const [points, setPoints] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -394,35 +396,59 @@ function RouteMap({ days, color }) {
 
       // Geocode sequentially with a short delay to stay within Nominatim's
       // fair-use rate limit (max ~1 request/second).
-      const points = []
+      const geocoded = []
       for (const d of daysWithLocation) {
         const coords = await geocode(d.location)
-        if (coords) points.push({ ...coords, day: d.day, title: d.title, location: d.location })
+        if (coords) geocoded.push({ ...coords, day: d.day, title: d.title, location: d.location })
         await new Promise(r => setTimeout(r, 250))
       }
-      if (cancelled || points.length === 0) { setStatus('empty'); return }
+      if (cancelled || geocoded.length === 0) { setStatus('empty'); return }
 
       if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
-      const map = L.map(containerRef.current, { scrollWheelZoom: false })
+      const map = L.map(containerRef.current, { scrollWheelZoom: false, zoomControl: false })
       mapRef.current = map
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+      L.control.zoom({ position: 'bottomright' }).addTo(map)
+
+      // Muted, elegant basemap — far better suited to a luxury travel brand
+      // than the default colorful OpenStreetMap tiles.
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap, &copy; CARTO',
+        maxZoom: 19
       }).addTo(map)
 
-      const latlngs = points.map(p => [p.lat, p.lng])
-      points.forEach(p => {
+      const latlngs = geocoded.map(p => [p.lat, p.lng])
+      markersRef.current = geocoded.map(p => {
         const icon = L.divIcon({
           className: '',
-          html: `<div style="background:${color};color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff;">${p.day}</div>`,
-          iconSize: [26, 26],
-          iconAnchor: [13, 13]
+          html: `
+            <div style="position:relative; width:34px; height:44px;">
+              <svg width="34" height="44" viewBox="0 0 34 44" style="position:absolute; top:0; left:0; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
+                <path d="M17 0C7.6 0 0 7.6 0 17c0 12.75 17 27 17 27s17-14.25 17-27C34 7.6 26.4 0 17 0z" fill="${color}"/>
+                <circle cx="17" cy="17" r="12" fill="#fff"/>
+              </svg>
+              <div style="position:absolute; top:6px; left:0; width:34px; text-align:center; font-weight:700; font-size:13px; color:${color}; font-family:${SERIF};">${p.day}</div>
+            </div>`,
+          iconSize: [34, 44],
+          iconAnchor: [17, 44],
+          popupAnchor: [0, -40]
         })
-        L.marker([p.lat, p.lng], { icon }).addTo(map).bindPopup(`<strong>Day ${p.day}: ${p.title || p.location}</strong><br/>${p.location}`)
+        const marker = L.marker([p.lat, p.lng], { icon }).addTo(map)
+        marker.bindPopup(
+          `<div style="font-family:${SANS}; min-width:160px;">
+             <div style="font-family:${SERIF}; font-weight:700; font-size:14px; color:${INK}; margin-bottom:2px;">Day ${p.day}${p.title ? ': ' + p.title : ''}</div>
+             <div style="font-size:12px; color:${MUTE};">${p.location}</div>
+           </div>`,
+          { closeButton: false, className: 'journey-map-popup' }
+        )
+        return marker
       })
+
       if (latlngs.length > 1) {
-        L.polyline(latlngs, { color, weight: 3, opacity: 0.7, dashArray: '6, 8' }).addTo(map)
+        L.polyline(latlngs, { color, weight: 2.5, opacity: 0.55, dashArray: '1, 9', lineCap: 'round' }).addTo(map)
       }
-      map.fitBounds(latlngs, { padding: [30, 30] })
+      map.fitBounds(latlngs, { padding: [36, 36] })
+
+      setPoints(geocoded)
       setStatus('ready')
     }
 
@@ -433,20 +459,71 @@ function RouteMap({ days, color }) {
     }
   }, [days, color])
 
+  const flyToStop = (idx) => {
+    if (!mapRef.current || !markersRef.current[idx]) return
+    const marker = markersRef.current[idx]
+    mapRef.current.flyTo(marker.getLatLng(), Math.max(mapRef.current.getZoom(), 9), { duration: 0.6 })
+    marker.openPopup()
+  }
+
   if (status === 'empty') return null
 
   return (
-    <div style={{ marginBottom: '32px' }}>
+    <div style={{ marginBottom: '36px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <p style={{ margin: 0, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>
+          Route Map
+        </p>
+        {status === 'ready' && (
+          <p style={{ margin: 0, fontSize: '12px', color: MUTE }}>{points.length} stop{points.length !== 1 ? 's' : ''}</p>
+        )}
+      </div>
+
       <div
         ref={containerRef}
-        style={{ height: '340px', borderRadius: '10px', overflow: 'hidden', border: `1px solid ${BORDER}`, background: CANVAS }}
+        style={{ height: '360px', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${BORDER}`, background: CANVAS, position: 'relative' }}
       >
         {status === 'loading' && (
-          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTE, fontSize: '13px' }}>
-            Loading route map…
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', color: MUTE, fontSize: '13px' }}>
+            <div style={{
+              width: '22px', height: '22px', borderRadius: '50%',
+              border: `2.5px solid ${BORDER}`, borderTopColor: color,
+              animation: 'route-map-spin 0.8s linear infinite'
+            }}></div>
+            Plotting the route…
           </div>
         )}
       </div>
+
+      {status === 'ready' && points.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '12px', paddingBottom: '4px' }}>
+          {points.map((p, idx) => (
+            <button
+              key={idx}
+              onClick={() => flyToStop(idx)}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: '7px',
+                background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '999px',
+                padding: '6px 12px 6px 6px', cursor: 'pointer', fontFamily: SANS
+              }}
+            >
+              <span style={{
+                width: '20px', height: '20px', borderRadius: '50%', background: color, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10.5px', fontWeight: 700, flexShrink: 0
+              }}>{p.day}</span>
+              <span style={{ fontSize: '12.5px', color: INK, whiteSpace: 'nowrap' }}>{p.location.split(',')[0]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes route-map-spin { to { transform: rotate(360deg); } }
+        .journey-map-popup .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: 0 6px 20px rgba(43,35,32,0.18); }
+        .journey-map-popup .leaflet-popup-tip { box-shadow: none; }
+        .leaflet-control-attribution { font-size: 9.5px !important; background: rgba(255,255,255,0.75) !important; }
+        .leaflet-control-zoom a { color: ${INK} !important; }
+      `}</style>
     </div>
   )
 }
