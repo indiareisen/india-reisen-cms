@@ -22,6 +22,8 @@ const emptyForm = {
   itineraryDays: [],
   inclusions: [],
   exclusions: [],
+  practicalInfo: { bestTime: '', visa: '', currency: '', packingList: [] },
+  faqs: [],
   translations: {}
 }
 
@@ -38,6 +40,8 @@ const TABS = [
   { key: 'itinerary', label: 'Itinerary' },
   { key: 'gallery', label: 'Gallery' },
   { key: 'details', label: 'Highlights & Inclusions' },
+  { key: 'practical', label: 'Practical Info' },
+  { key: 'faqs', label: 'FAQs' },
   { key: 'translations', label: 'Translations' }
 ]
 
@@ -86,6 +90,17 @@ const SAMPLE_JOURNEY = {
     'Lunches (unless specified)',
     'Personal expenses and tips',
     'Travel insurance'
+  ],
+  practicalInfo: {
+    bestTime: 'October to March, when daytime temperatures are pleasant (15-28°C) and the desert evenings are cool rather than freezing. April to June brings intense heat, and the monsoon (July-September) can disrupt travel in rural areas.',
+    visa: 'Most nationalities require an e-Visa for India, applied for online at least 4 days before arrival. Passport must be valid for at least 6 months beyond your travel dates.',
+    currency: 'Indian Rupee (INR). Credit cards are widely accepted in hotels and cities; carry cash for markets, tips, and rural stops. ATMs are available in all major towns on this route.',
+    packingList: ['Lightweight, breathable clothing', 'A warm layer for desert evenings', 'Comfortable walking shoes', 'Sun protection (hat, sunscreen, sunglasses)', 'A scarf or shawl for temple visits']
+  },
+  faqs: [
+    { question: 'Is this trip suitable for families with children?', answer: 'Yes — the pace is moderate and most activities are family-friendly, though the desert camel safari is best suited to children aged 6 and above.' },
+    { question: 'How much walking is involved?', answer: 'Expect 2-3 hours of walking most days across forts and old-city lanes, often on uneven stone surfaces. Comfortable footwear is recommended.' },
+    { question: 'Can this itinerary be customized?', answer: 'Absolutely — every India Reisen journey can be tailored in pace, accommodation level, and activities. Reach out to our team to adjust this trip to your preferences.' }
   ],
   translations: {
     hi: {
@@ -444,6 +459,49 @@ function GalleryEditor({ images, onChange }) {
   )
 }
 
+/* ---------- FAQ editor ---------- */
+
+function FaqEditor({ faqs, onChange }) {
+  const addFaq = () => onChange([...faqs, { question: '', answer: '' }])
+  const updateFaq = (idx, field, value) => {
+    onChange(faqs.map((f, i) => i === idx ? { ...f, [field]: value } : f))
+  }
+  const removeFaq = (idx) => onChange(faqs.filter((_, i) => i !== idx))
+
+  return (
+    <div>
+      {faqs.length === 0 && (
+        <p style={{ color: '#a89a8d', fontSize: '13px', fontStyle: 'italic', margin: '0 0 14px 0' }}>
+          No FAQs added yet. These show as an expandable Q&amp;A list on the journey page.
+        </p>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '14px' }}>
+        {faqs.map((f, idx) => (
+          <div key={idx} style={{ border: `1px solid ${BORDER}`, borderRadius: '8px', padding: '14px', background: CANVAS }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <TextInput
+                value={f.question}
+                placeholder="Question — e.g. Is this trip suitable for families?"
+                onChange={(e) => updateFaq(idx, 'question', e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <button onClick={() => removeFaq(idx)} title="Remove"
+                style={{ border: '1px solid #b3423f', color: '#b3423f', background: '#fff', borderRadius: '6px', width: '36px', cursor: 'pointer', flexShrink: 0 }}>×</button>
+            </div>
+            <TextArea
+              value={f.answer}
+              placeholder="Answer"
+              onChange={(e) => updateFaq(idx, 'answer', e.target.value)}
+              rows={2}
+            />
+          </div>
+        ))}
+      </div>
+      <PillButton onClick={addFaq} tone="gold">+ Add FAQ</PillButton>
+    </div>
+  )
+}
+
 /* ================================= MAIN ================================= */
 
 export default function JourneyManager() {
@@ -641,6 +699,49 @@ export default function JourneyManager() {
                   <ChipListEditor items={formData.exclusions} onChange={(v) => setFormData({ ...formData, exclusions: v })} placeholder="e.g. International flights" />
                 </div>
               </div>
+            )}
+
+            {activeTab === 'practical' && (
+              <div style={{ display: 'grid', gap: '18px' }}>
+                <Field label="Best Time to Visit">
+                  <TextArea
+                    value={formData.practicalInfo.bestTime}
+                    onChange={(e) => setFormData({ ...formData, practicalInfo: { ...formData.practicalInfo, bestTime: e.target.value } })}
+                    placeholder="e.g. October to March, when temperatures are pleasant..."
+                    rows={2}
+                  />
+                </Field>
+                <Field label="Visa Requirements">
+                  <TextArea
+                    value={formData.practicalInfo.visa}
+                    onChange={(e) => setFormData({ ...formData, practicalInfo: { ...formData.practicalInfo, visa: e.target.value } })}
+                    placeholder="e.g. Most nationalities require an e-Visa..."
+                    rows={2}
+                  />
+                </Field>
+                <Field label="Currency & Payments">
+                  <TextArea
+                    value={formData.practicalInfo.currency}
+                    onChange={(e) => setFormData({ ...formData, practicalInfo: { ...formData.practicalInfo, currency: e.target.value } })}
+                    placeholder="e.g. Indian Rupee (INR). Cards widely accepted..."
+                    rows={2}
+                  />
+                </Field>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#8a7a6d', marginBottom: '8px' }}>
+                    Packing List
+                  </label>
+                  <ChipListEditor
+                    items={formData.practicalInfo.packingList}
+                    onChange={(v) => setFormData({ ...formData, practicalInfo: { ...formData.practicalInfo, packingList: v } })}
+                    placeholder="e.g. Comfortable walking shoes"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'faqs' && (
+              <FaqEditor faqs={formData.faqs} onChange={(v) => setFormData({ ...formData, faqs: v })} />
             )}
 
             {activeTab === 'translations' && (

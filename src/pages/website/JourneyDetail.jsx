@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore'
 import { db } from '../../services/firebaseService'
 import useWishlist from '../../hooks/useWishlist'
 
@@ -37,9 +37,34 @@ export default function JourneyDetail() {
   const [loading, setLoading] = useState(true)
   const [lightboxImg, setLightboxImg] = useState(null)
   const [lang, setLang] = useState('en')
+  const [related, setRelated] = useState([])
+  const [openFaq, setOpenFaq] = useState(null)
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
 
   useEffect(() => { fetchData() }, [id])
+
+  useEffect(() => {
+    if (!journey) return
+    fetchRelated()
+  }, [journey?.id])
+
+  const fetchRelated = async () => {
+    try {
+      const snap = await getDocs(query(collection(db, 'journeys'), limit(12)))
+      const all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(j => j.id !== journey.id)
+      const destWords = (journey.destination || '').toLowerCase().split(/,\s*/)
+      const scored = all.map(j => {
+        const jWords = (j.destination || '').toLowerCase().split(/,\s*/)
+        const overlap = destWords.filter(w => jWords.includes(w)).length
+        const sameDifficulty = j.difficulty === journey.difficulty ? 1 : 0
+        return { j, score: overlap * 2 + sameDifficulty }
+      })
+      scored.sort((a, b) => b.score - a.score)
+      setRelated(scored.slice(0, 3).map(s => s.j))
+    } catch (error) {
+      console.error('Error fetching related journeys:', error)
+    }
+  }
 
   const fetchData = async () => {
     try {
@@ -83,6 +108,8 @@ export default function JourneyDetail() {
     }
   })
   const gallery = journey.gallery || []
+  const practicalInfo = journey.practicalInfo || {}
+  const faqs = journey.faqs || []
 
   return (
     <div style={{ fontFamily: SANS, color: INK, background: '#fff' }}>
@@ -261,6 +288,71 @@ export default function JourneyDetail() {
                 </div>
               )}
             </div>
+
+            {/* Practical Info */}
+            {(practicalInfo.bestTime || practicalInfo.visa || practicalInfo.currency || practicalInfo.packingList?.length > 0) && (
+              <div style={{ marginTop: '52px' }}>
+                <SectionEyebrow color={primaryColor}>Practical Information</SectionEyebrow>
+                <div style={{ display: 'grid', gap: '16px' }}>
+                  {practicalInfo.bestTime && (
+                    <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '16px 18px' }}>
+                      <p style={{ margin: '0 0 6px 0', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>☀ Best Time to Visit</p>
+                      <p style={{ margin: 0, fontSize: '13.5px', color: '#5c5148', lineHeight: 1.6 }}>{practicalInfo.bestTime}</p>
+                    </div>
+                  )}
+                  {practicalInfo.visa && (
+                    <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '16px 18px' }}>
+                      <p style={{ margin: '0 0 6px 0', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>🛂 Visa</p>
+                      <p style={{ margin: 0, fontSize: '13.5px', color: '#5c5148', lineHeight: 1.6 }}>{practicalInfo.visa}</p>
+                    </div>
+                  )}
+                  {practicalInfo.currency && (
+                    <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '16px 18px' }}>
+                      <p style={{ margin: '0 0 6px 0', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>💳 Currency & Payments</p>
+                      <p style={{ margin: 0, fontSize: '13.5px', color: '#5c5148', lineHeight: 1.6 }}>{practicalInfo.currency}</p>
+                    </div>
+                  )}
+                  {practicalInfo.packingList?.length > 0 && (
+                    <div style={{ background: CANVAS, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '16px 18px' }}>
+                      <p style={{ margin: '0 0 10px 0', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>🧳 Packing List</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {practicalInfo.packingList.map((item, i) => (
+                          <span key={i} style={{ fontSize: '12.5px', color: INK, background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '999px', padding: '5px 12px' }}>{item}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* FAQs */}
+            {faqs.length > 0 && (
+              <div style={{ marginTop: '52px' }}>
+                <SectionEyebrow color={primaryColor}>Frequently Asked Questions</SectionEyebrow>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {faqs.map((f, i) => (
+                    <div key={i} style={{ border: `1px solid ${BORDER}`, borderRadius: '10px', overflow: 'hidden' }}>
+                      <button
+                        onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                        style={{
+                          width: '100%', textAlign: 'left', padding: '15px 18px', background: openFaq === i ? CANVAS : '#fff',
+                          border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'
+                        }}
+                      >
+                        <span style={{ fontSize: '14.5px', fontWeight: 600, color: INK }}>{f.question}</span>
+                        <span style={{ color: primaryColor, fontSize: '16px', flexShrink: 0, transform: openFaq === i ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
+                      </button>
+                      {openFaq === i && (
+                        <div style={{ padding: '0 18px 16px 18px', background: CANVAS }}>
+                          <p style={{ margin: 0, fontSize: '13.5px', color: '#5c5148', lineHeight: 1.65 }}>{f.answer}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -290,6 +382,17 @@ export default function JourneyDetail() {
               >
                 {checkWishlisted(journey.id) ? '♥ Saved to Wishlist' : '♡ Save to Wishlist'}
               </button>
+              <button
+                onClick={() => downloadItineraryPdf(journey, days, inclusions, exclusions, practicalInfo)}
+                style={{
+                  width: '100%', padding: '13px', marginTop: '10px', background: 'transparent',
+                  color: MUTE, border: `1px dashed ${BORDER}`,
+                  borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px'
+                }}
+              >
+                📄 Download Itinerary PDF
+              </button>
 
               <div style={{ marginTop: '26px', paddingTop: '22px', borderTop: `1px solid ${BORDER}` }}>
                 <p style={{ margin: '0 0 10px 0', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>Need Help?</p>
@@ -300,6 +403,32 @@ export default function JourneyDetail() {
           </div>
         </div>
       </section>
+
+      {/* Related Journeys */}
+      {related.length > 0 && (
+        <section style={{ maxWidth: '1180px', margin: '0 auto', padding: '0 24px 56px 24px' }}>
+          <SectionEyebrow color={primaryColor}>You May Also Like</SectionEyebrow>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+            {related.map(rj => (
+              <div
+                key={rj.id}
+                onClick={() => navigate(`/journey/${rj.id}`)}
+                style={{ borderRadius: '12px', overflow: 'hidden', border: `1px solid ${BORDER}`, cursor: 'pointer', background: '#fff' }}
+              >
+                <div style={{
+                  height: '150px',
+                  backgroundImage: rj.featuredImage ? `url('${rj.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                  backgroundSize: 'cover', backgroundPosition: 'center'
+                }}></div>
+                <div style={{ padding: '16px' }}>
+                  <h4 style={{ fontFamily: SERIF, margin: '0 0 6px 0', fontSize: '16px', color: INK }}>{rj.title}</h4>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: MUTE }}>{rj.destination} · {rj.duration} days · {rj.currency || '$'} {rj.price}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: 'white', padding: '64px 24px', textAlign: 'center' }}>
@@ -341,6 +470,82 @@ function SectionEyebrow({ children, color }) {
       {children}
     </h3>
   )
+}
+
+// Loads jsPDF from CDN once, used to generate a downloadable itinerary PDF.
+function loadJsPDF() {
+  return new Promise((resolve) => {
+    if (window.jspdf?.jsPDF) { resolve(window.jspdf.jsPDF); return }
+    const script = document.createElement('script')
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+    script.onload = () => resolve(window.jspdf.jsPDF)
+    document.body.appendChild(script)
+  })
+}
+
+async function downloadItineraryPdf(journey, days, inclusions, exclusions, practicalInfo) {
+  const jsPDF = await loadJsPDF()
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const margin = 48
+  let y = 60
+
+  const addWrapped = (text, x, width, size, color, gap) => {
+    doc.setFontSize(size)
+    doc.setTextColor(color)
+    const lines = doc.splitTextToSize(text, width)
+    lines.forEach(line => {
+      if (y > 780) { doc.addPage(); y = 60 }
+      doc.text(line, x, y)
+      y += size * 1.35
+    })
+    y += gap
+  }
+
+  doc.setFont('helvetica', 'bold')
+  addWrapped(journey.title || 'Journey Itinerary', margin, pageWidth - margin * 2, 22, '#d1356f', 6)
+  doc.setFont('helvetica', 'normal')
+  addWrapped(`${journey.destination || ''}  •  ${journey.duration} days  •  ${journey.difficulty}`, margin, pageWidth - margin * 2, 11, '#8a7a6d', 14)
+  addWrapped(journey.description || '', margin, pageWidth - margin * 2, 11, '#2b2320', 20)
+
+  if (days.length > 0) {
+    doc.setFont('helvetica', 'bold')
+    addWrapped('Day-by-Day Itinerary', margin, pageWidth - margin * 2, 15, '#d1356f', 8)
+    doc.setFont('helvetica', 'normal')
+    days.forEach(d => {
+      doc.setFont('helvetica', 'bold')
+      addWrapped(`Day ${d.day}: ${d.title || ''}`, margin, pageWidth - margin * 2, 12, '#2b2320', 2)
+      doc.setFont('helvetica', 'normal')
+      addWrapped(d.description || '', margin, pageWidth - margin * 2, 10.5, '#5c5148', 10)
+    })
+  }
+
+  if (inclusions.length > 0) {
+    doc.setFont('helvetica', 'bold')
+    addWrapped("What's Included", margin, pageWidth - margin * 2, 13, '#d1356f', 6)
+    doc.setFont('helvetica', 'normal')
+    inclusions.forEach(item => addWrapped(`✓ ${item}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 3))
+    y += 8
+  }
+
+  if (exclusions.length > 0) {
+    doc.setFont('helvetica', 'bold')
+    addWrapped('Not Included', margin, pageWidth - margin * 2, 13, '#d1356f', 6)
+    doc.setFont('helvetica', 'normal')
+    exclusions.forEach(item => addWrapped(`✕ ${item}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 3))
+    y += 8
+  }
+
+  if (practicalInfo.bestTime || practicalInfo.visa || practicalInfo.currency) {
+    doc.setFont('helvetica', 'bold')
+    addWrapped('Practical Information', margin, pageWidth - margin * 2, 13, '#d1356f', 6)
+    doc.setFont('helvetica', 'normal')
+    if (practicalInfo.bestTime) addWrapped(`Best time to visit: ${practicalInfo.bestTime}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 8)
+    if (practicalInfo.visa) addWrapped(`Visa: ${practicalInfo.visa}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 8)
+    if (practicalInfo.currency) addWrapped(`Currency: ${practicalInfo.currency}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 8)
+  }
+
+  doc.save(`${(journey.title || 'itinerary').replace(/[^a-z0-9]+/gi, '-')}.pdf`)
 }
 
 // Loads Leaflet from CDN once per page (no npm install needed) and geocodes
