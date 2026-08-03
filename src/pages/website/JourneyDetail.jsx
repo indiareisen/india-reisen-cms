@@ -383,7 +383,7 @@ export default function JourneyDetail() {
                 {checkWishlisted(journey.id) ? '♥ Saved to Wishlist' : '♡ Save to Wishlist'}
               </button>
               <button
-                onClick={() => downloadItineraryPdf(journey, days, inclusions, exclusions, practicalInfo)}
+                onClick={() => downloadItineraryPdf(journey, days, inclusions, exclusions, practicalInfo, settings)}
                 style={{
                   width: '100%', padding: '13px', marginTop: '10px', background: 'transparent',
                   color: MUTE, border: `1px dashed ${BORDER}`,
@@ -483,66 +483,173 @@ function loadJsPDF() {
   })
 }
 
-async function downloadItineraryPdf(journey, days, inclusions, exclusions, practicalInfo) {
+// Fetches an external image and converts it to a data URL, since jsPDF can't
+// embed a remote URL directly. Returns null on failure so the PDF still
+// generates cleanly without that image rather than breaking entirely.
+async function loadImageDataUrl(url) {
+  try {
+    const res = await fetch(url, { mode: 'cors' })
+    const blob = await res.blob()
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch (e) {
+    console.error('Could not load image for PDF:', url, e)
+    return null
+  }
+}
+
+const LOGO_URL = 'https://res.cloudinary.com/dl1q4dw72/image/upload/v1781181114/final-logo_fqu772.png'
+
+async function downloadItineraryPdf(journey, days, inclusions, exclusions, practicalInfo, settings) {
   const jsPDF = await loadJsPDF()
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
   const margin = 48
-  let y = 60
+  const contentWidth = pageWidth - margin * 2
+  const primary = '#d1356f'
+  const ink = '#2b2320'
+  const mute = '#8a7a6d'
+  const HEADER_H = 66
+  const FOOTER_H = 54
+  let y = HEADER_H + 26
 
-  const addWrapped = (text, x, width, size, color, gap) => {
+  const [logoData, heroData] = await Promise.all([
+    loadImageDataUrl(LOGO_URL),
+    journey.featuredImage ? loadImageDataUrl(journey.featuredImage) : Promise.resolve(null)
+  ])
+
+  const newPage = () => { doc.addPage(); y = HEADER_H + 26 }
+  const ensureSpace = (needed) => { if (y + needed > pageHeight - FOOTER_H) newPage() }
+
+  const addWrapped = (text, size, color, bold, gap, x = margin, width = contentWidth) => {
+    doc.setFont('helvetica', bold ? 'bold' : 'normal')
     doc.setFontSize(size)
     doc.setTextColor(color)
     const lines = doc.splitTextToSize(text, width)
     lines.forEach(line => {
-      if (y > 780) { doc.addPage(); y = 60 }
+      ensureSpace(size * 1.4)
       doc.text(line, x, y)
-      y += size * 1.35
+      y += size * 1.4
     })
     y += gap
   }
 
-  doc.setFont('helvetica', 'bold')
-  addWrapped(journey.title || 'Journey Itinerary', margin, pageWidth - margin * 2, 22, '#d1356f', 6)
-  doc.setFont('helvetica', 'normal')
-  addWrapped(`${journey.destination || ''}  •  ${journey.duration} days  •  ${journey.difficulty}`, margin, pageWidth - margin * 2, 11, '#8a7a6d', 14)
-  addWrapped(journey.description || '', margin, pageWidth - margin * 2, 11, '#2b2320', 20)
+  // ---------- Title block ----------
+  addWrapped(journey.title || 'Journey Itinerary', 23, primary, true, 6)
+  addWrapped(`${journey.destination || ''}   •   ${journey.duration} days   •   ${journey.difficulty}   •   ${journey.currency || '$'} ${journey.price}`, 10.5, mute, false, 16)
 
+  // ---------- Hero image ----------
+  if (heroData) {
+    const heroH = 190
+    ensureSpace(heroH + 20)
+    try {
+      const props = doc.getImageProperties(heroData)
+      const ratio = props.width / props.height
+      let drawW = contentWidth
+      let drawH = drawW / ratio
+      if (drawH > heroH) { drawH = heroH; drawW = drawH * ratio }
+      const drawX = margin + (contentWidth - drawW) / 2
+      doc.addImage(heroData, drawX, y, drawW, drawH)
+      y += drawH + 20
+    } catch (e) { /* skip image if jsPDF can't parse it */ }
+  }
+
+  addWrapped(journey.description || '', 11, ink, false, 22)
+
+  // ---------- Itinerary ----------
   if (days.length > 0) {
-    doc.setFont('helvetica', 'bold')
-    addWrapped('Day-by-Day Itinerary', margin, pageWidth - margin * 2, 15, '#d1356f', 8)
-    doc.setFont('helvetica', 'normal')
-    days.forEach(d => {
+    addWrapped('Day-by-Day Itinerary', 15, primary, true, 4)
+    doc.setDrawColor(primary)
+    doc.setLineWidth(1)
+    ensureSpace(8)
+    doc.line(margin, y, margin + 60, y)
+    y += 18
+
+    days.forEach((d, idx) => {
+      ensureSpace(46)
+      const circleY = y + 3
+      doc.setFillColor(primary)
+      doc.circle(margin + 10, circleY, 11, 'F')
+      doc.setTextColor('#ffffff')
       doc.setFont('helvetica', 'bold')
-      addWrapped(`Day ${d.day}: ${d.title || ''}`, margin, pageWidth - margin * 2, 12, '#2b2320', 2)
-      doc.setFont('helvetica', 'normal')
-      addWrapped(d.description || '', margin, pageWidth - margin * 2, 10.5, '#5c5148', 10)
+      doc.setFontSize(10)
+      doc.text(String(d.day), margin + 10, circleY + 3.5, { align: 'center' })
+
+      const textX = margin + 30
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(12.5)
+      doc.setTextColor(ink)
+      doc.text(d.title || `Day ${d.day}`, textX, y + 7)
+      y += 20
+
+      if (d.description) {
+        addWrapped(d.description, 10, '#5c5148', false, 0, textX, contentWidth - 30)
+      }
+      y += 14
+      if (idx !== days.length - 1) {
+        doc.setDrawColor('#e8dfd7')
+        doc.setLineWidth(0.5)
+        ensureSpace(4)
+        doc.line(textX, y - 8, pageWidth - margin, y - 8)
+      }
     })
+    y += 8
   }
 
+  // ---------- Inclusions / Exclusions ----------
   if (inclusions.length > 0) {
-    doc.setFont('helvetica', 'bold')
-    addWrapped("What's Included", margin, pageWidth - margin * 2, 13, '#d1356f', 6)
-    doc.setFont('helvetica', 'normal')
-    inclusions.forEach(item => addWrapped(`✓ ${item}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 3))
-    y += 8
+    addWrapped("What's Included", 13, primary, true, 6)
+    inclusions.forEach(item => addWrapped(`✓  ${item}`, 10.5, '#5c5148', false, 4))
+    y += 6
   }
-
   if (exclusions.length > 0) {
-    doc.setFont('helvetica', 'bold')
-    addWrapped('Not Included', margin, pageWidth - margin * 2, 13, '#d1356f', 6)
-    doc.setFont('helvetica', 'normal')
-    exclusions.forEach(item => addWrapped(`✕ ${item}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 3))
-    y += 8
+    addWrapped('Not Included', 13, primary, true, 6)
+    exclusions.forEach(item => addWrapped(`✕  ${item}`, 10.5, '#5c5148', false, 4))
+    y += 6
   }
 
+  // ---------- Practical info ----------
   if (practicalInfo.bestTime || practicalInfo.visa || practicalInfo.currency) {
-    doc.setFont('helvetica', 'bold')
-    addWrapped('Practical Information', margin, pageWidth - margin * 2, 13, '#d1356f', 6)
+    addWrapped('Practical Information', 13, primary, true, 6)
+    if (practicalInfo.bestTime) addWrapped(`Best time to visit: ${practicalInfo.bestTime}`, 10.5, '#5c5148', false, 8)
+    if (practicalInfo.visa) addWrapped(`Visa: ${practicalInfo.visa}`, 10.5, '#5c5148', false, 8)
+    if (practicalInfo.currency) addWrapped(`Currency: ${practicalInfo.currency}`, 10.5, '#5c5148', false, 8)
+  }
+
+  // ---------- Header + footer on every page ----------
+  const totalPages = doc.internal.getNumberOfPages()
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i)
+
+    // Header
+    if (logoData) {
+      try {
+        const props = doc.getImageProperties(logoData)
+        const logoH = 34
+        const logoW = logoH * (props.width / props.height)
+        doc.addImage(logoData, margin, 18, logoW, logoH)
+      } catch (e) { /* skip */ }
+    }
+    doc.setDrawColor('#e8dfd7')
+    doc.setLineWidth(0.75)
+    doc.line(margin, HEADER_H, pageWidth - margin, HEADER_H)
+
+    // Footer
+    const footerY = pageHeight - FOOTER_H + 18
+    doc.setDrawColor('#e8dfd7')
+    doc.setLineWidth(0.75)
+    doc.line(margin, footerY - 14, pageWidth - margin, footerY - 14)
     doc.setFont('helvetica', 'normal')
-    if (practicalInfo.bestTime) addWrapped(`Best time to visit: ${practicalInfo.bestTime}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 8)
-    if (practicalInfo.visa) addWrapped(`Visa: ${practicalInfo.visa}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 8)
-    if (practicalInfo.currency) addWrapped(`Currency: ${practicalInfo.currency}`, margin, pageWidth - margin * 2, 10.5, '#5c5148', 8)
+    doc.setFontSize(9)
+    doc.setTextColor(mute)
+    const contactLine = [settings?.email, settings?.website || 'www.indiareisen.com', settings?.phone].filter(Boolean).join('   •   ')
+    doc.text(contactLine || 'India Reisen', margin, footerY)
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, footerY, { align: 'right' })
   }
 
   doc.save(`${(journey.title || 'itinerary').replace(/[^a-z0-9]+/gi, '-')}.pdf`)
