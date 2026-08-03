@@ -601,6 +601,20 @@ async function downloadItineraryPdf(journey, days, inclusions, exclusions, pract
     y += 8
   }
 
+  // ---------- Cost ----------
+  ensureSpace(50)
+  doc.setFillColor('#faf6f2')
+  doc.roundedRect(margin, y, contentWidth, 40, 6, 6, 'F')
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(mute)
+  doc.text('COST PER PERSON', margin + 16, y + 16)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(17)
+  doc.setTextColor(primary)
+  doc.text(`${journey.currency || '$'} ${journey.price}`, margin + 16, y + 32)
+  y += 56
+
   // ---------- Inclusions / Exclusions ----------
   if (inclusions.length > 0) {
     addWrapped("What's Included", 13, primary, true, 6)
