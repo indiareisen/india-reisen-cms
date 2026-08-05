@@ -38,10 +38,24 @@ export default function JourneyDetail() {
   const [lightboxImg, setLightboxImg] = useState(null)
   const [lang, setLang] = useState('en')
   const [related, setRelated] = useState([])
+  const [recentlyViewed, setRecentlyViewed] = useState([])
   const [openFaq, setOpenFaq] = useState(null)
   const { toggleWishlist, isWishlisted: checkWishlisted } = useWishlist()
 
   useEffect(() => { fetchData() }, [id])
+
+  // Track this journey in localStorage's recently-viewed list, and load the
+  // list (excluding the current journey) to show as a browsing-history strip.
+  useEffect(() => {
+    if (!journey) return
+    try {
+      const stored = JSON.parse(localStorage.getItem('recentlyViewedJourneys') || '[]')
+      const entry = { id: journey.id, title: journey.title, featuredImage: journey.featuredImage, price: journey.price, currency: journey.currency, destination: journey.destination }
+      const next = [entry, ...stored.filter(j => j.id !== journey.id)].slice(0, 6)
+      localStorage.setItem('recentlyViewedJourneys', JSON.stringify(next))
+      setRecentlyViewed(next.filter(j => j.id !== journey.id))
+    } catch (e) { /* localStorage unavailable, skip silently */ }
+  }, [journey?.id])
 
   useEffect(() => {
     if (!journey) return
@@ -430,6 +444,34 @@ export default function JourneyDetail() {
         </section>
       )}
 
+      {/* Recently Viewed */}
+      {recentlyViewed.length > 0 && (
+        <section style={{ maxWidth: '1180px', margin: '0 auto', padding: '0 24px 56px 24px' }}>
+          <p style={{ margin: '0 0 14px 0', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTE, fontWeight: 700 }}>
+            Recently Viewed
+          </p>
+          <div style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {recentlyViewed.map(rv => (
+              <div
+                key={rv.id}
+                onClick={() => navigate(`/journey/${rv.id}`)}
+                style={{ flexShrink: 0, width: '180px', borderRadius: '10px', overflow: 'hidden', border: `1px solid ${BORDER}`, cursor: 'pointer', background: '#fff' }}
+              >
+                <div style={{
+                  height: '100px',
+                  backgroundImage: rv.featuredImage ? `url('${rv.featuredImage}')` : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                  backgroundSize: 'cover', backgroundPosition: 'center'
+                }}></div>
+                <div style={{ padding: '10px 12px' }}>
+                  <p style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: 600, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{rv.title}</p>
+                  <p style={{ margin: 0, fontSize: '11.5px', color: MUTE }}>{rv.currency || '$'} {rv.price}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* CTA */}
       <section style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: 'white', padding: '64px 24px', textAlign: 'center' }}>
         <h2 style={{ fontFamily: SERIF, margin: '0 0 14px 0', fontSize: '30px' }}>Ready for Your Adventure?</h2>
@@ -441,6 +483,25 @@ export default function JourneyDetail() {
           Enquire Now →
         </button>
       </section>
+
+      {/* Sticky mobile Enquire bar — hidden on desktop via CSS below */}
+      <div className="mobile-enquire-bar" style={{
+        display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 998,
+        background: '#fff', borderTop: `1px solid ${BORDER}`, padding: '12px 16px',
+        alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+        boxShadow: '0 -4px 16px rgba(0,0,0,0.08)'
+      }}>
+        <div>
+          <p style={{ margin: 0, fontSize: '10px', color: MUTE, textTransform: 'uppercase', letterSpacing: '0.06em' }}>From</p>
+          <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: primaryColor, fontFamily: SERIF }}>{journey.currency || '$'} {journey.price}</p>
+        </div>
+        <button
+          onClick={() => alert('Booking system coming soon!')}
+          style={{ background: primaryColor, color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 22px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
+          Enquire Now
+        </button>
+      </div>
 
       {/* Lightbox */}
       {lightboxImg && (
@@ -455,6 +516,13 @@ export default function JourneyDetail() {
         }
         @media (max-width: 768px) {
           .journey-hero-bg { background-attachment: scroll !important; background-size: cover !important; background-position: center !important; }
+          .mobile-enquire-bar { display: flex !important; }
+        }
+      `}</style>
+      <div style={{ height: '0' }} className="mobile-enquire-spacer"></div>
+      <style>{`
+        @media (max-width: 768px) {
+          .mobile-enquire-spacer { height: 72px; }
         }
       `}</style>
     </div>
