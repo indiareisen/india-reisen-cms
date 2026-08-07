@@ -3,8 +3,45 @@ import { useState, useEffect } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../services/firebaseService'
 import Footer from '../components/Footer'
+import useNewsletter from '../hooks/useNewsletter'
+
+function useExitIntent(enabled) {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    if (!enabled) return
+    if (sessionStorage.getItem('exitIntentShown')) return
+    let armed = false
+    const armTimer = setTimeout(() => { armed = true }, 4000) // avoid triggering instantly on page load
+    const handler = (e) => {
+      if (armed && e.clientY <= 0) {
+        setShow(true)
+        sessionStorage.setItem('exitIntentShown', '1')
+        document.removeEventListener('mouseout', handler)
+      }
+    }
+    document.addEventListener('mouseout', handler)
+    return () => { clearTimeout(armTimer); document.removeEventListener('mouseout', handler) }
+  }, [enabled])
+  return [show, setShow]
+}
 export default function PublicLayout() {
   const [settings, setSettings] = useState({ primaryColor: '#d1356f' })
+  const [showExitPopup, setShowExitPopup] = useExitIntent(true)
+  const [popupEmail, setPopupEmail] = useState('')
+  const [popupStatus, setPopupStatus] = useState('idle') // idle | loading | done | error
+  const { subscribeToNewsletter } = useNewsletter()
+
+  const handlePopupSubscribe = async (e) => {
+    e.preventDefault()
+    setPopupStatus('loading')
+    try {
+      await subscribeToNewsletter(popupEmail, '')
+      setPopupStatus('done')
+    } catch (err) {
+      setPopupStatus('error')
+    }
+  }
+
   useEffect(() => {
     loadSettings()
   }, [])
@@ -56,6 +93,56 @@ export default function PublicLayout() {
         <Outlet />
       </main>
       <Footer />
+
+      {showExitPopup && (
+        <div
+          onClick={() => setShowExitPopup(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(20,14,12,0.6)', zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: '#fff', borderRadius: '14px', maxWidth: '420px', width: '100%', padding: '36px 32px', textAlign: 'center', position: 'relative', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+          >
+            <button
+              onClick={() => setShowExitPopup(false)}
+              style={{ position: 'absolute', top: '14px', right: '14px', border: 'none', background: 'transparent', fontSize: '20px', cursor: 'pointer', color: '#8a7a6d' }}
+            >×</button>
+
+            {popupStatus === 'done' ? (
+              <>
+                <p style={{ fontSize: '32px', margin: '0 0 12px 0' }}>✓</p>
+                <h3 style={{ margin: '0 0 8px 0', color: settings.primaryColor }}>You're on the list!</h3>
+                <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>Watch your inbox for travel inspiration and offers.</p>
+              </>
+            ) : (
+              <>
+                <h3 style={{ margin: '0 0 10px 0', color: settings.primaryColor, fontSize: '22px' }}>Before you go...</h3>
+                <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#666', lineHeight: 1.6 }}>
+                  Join our list for exclusive journey offers and travel inspiration from across India, Nepal, Bhutan, Tibet, and Sri Lanka.
+                </p>
+                <form onSubmit={handlePopupSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <input
+                    type="email"
+                    required
+                    placeholder="Your email address"
+                    value={popupEmail}
+                    onChange={(e) => setPopupEmail(e.target.value)}
+                    style={{ padding: '12px 14px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={popupStatus === 'loading'}
+                    style={{ padding: '12px', background: settings.primaryColor, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: popupStatus === 'loading' ? 'not-allowed' : 'pointer' }}
+                  >
+                    {popupStatus === 'loading' ? 'Subscribing…' : 'Keep Me Inspired'}
+                  </button>
+                  {popupStatus === 'error' && <p style={{ margin: 0, fontSize: '12.5px', color: '#b3423f' }}>Something went wrong — please try again.</p>}
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {settings.phone && (
         <a

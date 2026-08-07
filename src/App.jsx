@@ -9,6 +9,7 @@ import AdminLogin from './pages/admin/AdminLogin'
 import HomePage from './pages/website/HomePage'
 import JourneysPage from './pages/website/JourneysPage'
 import JourneyDetail from './pages/website/JourneyDetail'
+import JourneyQuiz from './pages/website/JourneyQuiz'
 import WishlistPage from './pages/website/WishlistPage'
 import BlogPage from './pages/website/BlogPage'
 import BlogDetail from './pages/website/BlogDetail'
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/journeys" element={<JourneysPage />} />
             <Route path="/journey/:id" element={<JourneyDetail />} />
+            <Route path="/journey-finder" element={<JourneyQuiz />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
